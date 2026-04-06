@@ -366,12 +366,15 @@ export async function PUT(
             })
           }
           // 판매 수량 감소
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
+          if (item.productId) {
+              await tx.product.update({
+              where: { id: item.productId },
+              data: {
               soldCount: { decrement: item.quantity }
+              }
+              })
             }
-          })
+          }
         }
 
         // 주문 상태 변경 (전액 환불)

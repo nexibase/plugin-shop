@@ -319,12 +319,15 @@ export async function PUT(
             })
           }
           // 판매 수량 감소
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
+          if (item.productId) {
+              await tx.product.update({
+              where: { id: item.productId },
+              data: {
               soldCount: { decrement: item.quantity }
+              }
+              })
             }
-          })
+          }
         }
 
         // 주문 상태 변경 (전액 환불)
@@ -448,12 +451,15 @@ export async function PUT(
               }
             })
           }
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
+          if (item.productId) {
+              await tx.product.update({
+              where: { id: item.productId },
+              data: {
               soldCount: { decrement: item.quantity }
+              }
+              })
             }
-          })
+          }
         }
 
         // 주문 상태 변경 (환불 완료)
@@ -580,12 +586,15 @@ export async function PUT(
             })
           }
           // 판매 수량 감소
-          await tx.product.update({
-            where: { id: item.productId },
-            data: {
+          if (item.productId) {
+              await tx.product.update({
+              where: { id: item.productId },
+              data: {
               soldCount: { decrement: item.quantity }
+              }
+              })
             }
-          })
+          }
         }
 
         // 주문 상태 변경 (전액 환불)
@@ -774,12 +783,15 @@ async function restoreStock(items: { productId: number; optionId: number | null;
         }
       })
     }
-    await prisma.product.update({
-      where: { id: item.productId },
-      data: {
+    if (item.productId) {
+        await prisma.product.update({
+        where: { id: item.productId },
+        data: {
         soldCount: { decrement: item.quantity }
+        }
+        })
       }
-    })
+    }
   }
 }
 
