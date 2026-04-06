@@ -323,9 +323,9 @@ export async function PUT(
               await tx.product.update({
               where: { id: item.productId },
               data: {
-              soldCount: { decrement: item.quantity }
+                soldCount: { decrement: item.quantity }
               }
-              })
+            })
             }
           }
         }
@@ -452,13 +452,12 @@ export async function PUT(
             })
           }
           if (item.productId) {
-              await tx.product.update({
-              where: { id: item.productId },
-              data: {
+            await tx.product.update({
+            where: { id: item.productId },
+            data: {
               soldCount: { decrement: item.quantity }
-              }
-              })
             }
+          })
           }
         }
 
@@ -590,9 +589,9 @@ export async function PUT(
               await tx.product.update({
               where: { id: item.productId },
               data: {
-              soldCount: { decrement: item.quantity }
+                soldCount: { decrement: item.quantity }
               }
-              })
+            })
             }
           }
         }
@@ -784,13 +783,12 @@ async function restoreStock(items: { productId: number; optionId: number | null;
       })
     }
     if (item.productId) {
-        await prisma.product.update({
-        where: { id: item.productId },
-        data: {
+      await prisma.product.update({
+      where: { id: item.productId },
+      data: {
         soldCount: { decrement: item.quantity }
-        }
-        })
       }
+    })
     }
   }
 }

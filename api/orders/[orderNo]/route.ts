@@ -367,13 +367,12 @@ export async function PUT(
           }
           // 판매 수량 감소
           if (item.productId) {
-              await tx.product.update({
+            await tx.product.update({
               where: { id: item.productId },
               data: {
-              soldCount: { decrement: item.quantity }
+                soldCount: { decrement: item.quantity }
               }
-              })
-            }
+            })
           }
         }
 
