@@ -122,7 +122,7 @@ function MyPageContent() {
 
   // URL에서 탭 상태 읽기
   const tabParam = searchParams.get('tab')
-  const activeTab = (tabParam === 'orders' || tabParam === 'wishlist' || tabParam === 'addresses' || tabParam === 'notifications') ? tabParam : 'profile'
+  const activeTab = (tabParam === 'orders' || tabParam === 'wishlist' || tabParam === 'addresses' || tabParam === 'notifications') ? tabParam : 'orders'
 
   // 주문 관련 상태
   const [orders, setOrders] = useState<Order[]>([])
@@ -776,9 +776,9 @@ function MyPageContent() {
           {/* 탭 */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="mb-6 w-full h-auto grid grid-cols-3 sm:grid-cols-5 gap-1 p-1">
-              <TabsTrigger value="profile" className="flex items-center justify-center gap-2 py-2">
-                <Pencil className="h-4 w-4" />
-                <span>내 정보</span>
+              <TabsTrigger value="profile" className="flex items-center justify-center gap-2 py-2" onClick={(e) => { e.preventDefault(); router.push('/mypage') }}>
+                <User className="h-4 w-4" />
+                <span>마이페이지</span>
               </TabsTrigger>
               <TabsTrigger value="orders" className="flex items-center justify-center gap-2 py-2">
                 <ShoppingBag className="h-4 w-4" />
