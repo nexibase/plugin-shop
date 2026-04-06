@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Header, Footer } from "@/components/layout"
+import { MyPageLayout } from "@/components/layout/MyPageLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -762,24 +762,10 @@ function MyPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <main className="flex-1">
-        <div className="max-w-4xl mx-auto px-4 py-6">
-          {/* 헤더 */}
-          <div className="flex items-center gap-3 mb-6">
-            <User className="h-7 w-7" />
-            <h1 className="text-2xl font-bold">마이페이지</h1>
-          </div>
-
+    <MyPageLayout>
           {/* 탭 */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-6 w-full h-auto grid grid-cols-3 sm:grid-cols-5 gap-1 p-1">
-              <TabsTrigger value="profile" className="flex items-center justify-center gap-2 py-2" onClick={(e) => { e.preventDefault(); router.push('/mypage') }}>
-                <User className="h-4 w-4" />
-                <span>마이페이지</span>
-              </TabsTrigger>
+            <TabsList className="mb-6 w-full h-auto grid grid-cols-3 gap-1 p-1">
               <TabsTrigger value="orders" className="flex items-center justify-center gap-2 py-2">
                 <ShoppingBag className="h-4 w-4" />
                 <span>주문내역</span>
@@ -1478,8 +1464,6 @@ function MyPageContent() {
               )}
             </TabsContent>
           </Tabs>
-        </div>
-      </main>
 
       {/* 주소 추가/수정 모달 */}
       <Dialog open={addressModalOpen} onOpenChange={setAddressModalOpen}>
@@ -1657,21 +1641,18 @@ function MyPageContent() {
         </DialogContent>
       </Dialog>
 
-      <Footer />
-    </div>
+    </MyPageLayout>
   )
 }
 
 export default function MyPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
+      <MyPageLayout>
+        <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </main>
-        <Footer />
-      </div>
+        </div>
+      </MyPageLayout>
     }>
       <MyPageContent />
     </Suspense>
