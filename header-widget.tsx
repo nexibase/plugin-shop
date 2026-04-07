@@ -7,8 +7,18 @@ import Link from "next/link"
 
 export default function ShopHeaderWidget() {
   const [cartCount, setCartCount] = useState(0)
+  const [enabled, setEnabled] = useState(false)
 
   useEffect(() => {
+    fetch('/api/settings/plugin-status?folder=shop')
+      .then(r => r.json())
+      .then(d => setEnabled(d.enabled === true))
+      .catch(() => setEnabled(false))
+  }, [])
+
+  useEffect(() => {
+    if (!enabled) return
+
     const updateCartCount = () => {
       try {
         const cart = JSON.parse(localStorage.getItem("cart") || "[]")
@@ -26,7 +36,9 @@ export default function ShopHeaderWidget() {
       window.removeEventListener("cartUpdated", updateCartCount)
       window.removeEventListener("storage", updateCartCount)
     }
-  }, [])
+  }, [enabled])
+
+  if (!enabled) return null
 
   return (
     <Link href="/shop/cart">
