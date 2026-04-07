@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import Script from "next/script"
-import { Header, Footer } from "@/components/layout"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -790,22 +790,15 @@ export default function OrderPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </main>
-        <Footer />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <main className="flex-1">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+    <>
+      <div className="max-w-4xl mx-auto px-4 py-6">
           {/* 헤더 */}
           <div className="mb-6">
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
@@ -1278,7 +1271,6 @@ export default function OrderPage() {
             </div>
           </form>
         </div>
-      </main>
 
       {/* 이니시스 스크립트 - beforeInteractive로 먼저 로드 */}
       <Script
@@ -1467,7 +1459,6 @@ export default function OrderPage() {
         </DialogContent>
       </Dialog>
 
-      <Footer />
-    </div>
+    </>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Header, Footer } from "@/components/layout"
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Loader2,
@@ -50,12 +50,8 @@ export default function ShopPolicyPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </main>
-        <Footer />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -65,11 +61,7 @@ export default function ShopPolicyPage() {
     : "5,000"
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <main className="flex-1">
-        <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-4xl mx-auto px-4 py-8">
           <h1 className="text-2xl font-bold mb-2">취소/반품/교환 정책</h1>
           <p className="text-muted-foreground mb-8">
             {settings?.shop_name || "쇼핑몰"}의 취소, 반품, 교환 관련 안내입니다.
@@ -265,10 +257,6 @@ export default function ShopPolicyPage() {
               </CardContent>
             </Card>
           </div>
-        </div>
-      </main>
-
-      <Footer />
     </div>
   )
 }

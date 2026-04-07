@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Header, Footer } from "@/components/layout"
+
 import { sanitizeHtml } from "@/lib/sanitize"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -710,39 +710,28 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </main>
-        <Footer />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex flex-col items-center justify-center">
-          <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground mb-4">{error || "상품을 찾을 수 없습니다."}</p>
-          <Button variant="outline" onClick={() => router.push("/shop")}>
-            <ChevronLeft className="h-4 w-4 mr-1" />
-            쇼핑몰로 돌아가기
-          </Button>
-        </main>
-        <Footer />
+      <div className="flex flex-col items-center justify-center py-20">
+        <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+        <p className="text-muted-foreground mb-4">{error || "상품을 찾을 수 없습니다."}</p>
+        <Button variant="outline" onClick={() => router.push("/shop")}>
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          쇼핑몰로 돌아가기
+        </Button>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <main className="flex-1">
-        <div className="max-w-6xl mx-auto px-4 py-6">
+    <>
+      <div className="max-w-6xl mx-auto px-4 py-6">
           {/* 뒤로가기 */}
           <div className="mb-4">
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
@@ -1244,7 +1233,6 @@ export default function ProductDetailPage() {
           <RecentlyViewedProducts excludeId={product.id} />
           <PopularProducts excludeId={product.id} />
         </div>
-      </main>
 
       {/* 장바구니 추가 확인 모달 */}
       {showCartModal && (
@@ -1291,8 +1279,6 @@ export default function ProductDetailPage() {
           </div>
         </div>
       )}
-
-      <Footer />
-    </div>
+    </>
   )
 }

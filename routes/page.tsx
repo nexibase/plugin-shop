@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { Header, Footer } from "@/components/layout"
+
 import { PopularProducts, NewProducts, RecentlyViewedProducts } from "@/plugins/shop/components/ShopProductRecommend"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -53,12 +53,8 @@ interface Category {
 export default function ShopPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </main>
-        <Footer />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     }>
       <ShopContent />
@@ -168,11 +164,7 @@ function ShopContent() {
   const formatPrice = (price: number) => price.toLocaleString() + '원'
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <main className="flex-1">
-        <div className="max-w-6xl mx-auto px-4 py-6">
+    <div className="max-w-6xl mx-auto px-4 py-6">
           {/* 헤더 */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -393,10 +385,6 @@ function ShopContent() {
             <PopularProducts title="인기 상품" />
             <NewProducts title="신상품" />
           </div>
-        </div>
-      </main>
-
-      <Footer />
     </div>
   )
 }

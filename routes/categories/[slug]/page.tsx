@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { Header, Footer } from "@/components/layout"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -52,12 +52,8 @@ interface Category {
 export default function CategoryPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </main>
-        <Footer />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     }>
       <CategoryContent />
@@ -166,11 +162,7 @@ function CategoryContent() {
   const formatPrice = (price: number) => price.toLocaleString() + '원'
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <main className="flex-1">
-        <div className="max-w-6xl mx-auto px-4 py-6">
+    <div className="max-w-6xl mx-auto px-4 py-6">
           {/* 헤더 */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-2">
@@ -374,10 +366,6 @@ function CategoryContent() {
               </Button>
             </div>
           )}
-        </div>
-      </main>
-
-      <Footer />
     </div>
   )
 }

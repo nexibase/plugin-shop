@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Header, Footer } from "@/components/layout"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -131,22 +131,14 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <div className="animate-pulse">로딩 중...</div>
-        </main>
-        <Footer />
+      <div className="flex items-center justify-center py-20">
+        <div className="animate-pulse">로딩 중...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <main className="flex-1">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-4xl mx-auto px-4 py-6">
           {/* 헤더 */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -355,10 +347,6 @@ export default function CartPage() {
               </div>
             </div>
           )}
-        </div>
-      </main>
-
-      <Footer />
     </div>
   )
 }

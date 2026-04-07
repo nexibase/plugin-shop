@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
-import { Header, Footer } from "@/components/layout"
+
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -252,26 +252,18 @@ export default function OrderDetailPage() {
   
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </main>
-        <Footer />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     )
   }
 
   if (error || !order) {
     return (
-      <div className="min-h-screen bg-background flex flex-col">
-        <Header />
-        <main className="flex-1 flex flex-col items-center justify-center">
-          <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-          <p className="text-muted-foreground mb-4">{error || "주문을 찾을 수 없습니다."}</p>
-          <Button onClick={() => router.push("/shop/orders")}>주문 내역으로</Button>
-        </main>
-        <Footer />
+      <div className="flex flex-col items-center justify-center py-20">
+        <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+        <p className="text-muted-foreground mb-4">{error || "주문을 찾을 수 없습니다."}</p>
+        <Button onClick={() => router.push("/shop/orders")}>주문 내역으로</Button>
       </div>
     )
   }
@@ -279,11 +271,8 @@ export default function OrderDetailPage() {
   const StatusIcon = STATUS_LABELS[order.status]?.icon || AlertCircle
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-
-      <main className="flex-1">
-        <div className="max-w-3xl mx-auto px-4 py-6">
+    <>
+      <div className="max-w-3xl mx-auto px-4 py-6">
           {/* 헤더 */}
           <div className="mb-6">
             <Button variant="ghost" size="sm" onClick={() => router.push("/shop/orders")}>
@@ -668,9 +657,6 @@ export default function OrderDetailPage() {
             )}
           </div>
         </div>
-      </main>
-
-      <Footer />
 
       {/* 액션 다이얼로그 */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -743,6 +729,6 @@ export default function OrderDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   )
 }
