@@ -112,7 +112,6 @@ model Order {
   items           OrderItem[]
   user            User            @relation(fields: [userId], references: [id])
   reviews         ProductReview[]
-  auction         Auction?
 
   @@index([userId])
   @@index([status])
