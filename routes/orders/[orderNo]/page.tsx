@@ -75,37 +75,37 @@ interface Order {
   }[]
 }
 
-// 카드사 코드 -> 이름 변환
+// 카드사 코드 -> i18n 키 매핑
 const CARD_NAMES: Record<string, string> = {
-  "01": "하나(외환)카드",
-  "02": "KB국민카드",
-  "03": "삼성카드",
-  "04": "현대카드",
-  "06": "롯데카드",
-  "07": "신한카드",
-  "08": "NH농협카드",
-  "11": "BC카드",
-  "12": "씨티카드",
-  "13": "카카오뱅크",
-  "14": "케이뱅크",
-  "15": "토스뱅크",
-  "21": "해외비자",
-  "22": "해외마스터",
-  "23": "해외JCB",
-  "24": "해외아멕스",
-  "25": "해외다이너스",
-  "26": "수협",
-  "27": "신협",
-  "28": "우리카드",
-  "29": "하나카드",
-  "30": "전북카드",
-  "31": "광주카드",
-  "32": "우체국",
-  "33": "새마을금고",
-  "34": "MG카드",
-  "35": "제주카드",
-  "36": "산업카드",
-  "41": "BC(페이북)",
+  "01": "cardIssuer.hanaKeb",
+  "02": "cardIssuer.kbKookmin",
+  "03": "cardIssuer.samsung",
+  "04": "cardIssuer.hyundai",
+  "06": "cardIssuer.lotte",
+  "07": "cardIssuer.shinhan",
+  "08": "cardIssuer.nhNonghyup",
+  "11": "cardIssuer.bc",
+  "12": "cardIssuer.citi",
+  "13": "cardIssuer.kakaobank",
+  "14": "cardIssuer.kbank",
+  "15": "cardIssuer.tossbank",
+  "21": "cardIssuer.visaIntl",
+  "22": "cardIssuer.masterIntl",
+  "23": "cardIssuer.jcbIntl",
+  "24": "cardIssuer.amexIntl",
+  "25": "cardIssuer.dinersIntl",
+  "26": "cardIssuer.suhyup",
+  "27": "cardIssuer.shinhyup",
+  "28": "cardIssuer.woori",
+  "29": "cardIssuer.hana",
+  "30": "cardIssuer.jeonbuk",
+  "31": "cardIssuer.gwangju",
+  "32": "cardIssuer.postOffice",
+  "33": "cardIssuer.saemaeul",
+  "34": "cardIssuer.mg",
+  "35": "cardIssuer.jeju",
+  "36": "cardIssuer.koreaIndustrial",
+  "41": "cardIssuer.bcPaybook",
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -477,7 +477,7 @@ export default function OrderDetailPage() {
                   {cardInfo.cardName && (
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">{t('order.cardCompany')}</span>
-                      <span>{CARD_NAMES[cardInfo.cardName] || cardInfo.cardName}</span>
+                      <span>{CARD_NAMES[cardInfo.cardName] ? t(CARD_NAMES[cardInfo.cardName] as any) : cardInfo.cardName}</span>
                     </div>
                   )}
                   {cardInfo.cardNo && (

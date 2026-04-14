@@ -89,45 +89,45 @@ interface Order {
   }
 }
 
-// 카드사 코드 -> 카드사명 매핑
+// 카드사 코드 -> i18n 키 매핑
 const CARD_NAMES: Record<string, string> = {
-  "01": "하나(외환)카드",
-  "02": "KB국민카드",
-  "03": "삼성카드",
-  "04": "현대카드",
-  "06": "롯데카드",
-  "07": "신한카드",
-  "08": "구)외환카드",
-  "11": "BC카드",
-  "12": "NH농협카드",
-  "13": "한미카드",
-  "14": "신세계한미카드",
-  "15": "씨티카드",
-  "16": "우리카드",
-  "17": "하나SK카드",
-  "21": "해외비자카드",
-  "22": "해외마스터카드",
-  "23": "JCB카드",
-  "24": "해외아멕스카드",
-  "25": "해외다이너스카드",
-  "26": "중국은련카드",
-  "27": "브이패스",
-  "28": "마스터",
-  "29": "디스커버",
-  "31": "SK주유전용카드",
-  "32": "S-OIL카드",
-  "33": "현대오일뱅크",
-  "34": "GS칼텍스",
-  "35": "우리비씨카드",
-  "36": "하이패스카드",
-  "37": "저축은행카드",
-  "38": "수협카드",
-  "39": "전북은행카드",
-  "40": "광주은행카드",
-  "41": "제주은행카드",
-  "42": "카카오뱅크카드",
-  "43": "케이뱅크카드",
-  "44": "토스뱅크카드",
+  "01": "cardIssuer.hanaKeb",
+  "02": "cardIssuer.kbKookmin",
+  "03": "cardIssuer.samsung",
+  "04": "cardIssuer.hyundai",
+  "06": "cardIssuer.lotte",
+  "07": "cardIssuer.shinhan",
+  "08": "cardIssuer.legacyKeb",
+  "11": "cardIssuer.bc",
+  "12": "cardIssuer.nhNonghyup",
+  "13": "cardIssuer.hanmi",
+  "14": "cardIssuer.shinsegaeHanmi",
+  "15": "cardIssuer.citi",
+  "16": "cardIssuer.woori",
+  "17": "cardIssuer.hanaSk",
+  "21": "cardIssuer.visaIntl",
+  "22": "cardIssuer.masterIntl",
+  "23": "cardIssuer.jcb",
+  "24": "cardIssuer.amexIntl",
+  "25": "cardIssuer.dinersIntl",
+  "26": "cardIssuer.chinaUnionpay",
+  "27": "cardIssuer.vpass",
+  "28": "cardIssuer.mastercard",
+  "29": "cardIssuer.discover",
+  "31": "cardIssuer.skFuel",
+  "32": "cardIssuer.soil",
+  "33": "cardIssuer.hyundaiOilbank",
+  "34": "cardIssuer.gsCaltex",
+  "35": "cardIssuer.wooribc",
+  "36": "cardIssuer.hipass",
+  "37": "cardIssuer.savingsBank",
+  "38": "cardIssuer.suhyupCard",
+  "39": "cardIssuer.jeonbukBank",
+  "40": "cardIssuer.gwangjuBank",
+  "41": "cardIssuer.jejuBank",
+  "42": "cardIssuer.kakaobanKCard",
+  "43": "cardIssuer.kbankCard",
+  "44": "cardIssuer.tossbankCard",
 }
 
 const STATUS_VALUES = [
@@ -167,6 +167,7 @@ export default function AdminOrderDetailPage() {
   const t = useTranslations('shop.admin')
   const to = useTranslations('shop.order')
   const tp = useTranslations('shop.policy')
+  const tc = useTranslations('shop')
   const params = useParams()
   const router = useRouter()
   const orderId = params.id as string
@@ -687,7 +688,7 @@ export default function AdminOrderDetailPage() {
                   {cardInfo.cardName && (
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">{t('cardCompany')}</span>
-                      <span>{CARD_NAMES[cardInfo.cardName] || cardInfo.cardName}</span>
+                      <span>{CARD_NAMES[cardInfo.cardName] ? tc(CARD_NAMES[cardInfo.cardName] as any) : cardInfo.cardName}</span>
                     </div>
                   )}
                   {cardInfo.cardNo && (

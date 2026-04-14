@@ -511,7 +511,7 @@ export default function OrderPage() {
         }, 100)
         setTimeout(() => {
           clearInterval(checkLoaded)
-          reject(new Error("스크립트 로드 타임아웃"))
+          reject(new Error("Script load timeout"))
         }, 10000)
         return
       }
@@ -522,11 +522,11 @@ export default function OrderPage() {
       script.type = "text/javascript"
       script.setAttribute("charset", "UTF-8")
       script.onload = () => {
-        console.log("이니시스 스크립트 로드 완료")
+        console.log("Inicis script loaded")
         resolve()
       }
       script.onerror = () => {
-        reject(new Error("이니시스 스크립트 로드 실패"))
+        reject(new Error("Inicis script load failed"))
       }
       document.head.appendChild(script)
     })
@@ -1031,14 +1031,14 @@ export default function OrderPage() {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">{t('checkout.memoNone')}</SelectItem>
-                          <SelectItem value="부재시 문앞에 놓아주세요">
-                            {t('checkout.memoDoor')}
+                          <SelectItem value={t('deliveryMemo.doorFront')}>
+                            {t('deliveryMemo.doorFront')}
                           </SelectItem>
-                          <SelectItem value="경비실에 맡겨주세요">
-                            {t('checkout.memoSecurity')}
+                          <SelectItem value={t('deliveryMemo.securityDesk')}>
+                            {t('deliveryMemo.securityDesk')}
                           </SelectItem>
-                          <SelectItem value="배송 전 연락 부탁드립니다">
-                            {t('checkout.memoCallBefore')}
+                          <SelectItem value={t('deliveryMemo.callFirst')}>
+                            {t('deliveryMemo.callFirst')}
                           </SelectItem>
                           <SelectItem value="custom">{t('checkout.directInput')}</SelectItem>
                         </SelectContent>
