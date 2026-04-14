@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -108,20 +109,21 @@ const CARD_NAMES: Record<string, string> = {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const STATUS_LABELS: Record<string, { label: string; color: string; icon: any }> = {
-  pending: { label: "결제대기", color: "bg-yellow-500", icon: AlertCircle },
-  paid: { label: "결제완료", color: "bg-blue-500", icon: CreditCard },
-  preparing: { label: "상품준비", color: "bg-indigo-500", icon: Package },
-  shipping: { label: "배송중", color: "bg-purple-500", icon: Truck },
-  delivered: { label: "배송완료", color: "bg-green-500", icon: CheckCircle2 },
-  confirmed: { label: "구매확정", color: "bg-green-700", icon: CheckCircle2 },
-  cancel_requested: { label: "취소요청", color: "bg-orange-500", icon: XCircle },
-  cancelled: { label: "주문취소", color: "bg-gray-500", icon: XCircle },
-  refund_requested: { label: "환불요청", color: "bg-orange-500", icon: RotateCcw },
-  refunded: { label: "환불완료", color: "bg-red-500", icon: RotateCcw },
+const STATUS_META: Record<string, { labelKey: string; color: string; icon: any }> = {
+  pending: { labelKey: "order.statusPending", color: "bg-yellow-500", icon: AlertCircle },
+  paid: { labelKey: "order.statusPaid", color: "bg-blue-500", icon: CreditCard },
+  preparing: { labelKey: "order.statusPreparing", color: "bg-indigo-500", icon: Package },
+  shipping: { labelKey: "order.statusShipping", color: "bg-purple-500", icon: Truck },
+  delivered: { labelKey: "order.statusDelivered", color: "bg-green-500", icon: CheckCircle2 },
+  confirmed: { labelKey: "order.statusConfirmed", color: "bg-green-700", icon: CheckCircle2 },
+  cancel_requested: { labelKey: "order.statusCancelRequested", color: "bg-orange-500", icon: XCircle },
+  cancelled: { labelKey: "order.statusCancelled", color: "bg-gray-500", icon: XCircle },
+  refund_requested: { labelKey: "order.statusRefundRequested", color: "bg-orange-500", icon: RotateCcw },
+  refunded: { labelKey: "order.statusRefunded", color: "bg-red-500", icon: RotateCcw },
 }
 
 export default function OrderDetailPage() {
+  const t = useTranslations('shop')
   const params = useParams()
   const router = useRouter()
   const orderNo = params.orderNo as string
@@ -146,21 +148,21 @@ export default function OrderDetailPage() {
   const [customReason, setCustomReason] = useState("")
   const [actionLoading, setActionLoading] = useState(false)
 
-  // 취소 사유 옵션
+  // 취소 사유 옵션 - 번역된 문자열을 그대로 사용 (백엔드에 저장됨)
   const cancelReasons = [
-    "주문 실수",
-    "단순 변심",
-    "다른 상품으로 재주문",
-    "기타"
+    t('order.cancelReasons.mistake'),
+    t('order.cancelReasons.changedMind'),
+    t('order.cancelReasons.reorder'),
+    t('order.cancelReasons.other'),
   ]
 
   // 환불 사유 옵션
   const refundReasons = [
-    "상품이 설명과 다름",
-    "상품 불량/파손",
-    "오배송",
-    "단순 변심",
-    "기타"
+    t('order.refundReasons.different'),
+    t('order.refundReasons.damaged'),
+    t('order.refundReasons.wrongShipping'),
+    t('order.refundReasons.changedMind'),
+    t('order.refundReasons.other'),
   ]
 
   useEffect(() => {
@@ -176,7 +178,7 @@ export default function OrderDetailPage() {
         return
       }
       if (!res.ok) {
-        setError("주문을 찾을 수 없습니다.")
+        setError(t('order.notFound'))
         return
       }
       const data = await res.json()
@@ -184,7 +186,7 @@ export default function OrderDetailPage() {
       setBankInfo(data.bankInfo)
       setCardInfo(data.cardInfo)
     } catch (err) {
-      setError("주문을 불러오는데 실패했습니다.")
+      setError(t('order.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -197,14 +199,15 @@ export default function OrderDetailPage() {
     let finalReason = ""
     if (dialogAction !== "confirm") {
       if (!selectedReason) {
-        alert("사유를 선택해주세요.")
+        alert(t('order.selectReason'))
         return
       }
-      if (selectedReason === "기타" && !customReason.trim()) {
-        alert("기타 사유를 입력해주세요.")
+      const isOther = selectedReason === t('order.cancelReasons.other') || selectedReason === t('order.refundReasons.other')
+      if (isOther && !customReason.trim()) {
+        alert(t('order.enterOtherReason'))
         return
       }
-      finalReason = selectedReason === "기타" ? customReason.trim() : selectedReason
+      finalReason = isOther ? customReason.trim() : selectedReason
     }
 
     setActionLoading(true)
@@ -221,7 +224,7 @@ export default function OrderDetailPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        alert(data.error || "처리에 실패했습니다.")
+        alert(data.error || t('order.processFailed'))
         return
       }
 
@@ -230,7 +233,7 @@ export default function OrderDetailPage() {
       setCustomReason("")
       fetchOrder()
     } catch (err) {
-      alert("처리 중 오류가 발생했습니다.")
+      alert(t('order.processError'))
     } finally {
       setActionLoading(false)
     }
@@ -243,7 +246,7 @@ export default function OrderDetailPage() {
     setDialogOpen(true)
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + "원"
+  const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
   const formatDate = (date: string | null) => {
     if (!date) return "-"
     return new Date(date).toLocaleString("ko-KR")
@@ -262,13 +265,13 @@ export default function OrderDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-muted-foreground mb-4">{error || "주문을 찾을 수 없습니다."}</p>
-        <Button onClick={() => router.push("/shop/orders")}>주문 내역으로</Button>
+        <p className="text-muted-foreground mb-4">{error || t('order.notFound')}</p>
+        <Button onClick={() => router.push("/shop/orders")}>{t('order.backToOrders')}</Button>
       </div>
     )
   }
 
-  const StatusIcon = STATUS_LABELS[order.status]?.icon || AlertCircle
+  const StatusIcon = STATUS_META[order.status]?.icon || AlertCircle
 
   return (
     <>
@@ -277,7 +280,7 @@ export default function OrderDetailPage() {
           <div className="mb-6">
             <Button variant="ghost" size="sm" onClick={() => router.push("/shop/orders")}>
               <ChevronLeft className="h-4 w-4 mr-1" />
-              주문 내역
+              {t('order.detail')}
             </Button>
           </div>
 
@@ -285,15 +288,15 @@ export default function OrderDetailPage() {
           <Card className="mb-6">
             <CardContent className="py-6">
               <div className="flex items-center gap-4">
-                <div className={`p-3 rounded-full ${STATUS_LABELS[order.status]?.color || 'bg-gray-500'}`}>
+                <div className={`p-3 rounded-full ${STATUS_META[order.status]?.color || 'bg-gray-500'}`}>
                   <StatusIcon className="h-6 w-6 text-white" />
                 </div>
                 <div>
                   <h2 className="text-xl font-bold">
-                    {STATUS_LABELS[order.status]?.label || order.status}
+                    {STATUS_META[order.status] ? t(STATUS_META[order.status].labelKey as any) : order.status}
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    주문번호: {order.orderNo}
+                    {t('order.orderNoLabel', { no: order.orderNo })}
                   </p>
                 </div>
               </div>
@@ -302,11 +305,11 @@ export default function OrderDetailPage() {
               {order.trackingNumber && (
                 <div className="mt-4 p-4 bg-muted rounded-lg">
                   <p className="text-sm">
-                    <span className="text-muted-foreground">택배사:</span>{" "}
+                    <span className="text-muted-foreground">{t('order.trackingCompany')}</span>{" "}
                     {order.trackingCompany}
                   </p>
                   <p className="text-sm">
-                    <span className="text-muted-foreground">송장번호:</span>{" "}
+                    <span className="text-muted-foreground">{t('order.trackingNumber')}</span>{" "}
                     {order.trackingNumber}
                   </p>
                   {order.trackingCompany && (
@@ -317,7 +320,7 @@ export default function OrderDetailPage() {
                       className="inline-flex items-center gap-1 text-sm text-primary hover:underline mt-2"
                     >
                       <ExternalLink className="h-3 w-3" />
-                      배송 조회
+                      {t('order.tracking')}
                     </a>
                   )}
                 </div>
@@ -326,10 +329,10 @@ export default function OrderDetailPage() {
               {/* 무통장입금 안내 */}
               {order.paymentMethod === "bank" && order.status === "pending" && bankInfo && (
                 <div className="mt-4 p-4 bg-primary/10 border border-primary/30 rounded-lg">
-                  <p className="text-sm font-medium text-primary mb-2">입금 계좌 안내</p>
+                  <p className="text-sm font-medium text-primary mb-2">{t('order.bankAccountInfo')}</p>
                   <p className="text-sm text-foreground whitespace-pre-line">{bankInfo}</p>
                   <p className="text-xs text-muted-foreground mt-2">
-                    * 입금 확인 후 결제 완료 처리됩니다.
+                    {t('order.bankAccountVerify')}
                   </p>
                 </div>
               )}
@@ -338,7 +341,7 @@ export default function OrderDetailPage() {
               {order.cancelReason && (
                 <div className="mt-4 p-4 bg-red-100 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-lg">
                   <p className="text-sm text-red-800 dark:text-red-200">
-                    <span className="font-medium">취소/환불 사유:</span> {order.cancelReason}
+                    <span className="font-medium">{t('order.cancelRefundReason')}</span> {order.cancelReason}
                   </p>
                 </div>
               )}
@@ -350,7 +353,7 @@ export default function OrderDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                주문 상품
+                {t('checkout.orderItems')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -381,7 +384,7 @@ export default function OrderDetailPage() {
                       <p className="text-sm text-muted-foreground">{item.optionText}</p>
                     )}
                     <p className="text-sm">
-                      {formatPrice(item.price)} × {item.quantity}개
+                      {formatPrice(item.price)} × {t('order.itemCountShort', { count: item.quantity })}
                     </p>
                   </div>
                   <div className="text-right">
@@ -397,20 +400,20 @@ export default function OrderDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
-                배송지 정보
+                {t('checkout.shipping')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex">
-                <span className="w-24 text-muted-foreground">받는 분</span>
+                <span className="w-24 text-muted-foreground">{t('order.recipient')}</span>
                 <span>{order.recipientName}</span>
               </div>
               <div className="flex">
-                <span className="w-24 text-muted-foreground">연락처</span>
+                <span className="w-24 text-muted-foreground">{t('order.phone')}</span>
                 <span>{order.recipientPhone}</span>
               </div>
               <div className="flex">
-                <span className="w-24 text-muted-foreground">주소</span>
+                <span className="w-24 text-muted-foreground">{t('order.address')}</span>
                 <span>
                   [{order.zipCode}] {order.address}
                   {order.addressDetail && ` ${order.addressDetail}`}
@@ -418,7 +421,7 @@ export default function OrderDetailPage() {
               </div>
               {order.deliveryMemo && (
                 <div className="flex">
-                  <span className="w-24 text-muted-foreground">배송 메모</span>
+                  <span className="w-24 text-muted-foreground">{t('order.deliveryMemo')}</span>
                   <span>{order.deliveryMemo}</span>
                 </div>
               )}
@@ -430,31 +433,31 @@ export default function OrderDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                결제 정보
+                {t('order.paymentInfo')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">상품 금액</span>
+                <span className="text-muted-foreground">{t('order.productAmount')}</span>
                 <span>{formatPrice(order.totalPrice)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">배송비</span>
+                <span className="text-muted-foreground">{t('order.shippingFee')}</span>
                 <span>{formatPrice(order.deliveryFee)}</span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="font-medium">총 결제금액</span>
+                <span className="font-medium">{t('checkout.totalAmount')}</span>
                 <span className="text-lg font-bold text-primary">
                   {formatPrice(order.finalPrice)}
                 </span>
               </div>
               <div className="flex justify-between pt-2">
-                <span className="text-muted-foreground">결제 방법</span>
-                <span>{order.paymentMethod === "bank" ? "무통장입금" : "카드결제"}</span>
+                <span className="text-muted-foreground">{t('order.paymentMethod')}</span>
+                <span>{order.paymentMethod === "bank" ? t('checkout.bankTransfer') : t('checkout.cardPayment')}</span>
               </div>
               {order.paidAt && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">결제일시</span>
+                  <span className="text-muted-foreground">{t('order.paymentDate')}</span>
                   <span>{formatDate(order.paidAt)}</span>
                 </div>
               )}
@@ -462,7 +465,7 @@ export default function OrderDetailPage() {
               {/* 무통장입금 계좌 정보 */}
               {order.paymentMethod === "bank" && bankInfo && (
                 <div className="mt-3 pt-3 border-t border-dashed">
-                  <p className="text-sm text-muted-foreground mb-1">입금 계좌</p>
+                  <p className="text-sm text-muted-foreground mb-1">{t('order.bankAccount')}</p>
                   <p className="text-sm whitespace-pre-line">{bankInfo}</p>
                 </div>
               )}
@@ -470,29 +473,29 @@ export default function OrderDetailPage() {
               {/* 카드결제 정보 */}
               {order.paymentMethod === "card" && cardInfo && (
                 <div className="mt-3 pt-3 border-t border-dashed space-y-1">
-                  <p className="text-sm font-medium mb-2">결제 카드 정보</p>
+                  <p className="text-sm font-medium mb-2">{t('order.paymentCardInfo')}</p>
                   {cardInfo.cardName && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">카드사</span>
+                      <span className="text-muted-foreground">{t('order.cardCompany')}</span>
                       <span>{CARD_NAMES[cardInfo.cardName] || cardInfo.cardName}</span>
                     </div>
                   )}
                   {cardInfo.cardNo && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">카드번호</span>
+                      <span className="text-muted-foreground">{t('order.cardNumber')}</span>
                       <span>{cardInfo.cardNo}</span>
                     </div>
                   )}
                   {cardInfo.applNum && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">승인번호</span>
+                      <span className="text-muted-foreground">{t('order.approvalNumber')}</span>
                       <span>{cardInfo.applNum}</span>
                     </div>
                   )}
                   {cardInfo.cardQuota && (
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">할부</span>
-                      <span>{cardInfo.cardQuota === "00" ? "일시불" : `${cardInfo.cardQuota}개월`}</span>
+                      <span className="text-muted-foreground">{t('order.installment')}</span>
+                      <span>{cardInfo.cardQuota === "00" ? t('order.lumpSum') : t('order.months', { count: parseInt(cardInfo.cardQuota) })}</span>
                     </div>
                   )}
                 </div>
@@ -501,20 +504,20 @@ export default function OrderDetailPage() {
               {/* 환불 정보 */}
               {(order.refundAmount !== null || ["cancelled", "refunded", "refund_requested"].includes(order.status)) && (
                 <div className="pt-3 mt-3 border-t border-dashed space-y-2">
-                  <h4 className="font-medium text-red-600">환불 정보</h4>
+                  <h4 className="font-medium text-red-600">{t('order.refundInfo')}</h4>
                   {order.refundAmount !== null && order.refundAmount < order.finalPrice && (
                     <div className="flex justify-between text-muted-foreground">
-                      <span>반품 배송비 차감</span>
+                      <span>{t('order.returnShippingDeducted')}</span>
                       <span>-{formatPrice(order.finalPrice - order.refundAmount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-red-600 font-medium">
-                    <span>{order.status === "refund_requested" ? "예상 환불금액" : "환불금액"}</span>
+                    <span>{order.status === "refund_requested" ? t('order.expectedRefundAmount') : t('order.refundAmount')}</span>
                     <span>{formatPrice(order.refundAmount || order.finalPrice)}</span>
                   </div>
                   {order.status === "refund_requested" && (
                     <p className="text-xs text-muted-foreground">
-                      * 환불 요청이 승인되면 환불이 진행됩니다.
+                      {t('order.refundApprovalNotice')}
                     </p>
                   )}
                 </div>
@@ -525,40 +528,40 @@ export default function OrderDetailPage() {
           {/* 주문 이력 */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>주문 이력</CardTitle>
+              <CardTitle>{t('order.orderHistory')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">주문일시</span>
+                <span className="text-muted-foreground">{t('order.orderedAt')}</span>
                 <span>{formatDate(order.createdAt)}</span>
               </div>
               {order.paidAt && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">결제일시</span>
+                  <span className="text-muted-foreground">{t('order.paymentDate')}</span>
                   <span>{formatDate(order.paidAt)}</span>
                 </div>
               )}
               {order.shippedAt && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">배송시작</span>
+                  <span className="text-muted-foreground">{t('order.shippingStart')}</span>
                   <span>{formatDate(order.shippedAt)}</span>
                 </div>
               )}
               {order.deliveredAt && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">배송완료</span>
+                  <span className="text-muted-foreground">{t('order.deliveryCompleted')}</span>
                   <span>{formatDate(order.deliveredAt)}</span>
                 </div>
               )}
               {order.cancelledAt && (
                 <div className="flex justify-between text-red-500">
-                  <span>취소일시</span>
+                  <span>{t('order.cancelDate')}</span>
                   <span>{formatDate(order.cancelledAt)}</span>
                 </div>
               )}
               {order.refundedAt && (
                 <div className="flex justify-between text-red-500">
-                  <span>환불일시</span>
+                  <span>{t('order.refundDate')}</span>
                   <span>{formatDate(order.refundedAt)}</span>
                 </div>
               )}
@@ -574,7 +577,7 @@ export default function OrderDetailPage() {
                 onClick={() => router.push("/shop")}
               >
                 <ShoppingBag className="h-4 w-4 mr-2" />
-                계속 쇼핑하기
+                {t('order.continueShopping')}
               </Button>
             )}
 
@@ -586,7 +589,7 @@ export default function OrderDetailPage() {
                 onClick={() => openDialog("cancel")}
               >
                 <XCircle className="h-4 w-4 mr-2" />
-                주문 취소
+                {t('order.cancelOrder')}
               </Button>
             )}
 
@@ -598,20 +601,20 @@ export default function OrderDetailPage() {
                 onClick={() => openDialog("cancel")}
               >
                 <XCircle className="h-4 w-4 mr-2" />
-                취소 요청
+                {t('order.cancelRequest')}
               </Button>
             )}
 
             {/* 취소요청 중 안내 */}
             {order.status === "cancel_requested" && (
               <div className="flex-1 p-4 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-800 space-y-2">
-                <p className="font-medium">취소 요청이 접수되었습니다</p>
+                <p className="font-medium">{t('order.cancelRequestReceived')}</p>
                 <div className="text-orange-700 space-y-1">
-                  <p>요청일시: {formatDate(order.updatedAt)}</p>
-                  {order.cancelReason && <p>취소사유: {order.cancelReason}</p>}
+                  <p>{t('order.requestDate', { date: formatDate(order.updatedAt) })}</p>
+                  {order.cancelReason && <p>{t('order.cancelReason', { reason: order.cancelReason })}</p>}
                 </div>
                 <p className="text-xs text-orange-600 pt-1 border-t border-orange-200">
-                  관리자 확인 후 취소 또는 반품 처리가 진행됩니다.
+                  {t('order.cancelAdminNotice')}
                 </p>
               </div>
             )}
@@ -624,23 +627,23 @@ export default function OrderDetailPage() {
                 onClick={() => openDialog("refund")}
               >
                 <RotateCcw className="h-4 w-4 mr-2" />
-                환불 요청
+                {t('order.requestRefund')}
               </Button>
             )}
 
             {/* 환불요청 중 안내 */}
             {order.status === "refund_requested" && (
               <div className="flex-1 p-4 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-800 space-y-2">
-                <p className="font-medium">환불 요청이 접수되었습니다</p>
+                <p className="font-medium">{t('order.refundRequestReceived')}</p>
                 <div className="text-orange-700 space-y-1">
-                  <p>요청일시: {formatDate(order.updatedAt)}</p>
-                  {order.cancelReason && <p>환불사유: {order.cancelReason}</p>}
+                  <p>{t('order.requestDate', { date: formatDate(order.updatedAt) })}</p>
+                  {order.cancelReason && <p>{t('order.refundReason', { reason: order.cancelReason })}</p>}
                   {order.refundAmount !== null && (
-                    <p>예상 환불금액: {formatPrice(order.refundAmount)}</p>
+                    <p>{t('order.expectedRefundLabel', { amount: formatPrice(order.refundAmount) })}</p>
                   )}
                 </div>
                 <p className="text-xs text-orange-600 pt-1 border-t border-orange-200">
-                  관리자 확인 후 환불 처리가 진행됩니다.
+                  {t('order.refundAdminNotice')}
                 </p>
               </div>
             )}
@@ -652,7 +655,7 @@ export default function OrderDetailPage() {
                 onClick={() => openDialog("confirm")}
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
-                구매 확정
+                {t('order.confirmPurchase')}
               </Button>
             )}
           </div>
@@ -663,24 +666,23 @@ export default function OrderDetailPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {dialogAction === "cancel" && "주문 취소"}
-              {dialogAction === "refund" && "환불 요청"}
-              {dialogAction === "confirm" && "구매 확정"}
+              {dialogAction === "cancel" && t('order.cancelOrder')}
+              {dialogAction === "refund" && t('order.requestRefund')}
+              {dialogAction === "confirm" && t('order.confirmPurchase')}
             </DialogTitle>
             <DialogDescription>
-              {dialogAction === "cancel" && "주문을 취소하시겠습니까? 취소 사유를 입력해주세요."}
-              {dialogAction === "refund" && "환불을 요청하시겠습니까? 환불 사유를 입력해주세요."}
-              {dialogAction === "confirm" && "구매를 확정하시겠습니까? 확정 후에는 환불이 어려울 수 있습니다."}
+              {dialogAction === "cancel" && t('order.cancelConfirm')}
+              {dialogAction === "refund" && t('order.refundConfirm')}
+              {dialogAction === "confirm" && t('order.purchaseConfirm')}
             </DialogDescription>
           </DialogHeader>
 
           {/* 준비중 상태에서 취소 요청 안내 */}
           {dialogAction === "cancel" && order?.status === "preparing" && (
             <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-              <p className="font-medium mb-1">안내</p>
+              <p className="font-medium mb-1">{t('order.preparingNotice')}</p>
               <p>
-                상품 준비 중에는 이미 배송이 시작되었을 수 있어 즉시 취소가 어려울 수 있습니다.
-                관리자 확인 후 취소 또는 반품(배송 후 환불) 처리가 진행되오니 이점 양지하시기 바랍니다.
+                {t('order.preparingNoticeDetail')}
               </p>
             </div>
           )}
@@ -696,9 +698,9 @@ export default function OrderDetailPage() {
                 ))}
               </RadioGroup>
 
-              {selectedReason === "기타" && (
+              {(selectedReason === t('order.cancelReasons.other') || selectedReason === t('order.refundReasons.other')) && (
                 <Textarea
-                  placeholder="기타 사유를 입력해주세요"
+                  placeholder={t('order.otherReasonPlaceholder')}
                   value={customReason}
                   onChange={(e) => setCustomReason(e.target.value)}
                   rows={3}
@@ -709,7 +711,7 @@ export default function OrderDetailPage() {
 
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>
-              취소
+              {t('address.cancel')}
             </Button>
             <Button
               onClick={handleAction}
@@ -720,9 +722,9 @@ export default function OrderDetailPage() {
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  {dialogAction === "cancel" && "주문 취소"}
-                  {dialogAction === "refund" && "환불 요청"}
-                  {dialogAction === "confirm" && "구매 확정"}
+                  {dialogAction === "cancel" && t('order.cancelOrder')}
+                  {dialogAction === "refund" && t('order.requestRefund')}
+                  {dialogAction === "confirm" && t('order.confirmPurchase')}
                 </>
               )}
             </Button>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { MyPageLayout } from "@/components/layout/MyPageLayout"
 import { Button } from "@/components/ui/button"
@@ -29,6 +30,7 @@ interface WishlistItem {
 }
 
 export default function WishlistPage() {
+	const t = useTranslations('shop')
 	const router = useRouter()
 
 	const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([])
@@ -61,7 +63,7 @@ export default function WishlistPage() {
 		fetchWishlist()
 	}, [fetchWishlist])
 
-	const formatPrice = (price: number) => price.toLocaleString() + '원'
+	const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
 	const getThumbnailUrl = (url: string | null) => {
 		if (!url) return '/placeholder.png'
@@ -97,9 +99,9 @@ export default function WishlistPage() {
 				<Card>
 					<CardContent className="py-16 text-center">
 						<Heart className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-						<p className="text-muted-foreground mb-4">찜한 상품이 없습니다.</p>
+						<p className="text-muted-foreground mb-4">{t('wishlist.empty')}</p>
 						<Button onClick={() => router.push('/shop')}>
-							쇼핑하러 가기
+							{t('goShopping')}
 						</Button>
 					</CardContent>
 				</Card>
@@ -120,7 +122,7 @@ export default function WishlistPage() {
 										{(item.isSoldOut || !item.isActive) && (
 											<div className="absolute inset-0 bg-black/50 flex items-center justify-center">
 												<Badge variant="secondary" className="text-sm">
-													{!item.isActive ? "판매중지" : "품절"}
+													{!item.isActive ? t('product.notSelling') : t('product.soldOut')}
 												</Badge>
 											</div>
 										)}
@@ -132,7 +134,7 @@ export default function WishlistPage() {
 									onClick={() => removeFromWishlist(item.productId)}
 									disabled={removingId === item.productId}
 									className="absolute top-2 right-2 p-1.5 rounded-full bg-white/80 hover:bg-white shadow-sm transition-colors"
-									title="찜 해제"
+									title={t('wishlist.remove')}
 								>
 									{removingId === item.productId ? (
 										<Loader2 className="h-4 w-4 animate-spin" />
@@ -168,7 +170,7 @@ export default function WishlistPage() {
 												className="w-full"
 											>
 												<ShoppingCart className="h-4 w-4 mr-1" />
-												구매하기
+												{t('wishlist.buyNow')}
 											</Button>
 										</Link>
 									)}
@@ -187,7 +189,7 @@ export default function WishlistPage() {
 								disabled={wishlistPage <= 1}
 							>
 								<ChevronLeft className="h-4 w-4" />
-								이전
+								{t('prev')}
 							</Button>
 							<span className="flex items-center px-4 text-sm">
 								{wishlistPage} / {wishlistTotalPages}
@@ -198,7 +200,7 @@ export default function WishlistPage() {
 								onClick={() => setWishlistPage(p => Math.min(wishlistTotalPages, p + 1))}
 								disabled={wishlistPage >= wishlistTotalPages}
 							>
-								다음
+								{t('next')}
 								<ChevronRight className="h-4 w-4" />
 							</Button>
 						</div>

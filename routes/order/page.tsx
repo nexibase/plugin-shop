@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import Script from "next/script"
 
 import { Button } from "@/components/ui/button"
@@ -94,6 +95,7 @@ interface UserAddress {
 
 
 export default function OrderPage() {
+  const t = useTranslations('shop')
   const router = useRouter()
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -260,7 +262,7 @@ export default function OrderPage() {
     if (!editingAddress) return
     if (!addressForm.name || !addressForm.recipientName || !addressForm.recipientPhone ||
         !addressForm.zipCode || !addressForm.address) {
-      alert('필수 항목을 모두 입력해주세요.')
+      alert(t('address.enterRequired'))
       return
     }
 
@@ -285,11 +287,11 @@ export default function OrderPage() {
         }
       } else {
         const data = await res.json()
-        alert(data.error || '주소 저장에 실패했습니다.')
+        alert(data.error || t('address.saveFailed'))
       }
     } catch (error) {
       console.error('주소 저장 에러:', error)
-      alert('주소 저장 중 오류가 발생했습니다.')
+      alert(t('address.saveError'))
     } finally {
       setAddressSaving(false)
     }
@@ -297,7 +299,7 @@ export default function OrderPage() {
 
   // 주소 삭제
   const deleteAddress = async (id: number) => {
-    if (!confirm('이 주소를 삭제하시겠습니까?')) return
+    if (!confirm(t('address.deleteConfirm'))) return
 
     setDeletingAddressId(id)
     try {
@@ -311,7 +313,7 @@ export default function OrderPage() {
         }
       } else {
         const data = await res.json()
-        alert(data.error || '주소 삭제에 실패했습니다.')
+        alert(data.error || t('address.deleteFailed'))
       }
     } catch (error) {
       console.error('주소 삭제 에러:', error)
@@ -483,7 +485,7 @@ export default function OrderPage() {
     return deliveryMemoOption
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + "원"
+  const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
   // 이니시스 스크립트 동적 로드
   const loadInicisScript = (): Promise<void> => {
@@ -539,7 +541,7 @@ export default function OrderPage() {
       // 폼에 데이터 설정
       const form = paymentFormRef.current
       if (!form) {
-        setError("결제 폼을 찾을 수 없습니다.")
+        setError(t('checkout.paymentFormNotFound'))
         setSubmitting(false)
         return
       }
@@ -584,7 +586,7 @@ export default function OrderPage() {
       win.INIStdPay.pay("inicisPayForm")
     } catch (err) {
       console.error("결제 시작 에러:", err)
-      setError("결제 모듈을 로딩하지 못했습니다. 페이지를 새로고침 후 다시 시도해주세요.")
+      setError(t('checkout.paymentModuleError'))
       setSubmitting(false)
     }
   }
@@ -595,12 +597,12 @@ export default function OrderPage() {
 
     // 유효성 검사
     if (!ordererName || !ordererPhone) {
-      setError("주문자 정보를 입력해주세요.")
+      setError(t('checkout.enterBuyerInfo'))
       return
     }
 
     if (!recipientName || !recipientPhone || !zipCode || !address) {
-      setError("배송지 정보를 입력해주세요.")
+      setError(t('checkout.enterShippingInfo'))
       return
     }
 
@@ -664,7 +666,7 @@ export default function OrderPage() {
         const data = await res.json()
 
         if (!res.ok) {
-          setError(data.error || "결제 준비 중 오류가 발생했습니다.")
+          setError(data.error || t('checkout.paymentPrepareError'))
           setSubmitting(false)
           return
         }
@@ -704,7 +706,7 @@ export default function OrderPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "주문 처리 중 오류가 발생했습니다.")
+        setError(data.error || t('checkout.orderProcessError'))
         setSubmitting(false)
         return
       }
@@ -724,7 +726,7 @@ export default function OrderPage() {
       // 주문 완료 페이지로 이동
       router.push(`/shop/order/complete?orderNo=${data.order.orderNo}`)
     } catch (err) {
-      setError("주문 처리 중 오류가 발생했습니다.")
+      setError(t('checkout.orderProcessError'))
       setSubmitting(false)
     }
   }
@@ -803,9 +805,9 @@ export default function OrderPage() {
           <div className="mb-6">
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
               <ChevronLeft className="h-4 w-4 mr-1" />
-              뒤로가기
+              {t('goBack')}
             </Button>
-            <h1 className="text-2xl font-bold mt-2">주문서 작성</h1>
+            <h1 className="text-2xl font-bold mt-2">{t('checkout.formTitle')}</h1>
           </div>
 
           <form onSubmit={handleSubmit}>
@@ -816,7 +818,7 @@ export default function OrderPage() {
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Package className="h-5 w-5" />
-                      주문 상품
+                      {t('checkout.orderItems')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -844,7 +846,7 @@ export default function OrderPage() {
                             <p className="text-sm text-muted-foreground">{item.optionText}</p>
                           )}
                           <p className="text-sm">
-                            {formatPrice(item.price)} × {item.quantity}개
+                            {formatPrice(item.price)} × {t('order.itemCountShort', { count: item.quantity })}
                           </p>
                         </div>
                         <div className="text-right">
@@ -858,22 +860,22 @@ export default function OrderPage() {
                 {/* 주문자 정보 */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">주문자 정보</CardTitle>
+                    <CardTitle className="text-lg">{t('checkout.buyer')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="ordererName">이름 *</Label>
+                        <Label htmlFor="ordererName">{t('checkout.nameRequired')}</Label>
                         <Input
                           id="ordererName"
                           value={ordererName}
                           onChange={(e) => setOrdererName(e.target.value)}
-                          placeholder="주문자 이름"
+                          placeholder={t('checkout.buyerNamePlaceholder')}
                           required
                         />
                       </div>
                       <div>
-                        <Label htmlFor="ordererPhone">연락처 *</Label>
+                        <Label htmlFor="ordererPhone">{t('checkout.phoneRequired')}</Label>
                         <Input
                           id="ordererPhone"
                           value={ordererPhone}
@@ -884,7 +886,7 @@ export default function OrderPage() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="ordererEmail">이메일</Label>
+                      <Label htmlFor="ordererEmail">{t('checkout.email')}</Label>
                       <Input
                         id="ordererEmail"
                         type="email"
@@ -901,7 +903,7 @@ export default function OrderPage() {
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Truck className="h-5 w-5" />
-                      배송지 정보
+                      {t('checkout.shipping')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -929,7 +931,7 @@ export default function OrderPage() {
                             onClick={() => setAddressModalOpen(true)}
                             className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm border border-dashed border-border hover:border-primary text-muted-foreground hover:text-foreground transition-colors"
                           >
-                            +{savedAddresses.length - 3}개 더보기
+                            {t('checkout.moreAddresses', { count: savedAddresses.length - 3 })}
                           </button>
                         )}
                         <button
@@ -941,7 +943,7 @@ export default function OrderPage() {
                               : 'border-dashed border-border hover:border-primary text-muted-foreground hover:text-foreground'
                           }`}
                         >
-                          + 새 배송지
+                          {t('checkout.newAddress')}
                         </button>
                       </div>
                     )}
@@ -961,24 +963,24 @@ export default function OrderPage() {
                         className="rounded"
                       />
                       <label htmlFor="sameAsOrderer" className="text-sm cursor-pointer">
-                        주문자 정보와 동일
+                        {t('checkout.sameAsBuyer')}
                       </label>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="recipientName">받는 분 *</Label>
+                        <Label htmlFor="recipientName">{t('checkout.recipientName')}</Label>
                         <Input
                           id="recipientName"
                           value={recipientName}
                           onChange={(e) => setRecipientName(e.target.value)}
-                          placeholder="받는 분 이름"
+                          placeholder={t('checkout.recipientNamePlaceholder')}
                           required
                           disabled={sameAsOrderer}
                         />
                       </div>
                       <div>
-                        <Label htmlFor="recipientPhone">연락처 *</Label>
+                        <Label htmlFor="recipientPhone">{t('checkout.recipientPhone')}</Label>
                         <Input
                           id="recipientPhone"
                           value={recipientPhone}
@@ -991,18 +993,18 @@ export default function OrderPage() {
                     </div>
 
                     <div>
-                      <Label>주소 *</Label>
+                      <Label>{t('checkout.addressRequiredLabel')}</Label>
                       <div className="flex gap-2">
                         <Input
                           value={zipCode}
                           onChange={(e) => setZipCode(e.target.value)}
-                          placeholder="우편번호"
+                          placeholder={t('checkout.zipcode')}
                           className="w-32"
                           required
                           readOnly
                         />
                         <Button type="button" variant="outline" onClick={searchAddress}>
-                          주소 검색
+                          {t('checkout.addressSearch')}
                         </Button>
                       </div>
                     </div>
@@ -1010,7 +1012,7 @@ export default function OrderPage() {
                     <Input
                       value={address}
                       onChange={(e) => setAddress(e.target.value)}
-                      placeholder="기본 주소"
+                      placeholder={t('checkout.addressMain')}
                       required
                       readOnly
                     />
@@ -1018,33 +1020,33 @@ export default function OrderPage() {
                     <Input
                       value={addressDetail}
                       onChange={(e) => setAddressDetail(e.target.value)}
-                      placeholder="상세 주소 (선택)"
+                      placeholder={t('checkout.addressDetail')}
                     />
 
                     <div>
-                      <Label htmlFor="deliveryMemo">배송 메모</Label>
+                      <Label htmlFor="deliveryMemo">{t('checkout.memo')}</Label>
                       <Select value={deliveryMemoOption} onValueChange={setDeliveryMemoOption}>
                         <SelectTrigger>
-                          <SelectValue placeholder="배송 메모 선택" />
+                          <SelectValue placeholder={t('checkout.memoSelectPlaceholder')} />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="none">선택 안함</SelectItem>
+                          <SelectItem value="none">{t('checkout.memoNone')}</SelectItem>
                           <SelectItem value="부재시 문앞에 놓아주세요">
-                            부재시 문앞에 놓아주세요
+                            {t('checkout.memoDoor')}
                           </SelectItem>
                           <SelectItem value="경비실에 맡겨주세요">
-                            경비실에 맡겨주세요
+                            {t('checkout.memoSecurity')}
                           </SelectItem>
                           <SelectItem value="배송 전 연락 부탁드립니다">
-                            배송 전 연락 부탁드립니다
+                            {t('checkout.memoCallBefore')}
                           </SelectItem>
-                          <SelectItem value="custom">직접 입력</SelectItem>
+                          <SelectItem value="custom">{t('checkout.directInput')}</SelectItem>
                         </SelectContent>
                       </Select>
                       {deliveryMemoOption === "custom" && (
                         <Input
                           className="mt-2"
-                          placeholder="배송 메모 입력"
+                          placeholder={t('checkout.memoInputPlaceholder')}
                           value={deliveryMemoCustom}
                           onChange={(e) => setDeliveryMemoCustom(e.target.value)}
                         />
@@ -1054,7 +1056,7 @@ export default function OrderPage() {
                     {deliveryInfo && (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Check className="h-4 w-4 text-green-500" />
-                        배송비: {deliveryInfo} ({formatPrice(deliveryFee)})
+                        {t('checkout.shippingFeeInfo', { info: deliveryInfo, price: formatPrice(deliveryFee) })}
                       </div>
                     )}
 
@@ -1070,7 +1072,7 @@ export default function OrderPage() {
                             className="rounded"
                           />
                           <label htmlFor="skipSaveAddress" className="text-sm cursor-pointer text-muted-foreground">
-                            이 주소를 주소록에 저장하지 않음
+                            {t('checkout.doNotSaveAddress')}
                           </label>
                         </div>
                       </div>
@@ -1083,7 +1085,7 @@ export default function OrderPage() {
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
                       <CreditCard className="h-5 w-5" />
-                      결제 방법
+                      {t('checkout.payment')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -1097,9 +1099,9 @@ export default function OrderPage() {
                           }`}
                       >
                         <Building2 className="h-6 w-6 mb-2" />
-                        <p className="font-medium">무통장입금</p>
+                        <p className="font-medium">{t('checkout.bankTransfer')}</p>
                         <p className="text-sm text-muted-foreground">
-                          계좌이체로 결제
+                          {t('checkout.bankTransferDesc')}
                         </p>
                       </button>
                       <button
@@ -1111,16 +1113,16 @@ export default function OrderPage() {
                           }`}
                       >
                         <CreditCard className="h-6 w-6 mb-2" />
-                        <p className="font-medium">카드결제</p>
+                        <p className="font-medium">{t('checkout.cardPayment')}</p>
                         <p className="text-sm text-muted-foreground">
-                          신용/체크카드
+                          {t('checkout.cardPaymentDesc')}
                         </p>
                       </button>
                     </div>
 
                     {paymentMethod === "bank" && shopSettings?.bank_info && (
                       <div className="p-4 bg-muted rounded-lg">
-                        <p className="font-medium mb-2">입금 계좌 안내</p>
+                        <p className="font-medium mb-2">{t('checkout.bankTransferInfo')}</p>
                         <p className="text-sm whitespace-pre-wrap">
                           {shopSettings.bank_info}
                         </p>
@@ -1130,7 +1132,7 @@ export default function OrderPage() {
                     {paymentMethod === "card" && (
                       <div className="p-4 bg-muted rounded-lg">
                         <p className="text-sm text-muted-foreground">
-                          주문 완료 후 카드 결제 페이지로 이동합니다.
+                          {t('checkout.cardRedirectInfo')}
                         </p>
                       </div>
                     )}
@@ -1143,7 +1145,7 @@ export default function OrderPage() {
                     <CardHeader className="pb-3">
                       <CardTitle className="text-lg flex items-center gap-2">
                         <AlertCircle className="h-5 w-5 text-muted-foreground" />
-                        주문 안내
+                        {t('checkout.orderNotice')}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 text-sm">
@@ -1151,7 +1153,7 @@ export default function OrderPage() {
                         <div>
                           <h4 className="font-medium mb-1 flex items-center gap-2">
                             <Truck className="h-4 w-4" />
-                            배송 안내
+                            {t('checkout.shippingInfo')}
                           </h4>
                           <p className="text-muted-foreground whitespace-pre-wrap pl-6">
                             {shopSettings.delivery_notice}
@@ -1160,23 +1162,23 @@ export default function OrderPage() {
                       )}
                       {shopSettings.refund_policy && (
                         <div>
-                          <h4 className="font-medium mb-1">환불 정책</h4>
+                          <h4 className="font-medium mb-1">{t('checkout.refundPolicy')}</h4>
                           <p className="text-muted-foreground whitespace-pre-wrap pl-6">
                             {shopSettings.refund_policy}
                           </p>
                           {shopSettings.return_shipping_fee && (
                             <p className="text-muted-foreground pl-6 mt-1">
-                              * 배송 후 취소/반품 시 반품 배송비 {parseInt(shopSettings.return_shipping_fee).toLocaleString()}원이 차감됩니다.
+                              {t('checkout.returnShippingDeduction', { fee: parseInt(shopSettings.return_shipping_fee).toLocaleString() })}
                             </p>
                           )}
                         </div>
                       )}
                       {(shopSettings.exchange_info || shopSettings.return_info) && (
                         <div>
-                          <h4 className="font-medium mb-1">교환/반품 안내</h4>
+                          <h4 className="font-medium mb-1">{t('checkout.exchangeReturnInfo')}</h4>
                           {shopSettings.exchange_info && (
                             <div className="pl-6 mb-2">
-                              <p className="text-xs font-medium text-muted-foreground">교환</p>
+                              <p className="text-xs font-medium text-muted-foreground">{t('checkout.exchange')}</p>
                               <p className="text-muted-foreground whitespace-pre-wrap">
                                 {shopSettings.exchange_info}
                               </p>
@@ -1184,7 +1186,7 @@ export default function OrderPage() {
                           )}
                           {shopSettings.return_info && (
                             <div className="pl-6 mb-2">
-                              <p className="text-xs font-medium text-muted-foreground">반품</p>
+                              <p className="text-xs font-medium text-muted-foreground">{t('checkout.return')}</p>
                               <p className="text-muted-foreground whitespace-pre-wrap">
                                 {shopSettings.return_info}
                               </p>
@@ -1192,7 +1194,7 @@ export default function OrderPage() {
                           )}
                           {shopSettings.return_address && (
                             <div className="pl-6">
-                              <p className="text-xs font-medium text-muted-foreground">반품/교환 주소</p>
+                              <p className="text-xs font-medium text-muted-foreground">{t('checkout.returnAddress')}</p>
                               <p className="text-muted-foreground">
                                 {shopSettings.return_address}
                               </p>
@@ -1209,28 +1211,28 @@ export default function OrderPage() {
               <div className="lg:col-span-1">
                 <Card className="sticky top-4">
                   <CardHeader>
-                    <CardTitle className="text-lg">결제 금액</CardTitle>
+                    <CardTitle className="text-lg">{t('checkout.summary')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between text-sm">
-                      <span>상품 금액</span>
+                      <span>{t('order.productAmount')}</span>
                       <span>{formatPrice(getTotalPrice())}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>배송비</span>
+                      <span>{t('order.shippingFee')}</span>
                       <span>
                         {calculatingDelivery ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : zipCode ? (
                           formatPrice(deliveryFee)
                         ) : (
-                          "주소 입력 시 계산"
+                          t('checkout.enterAddressToCalc')
                         )}
                       </span>
                     </div>
                     <div className="border-t pt-4">
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">총 결제금액</span>
+                        <span className="font-medium">{t('checkout.totalAmount')}</span>
                         <span className="text-xl font-bold text-primary">
                           {formatPrice(getFinalPrice())}
                         </span>
@@ -1253,17 +1255,17 @@ export default function OrderPage() {
                       {submitting ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          처리 중...
+                          {t('checkout.processing')}
                         </>
                       ) : (
                         <>
-                          {formatPrice(getFinalPrice())} 결제하기
+                          {t('checkout.placeOrderWithAmount', { amount: formatPrice(getFinalPrice()) })}
                         </>
                       )}
                     </Button>
 
                     <p className="text-xs text-muted-foreground text-center">
-                      주문 내용을 확인하였으며, 결제에 동의합니다.
+                      {t('checkout.agree')}
                     </p>
                   </CardContent>
                 </Card>
@@ -1291,7 +1293,7 @@ export default function OrderPage() {
       <Dialog open={addressModalOpen} onOpenChange={setAddressModalOpen}>
         <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>배송지 선택</DialogTitle>
+            <DialogTitle>{t('address.selectAddress')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             {savedAddresses.map((addr) => (
@@ -1312,7 +1314,7 @@ export default function OrderPage() {
                     {addr.isDefault && (
                       <span className="text-xs text-primary bg-primary/10 px-1.5 py-0.5 rounded flex items-center gap-0.5">
                         <Star className="h-2.5 w-2.5" />
-                        기본
+                        {t('address.default')}
                       </span>
                     )}
                     {selectedAddressId === addr.id && (
@@ -1337,7 +1339,7 @@ export default function OrderPage() {
                       openAddressEditModal(addr)
                     }}
                     className="p-1.5 rounded hover:bg-muted transition-colors"
-                    title="수정"
+                    title={t('address.edit')}
                   >
                     <Pencil className="h-4 w-4 text-muted-foreground" />
                   </button>
@@ -1349,7 +1351,7 @@ export default function OrderPage() {
                     }}
                     disabled={deletingAddressId === addr.id}
                     className="p-1.5 rounded hover:bg-muted transition-colors"
-                    title="삭제"
+                    title={t('address.delete')}
                   >
                     {deletingAddressId === addr.id ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -1368,30 +1370,30 @@ export default function OrderPage() {
       <Dialog open={addressEditModalOpen} onOpenChange={setAddressEditModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>배송지 수정</DialogTitle>
+            <DialogTitle>{t('address.editAddress')}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="addressName">배송지명 *</Label>
+              <Label htmlFor="addressName">{t('address.addressName')}</Label>
               <Input
                 id="addressName"
-                placeholder="예: 집, 회사"
+                placeholder={t('address.addressNamePlaceholder')}
                 value={addressForm.name}
                 onChange={(e) => setAddressForm({ ...addressForm, name: e.target.value })}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="editRecipientName">받는 분 *</Label>
+                <Label htmlFor="editRecipientName">{t('address.recipientName')}</Label>
                 <Input
                   id="editRecipientName"
-                  placeholder="이름"
+                  placeholder={t('address.namePlaceholder')}
                   value={addressForm.recipientName}
                   onChange={(e) => setAddressForm({ ...addressForm, recipientName: e.target.value })}
                 />
               </div>
               <div>
-                <Label htmlFor="editRecipientPhone">연락처 *</Label>
+                <Label htmlFor="editRecipientPhone">{t('address.recipientPhone')}</Label>
                 <Input
                   id="editRecipientPhone"
                   placeholder="010-0000-0000"
@@ -1401,27 +1403,27 @@ export default function OrderPage() {
               </div>
             </div>
             <div>
-              <Label>주소 *</Label>
+              <Label>{t('address.addressLabel')}</Label>
               <div className="flex gap-2">
                 <Input
                   value={addressForm.zipCode}
-                  placeholder="우편번호"
+                  placeholder={t('address.zipcode')}
                   className="w-28"
                   readOnly
                 />
                 <Button type="button" variant="outline" onClick={searchAddressForForm}>
-                  주소 검색
+                  {t('address.addressSearch')}
                 </Button>
               </div>
             </div>
             <Input
               value={addressForm.address}
-              placeholder="기본 주소"
+              placeholder={t('address.addressMain')}
               readOnly
             />
             <Input
               value={addressForm.addressDetail}
-              placeholder="상세 주소 (선택)"
+              placeholder={t('address.addressDetail')}
               onChange={(e) => setAddressForm({ ...addressForm, addressDetail: e.target.value })}
             />
             <div className="flex items-center gap-2">
@@ -1433,7 +1435,7 @@ export default function OrderPage() {
                 className="rounded"
               />
               <label htmlFor="editIsDefault" className="text-sm cursor-pointer">
-                기본 배송지로 설정
+                {t('address.setAsDefault')}
               </label>
             </div>
             <div className="flex gap-2 pt-4">
@@ -1442,7 +1444,7 @@ export default function OrderPage() {
                 className="flex-1"
                 onClick={() => setAddressEditModalOpen(false)}
               >
-                취소
+                {t('address.cancel')}
               </Button>
               <Button
                 className="flex-1"
@@ -1452,7 +1454,7 @@ export default function OrderPage() {
                 {addressSaving ? (
                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 ) : null}
-                수정
+                {t('address.update')}
               </Button>
             </div>
           </div>

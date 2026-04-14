@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 
 import { PopularProducts, NewProducts, RecentlyViewedProducts } from "@/plugins/shop/components/ShopProductRecommend"
@@ -63,6 +64,7 @@ export default function ShopPage() {
 }
 
 function ShopContent() {
+  const t = useTranslations('shop')
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -161,7 +163,7 @@ function ShopContent() {
     router.push(`/shop?${params}`)
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + '원'
+  const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -169,10 +171,10 @@ function ShopContent() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Package className="h-6 w-6" />
-              쇼핑몰
+              {t('title')}
             </h1>
             <p className="text-muted-foreground mt-1">
-              신선한 상품을 만나보세요
+              {t('tagline')}
             </p>
           </div>
 
@@ -183,7 +185,7 @@ function ShopContent() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="상품 검색..."
+                  placeholder={t('searchPlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 pr-20"
@@ -193,7 +195,7 @@ function ShopContent() {
                   size="sm"
                   className="absolute right-1 top-1/2 transform -translate-y-1/2"
                 >
-                  검색
+                  {t('searchButton')}
                 </Button>
               </div>
             </form>
@@ -202,10 +204,10 @@ function ShopContent() {
               {/* 카테고리 필터 */}
               <Select value="all" onValueChange={handleCategoryChange}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="카테고리" />
+                  <SelectValue placeholder={t('categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="all">{t('categoryAll')}</SelectItem>
                   {categories.map(cat => (
                     <SelectItem key={cat.id} value={cat.slug}>
                       {cat.name} ({cat.productCount})
@@ -220,11 +222,11 @@ function ShopContent() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="latest">최신순</SelectItem>
-                  <SelectItem value="popular">판매순</SelectItem>
-                  <SelectItem value="review">후기순</SelectItem>
-                  <SelectItem value="price_asc">낮은가격</SelectItem>
-                  <SelectItem value="price_desc">높은가격</SelectItem>
+                  <SelectItem value="latest">{t('sortLatest')}</SelectItem>
+                  <SelectItem value="popular">{t('sortPopular')}</SelectItem>
+                  <SelectItem value="review">{t('sortReview')}</SelectItem>
+                  <SelectItem value="price_asc">{t('sortPriceAsc')}</SelectItem>
+                  <SelectItem value="price_desc">{t('sortPriceDesc')}</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -237,7 +239,7 @@ function ShopContent() {
                     setSearch('')
                     router.push('/shop')
                   }}
-                  title="검색 초기화"
+                  title={t('searchReset')}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -253,7 +255,7 @@ function ShopContent() {
                 className="cursor-pointer"
                 onClick={() => handleCategoryChange('all')}
               >
-                전체
+                {t('categoryAll')}
               </Badge>
               {categories.map(cat => (
                 <Badge
@@ -271,8 +273,8 @@ function ShopContent() {
           {/* 결과 정보 */}
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-muted-foreground">
-              총 {total}개의 상품
-              {searchQuery && ` (검색: "${searchQuery}")`}
+              {t('totalCount', { total })}
+              {searchQuery && ` (${t('searchedFor', { query: searchQuery })})`}
             </p>
           </div>
 
@@ -284,7 +286,7 @@ function ShopContent() {
           ) : products.length === 0 ? (
             <div className="text-center py-20">
               <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">상품이 없습니다.</p>
+              <p className="text-muted-foreground">{t('noProducts')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -306,7 +308,7 @@ function ShopContent() {
                       )}
                       {product.isSoldOut && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white font-bold text-lg">품절</span>
+                          <span className="text-white font-bold text-lg">{t('product.soldOut')}</span>
                         </div>
                       )}
                       {product.originPrice && product.originPrice > product.price && (
@@ -382,8 +384,8 @@ function ShopContent() {
           {/* 추천 섹션 */}
           <div className="border-t mt-8">
             <RecentlyViewedProducts />
-            <PopularProducts title="인기 상품" />
-            <NewProducts title="신상품" />
+            <PopularProducts title={t('popular')} />
+            <NewProducts title={t('newArrivals')} />
           </div>
     </div>
   )

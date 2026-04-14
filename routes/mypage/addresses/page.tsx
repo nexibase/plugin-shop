@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import { MyPageLayout } from "@/components/layout/MyPageLayout"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -36,6 +37,7 @@ interface UserAddress {
 }
 
 export default function AddressesPage() {
+	const t = useTranslations('shop')
 	const router = useRouter()
 
 	const [addresses, setAddresses] = useState<UserAddress[]>([])
@@ -107,7 +109,7 @@ export default function AddressesPage() {
 	const saveAddress = async () => {
 		if (!addressForm.name || !addressForm.recipientName || !addressForm.recipientPhone ||
 				!addressForm.zipCode || !addressForm.address) {
-			alert('필수 항목을 모두 입력해주세요.')
+			alert(t('address.enterRequired'))
 			return
 		}
 
@@ -129,18 +131,18 @@ export default function AddressesPage() {
 				fetchAddresses()
 			} else {
 				const data = await res.json()
-				alert(data.error || '주소 저장에 실패했습니다.')
+				alert(data.error || t('address.saveFailed'))
 			}
 		} catch (error) {
 			console.error('주소 저장 에러:', error)
-			alert('주소 저장 중 오류가 발생했습니다.')
+			alert(t('address.saveError'))
 		} finally {
 			setAddressSaving(false)
 		}
 	}
 
 	const deleteAddress = async (id: number) => {
-		if (!confirm('이 주소를 삭제하시겠습니까?')) return
+		if (!confirm(t('address.deleteConfirm'))) return
 
 		setDeletingAddressId(id)
 		try {
@@ -149,7 +151,7 @@ export default function AddressesPage() {
 				fetchAddresses()
 			} else {
 				const data = await res.json()
-				alert(data.error || '주소 삭제에 실패했습니다.')
+				alert(data.error || t('address.deleteFailed'))
 			}
 		} catch (error) {
 			console.error('주소 삭제 에러:', error)
@@ -219,7 +221,7 @@ export default function AddressesPage() {
 			<div className="flex justify-end mb-4">
 				<Button onClick={() => openAddressModal()}>
 					<Plus className="h-4 w-4 mr-2" />
-					새 주소 추가
+					{t('address.addNew')}
 				</Button>
 			</div>
 
@@ -231,10 +233,10 @@ export default function AddressesPage() {
 				<Card>
 					<CardContent className="py-16 text-center">
 						<MapPin className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-						<p className="text-muted-foreground mb-4">등록된 배송지가 없습니다.</p>
+						<p className="text-muted-foreground mb-4">{t('address.noAddresses')}</p>
 						<Button onClick={() => openAddressModal()}>
 							<Plus className="h-4 w-4 mr-2" />
-							배송지 추가하기
+							{t('address.addShippingAddress')}
 						</Button>
 					</CardContent>
 				</Card>
@@ -250,7 +252,7 @@ export default function AddressesPage() {
 											{addr.isDefault && (
 												<Badge variant="default" className="text-xs">
 													<Star className="h-3 w-3 mr-1" />
-													기본 배송지
+													{t('address.defaultAddress')}
 												</Badge>
 											)}
 										</div>
@@ -295,31 +297,31 @@ export default function AddressesPage() {
 				<DialogContent className="max-w-md">
 					<DialogHeader>
 						<DialogTitle>
-							{editingAddress ? '배송지 수정' : '새 배송지 추가'}
+							{editingAddress ? t('address.editAddress') : t('address.newAddress')}
 						</DialogTitle>
 					</DialogHeader>
 					<div className="space-y-4">
 						<div>
-							<Label htmlFor="addressName">배송지명 *</Label>
+							<Label htmlFor="addressName">{t('address.addressName')}</Label>
 							<Input
 								id="addressName"
-								placeholder="예: 집, 회사"
+								placeholder={t('address.addressNamePlaceholder')}
 								value={addressForm.name}
 								onChange={(e) => setAddressForm({ ...addressForm, name: e.target.value })}
 							/>
 						</div>
 						<div className="grid grid-cols-2 gap-4">
 							<div>
-								<Label htmlFor="recipientName">받는 분 *</Label>
+								<Label htmlFor="recipientName">{t('address.recipientName')}</Label>
 								<Input
 									id="recipientName"
-									placeholder="이름"
+									placeholder={t('address.namePlaceholder')}
 									value={addressForm.recipientName}
 									onChange={(e) => setAddressForm({ ...addressForm, recipientName: e.target.value })}
 								/>
 							</div>
 							<div>
-								<Label htmlFor="recipientPhone">연락처 *</Label>
+								<Label htmlFor="recipientPhone">{t('address.recipientPhone')}</Label>
 								<Input
 									id="recipientPhone"
 									placeholder="010-0000-0000"
@@ -329,27 +331,27 @@ export default function AddressesPage() {
 							</div>
 						</div>
 						<div>
-							<Label>주소 *</Label>
+							<Label>{t('address.addressLabel')}</Label>
 							<div className="flex gap-2">
 								<Input
 									value={addressForm.zipCode}
-									placeholder="우편번호"
+									placeholder={t('address.zipcode')}
 									className="w-28"
 									readOnly
 								/>
 								<Button type="button" variant="outline" onClick={searchAddressForForm}>
-									주소 검색
+									{t('address.addressSearch')}
 								</Button>
 							</div>
 						</div>
 						<Input
 							value={addressForm.address}
-							placeholder="기본 주소"
+							placeholder={t('address.addressMain')}
 							readOnly
 						/>
 						<Input
 							value={addressForm.addressDetail}
-							placeholder="상세 주소 (선택)"
+							placeholder={t('address.addressDetail')}
 							onChange={(e) => setAddressForm({ ...addressForm, addressDetail: e.target.value })}
 						/>
 						<div className="flex items-center gap-2">
@@ -361,7 +363,7 @@ export default function AddressesPage() {
 								className="rounded"
 							/>
 							<label htmlFor="isDefault" className="text-sm cursor-pointer">
-								기본 배송지로 설정
+								{t('address.setAsDefault')}
 							</label>
 						</div>
 						<div className="flex gap-2 pt-4">
@@ -370,7 +372,7 @@ export default function AddressesPage() {
 								className="flex-1"
 								onClick={() => setAddressModalOpen(false)}
 							>
-								취소
+								{t('address.cancel')}
 							</Button>
 							<Button
 								className="flex-1"
@@ -380,7 +382,7 @@ export default function AddressesPage() {
 								{addressSaving ? (
 									<Loader2 className="h-4 w-4 animate-spin mr-2" />
 								) : null}
-								{editingAddress ? '수정' : '추가'}
+								{editingAddress ? t('address.update') : t('address.add')}
 							</Button>
 						</div>
 					</div>

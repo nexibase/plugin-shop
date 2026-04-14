@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react"
 import { useParams, useRouter, useSearchParams } from "next/navigation"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 
 import { sanitizeHtml } from "@/lib/sanitize"
@@ -127,6 +128,7 @@ interface ReviewableOrder {
 }
 
 export default function ProductDetailPage() {
+  const t = useTranslations('shop')
   const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -234,15 +236,15 @@ export default function ProductDetailPage() {
         setIsWished(data.isWished)
       } else if (res.status === 401) {
         // 로그인 필요
-        if (confirm('로그인이 필요합니다. 로그인 페이지로 이동하시겠습니까?')) {
+        if (confirm(t('product.loginRequiredWish'))) {
           router.push(`/login?redirect=/shop/products/${slug}`)
         }
       } else {
         const data = await res.json()
-        alert(data.error || '찜하기에 실패했습니다.')
+        alert(data.error || t('product.wishFailed'))
       }
     } catch {
-      alert('찜하기에 실패했습니다.')
+      alert(t('product.wishFailed'))
     } finally {
       setWishLoading(false)
     }
@@ -316,9 +318,9 @@ export default function ProductDetailPage() {
       const res = await fetch(`/api/shop/products/${slug}`)
       if (!res.ok) {
         if (res.status === 404) {
-          setError("상품을 찾을 수 없습니다.")
+          setError(t('product.notFound'))
         } else {
-          setError("상품을 불러오는데 실패했습니다.")
+          setError(t('product.loadFailed'))
         }
         return
       }
@@ -333,7 +335,7 @@ export default function ProductDetailPage() {
       // 최근 본 상품에 저장
       saveViewedProduct(data.product.id)
     } catch {
-      setError("상품을 불러오는데 실패했습니다.")
+      setError(t('product.loadFailed'))
     } finally {
       setLoading(false)
     }
@@ -485,7 +487,7 @@ export default function ProductDetailPage() {
     // 이미 추가된 옵션인지 확인
     const exists = selectedItems.some(item => item.optionId === option.id)
     if (exists) {
-      setCartMessage("이미 추가된 옵션입니다.")
+      setCartMessage(t('product.alreadyAdded'))
       setTimeout(() => setCartMessage(null), 2000)
       // 옵션 선택 초기화
       setSelectedOption1("")
@@ -496,7 +498,7 @@ export default function ProductDetailPage() {
 
     // 품절 확인
     if (option.stock <= 0) {
-      setCartMessage("품절된 옵션입니다.")
+      setCartMessage(t('product.soldOutOption'))
       setTimeout(() => setCartMessage(null), 2000)
       setSelectedOption1("")
       setSelectedOption2("")
@@ -576,7 +578,7 @@ export default function ProductDetailPage() {
     // 옵션이 있는 상품
     if (product.hasOptions) {
       if (selectedItems.length === 0) {
-        setCartMessage("옵션을 선택해주세요.")
+        setCartMessage(t('product.pleaseSelectOption'))
         setTimeout(() => setCartMessage(null), 2000)
         return
       }
@@ -619,7 +621,7 @@ export default function ProductDetailPage() {
     } else {
       // 옵션이 없는 상품
       if (isOutOfStock) {
-        setCartMessage("품절된 상품입니다.")
+        setCartMessage(t('product.soldOutProduct'))
         setTimeout(() => setCartMessage(null), 2000)
         return
       }
@@ -663,7 +665,7 @@ export default function ProductDetailPage() {
     // 옵션이 있는 상품
     if (product.hasOptions) {
       if (selectedItems.length === 0) {
-        setCartMessage("옵션을 선택해주세요.")
+        setCartMessage(t('product.pleaseSelectOption'))
         setTimeout(() => setCartMessage(null), 2000)
         return
       }
@@ -685,7 +687,7 @@ export default function ProductDetailPage() {
     } else {
       // 옵션이 없는 상품
       if (isOutOfStock) {
-        setCartMessage("품절된 상품입니다.")
+        setCartMessage(t('product.soldOutProduct'))
         setTimeout(() => setCartMessage(null), 2000)
         return
       }
@@ -706,7 +708,7 @@ export default function ProductDetailPage() {
     }
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + "원"
+  const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
   if (loading) {
     return (
@@ -720,10 +722,10 @@ export default function ProductDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-20">
         <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-        <p className="text-muted-foreground mb-4">{error || "상품을 찾을 수 없습니다."}</p>
+        <p className="text-muted-foreground mb-4">{error || t('product.notFound')}</p>
         <Button variant="outline" onClick={() => router.push("/shop")}>
           <ChevronLeft className="h-4 w-4 mr-1" />
-          쇼핑몰로 돌아가기
+          {t('backToShop')}
         </Button>
       </div>
     )
@@ -736,7 +738,7 @@ export default function ProductDetailPage() {
           <div className="mb-4">
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
               <ChevronLeft className="h-4 w-4 mr-1" />
-              뒤로가기
+              {t('goBack')}
             </Button>
           </div>
 
@@ -776,7 +778,7 @@ export default function ProductDetailPage() {
                     onClick={toggleWishlist}
                     disabled={wishLoading}
                     className="p-1.5 rounded-full hover:bg-muted transition-colors"
-                    title={isWished ? "찜 해제" : "찜하기"}
+                    title={isWished ? t('product.removeFromWishlist') : t('product.addToWishlist')}
                   >
                     <Heart
                       className={`h-5 w-5 transition-colors ${
@@ -790,7 +792,7 @@ export default function ProductDetailPage() {
                     <Link
                       href={`/admin/shop/products/${product.id}`}
                       className="p-1.5 rounded-full hover:bg-muted text-muted-foreground hover:text-primary transition-colors"
-                      title="상품 수정"
+                      title={t('product.editProduct')}
                     >
                       <Settings className="h-4 w-4" />
                     </Link>
@@ -800,8 +802,8 @@ export default function ProductDetailPage() {
 
               {/* 판매 정보 (조회수는 관리자만) */}
               <div className="flex gap-3 text-sm text-muted-foreground mb-4 pb-4 border-b">
-                <span>판매 {product.soldCount}개</span>
-                {isAdmin && <span>조회 {product.viewCount}</span>}
+                <span>{t('product.soldCount', { count: product.soldCount })}</span>
+                {isAdmin && <span>{t('product.viewCount', { count: product.viewCount })}</span>}
               </div>
 
               {/* 가격 (모바일에서만 표시) */}
@@ -821,7 +823,7 @@ export default function ProductDetailPage() {
               {/* 설명 */}
               {product.description && (
                 <div className="mb-4">
-                  <h3 className="text-sm font-medium mb-2">상품 설명</h3>
+                  <h3 className="text-sm font-medium mb-2">{t('product.description')}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">{product.description}</p>
                 </div>
               )}
@@ -830,13 +832,13 @@ export default function ProductDetailPage() {
               <div className="space-y-2 text-sm">
                 {product.hasOptions && product.optionValues.option1.length > 0 && (
                   <div className="flex">
-                    <span className="text-muted-foreground w-20">{product.optionName1 || "옵션1"}</span>
+                    <span className="text-muted-foreground w-20">{product.optionName1 || t('product.optionLabel1')}</span>
                     <span>{product.optionValues.option1.join(", ")}</span>
                   </div>
                 )}
                 {product.hasOptions && product.optionValues.option2.length > 0 && (
                   <div className="flex">
-                    <span className="text-muted-foreground w-20">{product.optionName2 || "옵션2"}</span>
+                    <span className="text-muted-foreground w-20">{product.optionName2 || t('product.optionLabel2')}</span>
                     <span>{product.optionValues.option2.join(", ")}</span>
                   </div>
                 )}
@@ -863,7 +865,7 @@ export default function ProductDetailPage() {
 
                   {/* 배송 정보 */}
                   <div className="text-sm text-muted-foreground pb-3 border-b">
-                    무료배송
+                    {t('product.freeShipping')}
                   </div>
 
                   {/* 재고 상태 */}
@@ -875,11 +877,11 @@ export default function ProductDetailPage() {
                     }`}>
                       {currentStock !== null
                         ? currentStock <= 0
-                          ? "품절"
-                          : `재고 ${currentStock}개`
+                          ? t('product.soldOut')
+                          : t('product.stockCount', { count: currentStock })
                         : product.hasOptions
-                          ? "옵션을 선택해주세요"
-                          : "재고 있음"
+                          ? t('product.selectOption')
+                          : t('product.stockAvailable')
                       }
                     </p>
                   )}
@@ -891,11 +893,11 @@ export default function ProductDetailPage() {
                       {product.optionValues.option1.length > 0 && (
                         <div>
                           <label className="text-xs font-medium mb-1.5 block text-muted-foreground">
-                            {product.optionName1 || "옵션1"}
+                            {product.optionName1 || t('product.optionLabel1')}
                           </label>
                           <Select value={selectedOption1} onValueChange={handleOption1Change}>
                             <SelectTrigger className="h-9 text-sm">
-                              <SelectValue placeholder="선택" />
+                              <SelectValue placeholder={t('product.select')} />
                             </SelectTrigger>
                             <SelectContent>
                               {product.optionValues.option1.map(val => {
@@ -913,7 +915,7 @@ export default function ProductDetailPage() {
                                             ? "text-orange-500"
                                             : "text-muted-foreground"
                                       }`}>
-                                        {isSoldOut ? "(품절)" : `(재고 ${stockInfo.stock})`}
+                                        {isSoldOut ? t('product.outOfStockOption') : t('product.stockOptionInfo', { count: stockInfo.stock })}
                                       </span>
                                     )}
                                   </SelectItem>
@@ -928,7 +930,7 @@ export default function ProductDetailPage() {
                       {product.optionValues.option2.length > 0 && (
                         <div>
                           <label className="text-xs font-medium mb-1.5 block text-muted-foreground">
-                            {product.optionName2 || "옵션2"}
+                            {product.optionName2 || t('product.optionLabel2')}
                           </label>
                           <Select
                             value={selectedOption2}
@@ -936,7 +938,7 @@ export default function ProductDetailPage() {
                             disabled={!selectedOption1}
                           >
                             <SelectTrigger className="h-9 text-sm">
-                              <SelectValue placeholder={selectedOption1 ? "선택" : "상위 옵션 먼저 선택"} />
+                              <SelectValue placeholder={selectedOption1 ? t('product.select') : t('product.selectParentFirst')} />
                             </SelectTrigger>
                             <SelectContent>
                               {availableOption2Values.map(val => {
@@ -954,7 +956,7 @@ export default function ProductDetailPage() {
                                             ? "text-orange-500"
                                             : "text-muted-foreground"
                                       }`}>
-                                        {isSoldOut ? "(품절)" : `(재고 ${stockInfo.stock})`}
+                                        {isSoldOut ? t('product.outOfStockOption') : t('product.stockOptionInfo', { count: stockInfo.stock })}
                                       </span>
                                     )}
                                   </SelectItem>
@@ -969,7 +971,7 @@ export default function ProductDetailPage() {
                       {product.optionValues.option3.length > 0 && (
                         <div>
                           <label className="text-xs font-medium mb-1.5 block text-muted-foreground">
-                            {product.optionName3 || "옵션3"}
+                            {product.optionName3 || t('product.optionLabel3')}
                           </label>
                           <Select
                             value={selectedOption3}
@@ -977,7 +979,7 @@ export default function ProductDetailPage() {
                             disabled={!selectedOption2}
                           >
                             <SelectTrigger className="h-9 text-sm">
-                              <SelectValue placeholder={selectedOption2 ? "선택" : "상위 옵션 먼저 선택"} />
+                              <SelectValue placeholder={selectedOption2 ? t('product.select') : t('product.selectParentFirst')} />
                             </SelectTrigger>
                             <SelectContent>
                               {availableOption3Values.map(val => {
@@ -995,7 +997,7 @@ export default function ProductDetailPage() {
                                             ? "text-orange-500"
                                             : "text-muted-foreground"
                                       }`}>
-                                        {isSoldOut ? "(품절)" : `(재고 ${stockInfo.stock})`}
+                                        {isSoldOut ? t('product.outOfStockOption') : t('product.stockOptionInfo', { count: stockInfo.stock })}
                                       </span>
                                     )}
                                   </SelectItem>
@@ -1012,14 +1014,14 @@ export default function ProductDetailPage() {
                   {/* 선택된 옵션 목록 (멀티 옵션) */}
                   {product.hasOptions && selectedItems.length > 0 && (
                     <div className="space-y-2 pt-3 border-t">
-                      <label className="text-xs font-medium text-muted-foreground">선택한 상품</label>
+                      <label className="text-xs font-medium text-muted-foreground">{t('product.selectedProducts')}</label>
                       {selectedItems.map((item) => (
                         <div key={item.optionId} className="bg-muted/50 rounded-md p-3 space-y-2">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <span className="text-sm">{item.optionText}</span>
                               <span className={`text-xs ml-2 ${item.stock <= 5 ? "text-orange-600" : "text-muted-foreground"}`}>
-                                (재고 {item.stock}개)
+                                {t('product.stockOptionInfo', { count: item.stock })}
                               </span>
                             </div>
                             <button
@@ -1063,7 +1065,7 @@ export default function ProductDetailPage() {
                   {/* 수량 선택 (옵션 없는 상품만) */}
                   {!product.hasOptions && (
                     <div>
-                      <label className="text-xs font-medium mb-1.5 block text-muted-foreground">수량</label>
+                      <label className="text-xs font-medium mb-1.5 block text-muted-foreground">{t('product.quantity')}</label>
                       <div className="flex items-center border rounded-md w-fit">
                         <Button
                           variant="ghost"
@@ -1091,7 +1093,7 @@ export default function ProductDetailPage() {
                   {/* 총 금액 */}
                   <div className="flex justify-between items-center pt-3 border-t">
                     <span className="text-sm text-muted-foreground">
-                      총 금액 {totalQuantity > 0 && `(${totalQuantity}개)`}
+                      {totalQuantity > 0 ? t('product.totalPriceWithCount', { count: totalQuantity }) : t('product.totalPrice')}
                     </span>
                     <span className="text-lg font-bold text-primary">
                       {formatPrice(totalPrice)}
@@ -1100,14 +1102,8 @@ export default function ProductDetailPage() {
 
                   {/* 메시지 */}
                   {cartMessage && (
-                    <div className={`flex items-center gap-2 p-2 rounded text-xs ${
-                      cartMessage.includes("추가") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                    }`}>
-                      {cartMessage.includes("추가") ? (
-                        <Check className="h-3 w-3" />
-                      ) : (
-                        <AlertCircle className="h-3 w-3" />
-                      )}
+                    <div className="flex items-center gap-2 p-2 rounded text-xs bg-red-100 text-red-800">
+                      <AlertCircle className="h-3 w-3" />
                       {cartMessage}
                     </div>
                   )}
@@ -1119,7 +1115,7 @@ export default function ProductDetailPage() {
                       onClick={buyNow}
                       disabled={product.hasOptions ? selectedItems.length === 0 : isOutOfStock}
                     >
-                      바로 구매
+                      {t('product.buyNow')}
                     </Button>
                     <Button
                       variant="outline"
@@ -1132,7 +1128,7 @@ export default function ProductDetailPage() {
                       ) : (
                         <ShoppingCart className="h-4 w-4 mr-2" />
                       )}
-                      장바구니
+                      {t('product.addToCartShort')}
                     </Button>
                   </div>
                 </CardContent>
@@ -1153,7 +1149,7 @@ export default function ProductDetailPage() {
                     : 'border-transparent text-muted-foreground hover:text-foreground'
                 }`}
               >
-                상세정보
+                {t('product.descriptionTab')}
               </button>
               <button
                 onClick={() => setActiveTab('review')}
@@ -1164,7 +1160,7 @@ export default function ProductDetailPage() {
                 }`}
               >
                 <Star className="h-5 w-5" />
-                리뷰 ({reviewTotal})
+                {t('product.reviewsWithCount', { count: reviewTotal })}
               </button>
               <button
                 onClick={() => setActiveTab('qna')}
@@ -1175,7 +1171,7 @@ export default function ProductDetailPage() {
                 }`}
               >
                 <MessageSquare className="h-5 w-5" />
-                Q&A ({qnaTotal})
+                {t('product.qnaWithCount', { count: qnaTotal })}
               </button>
             </div>
 
@@ -1191,7 +1187,7 @@ export default function ProductDetailPage() {
                     />
                   ) : (
                     <p className="text-muted-foreground text-center py-12">
-                      등록된 상세정보가 없습니다.
+                      {t('product.noDescription')}
                     </p>
                   )}
                 </div>
@@ -1255,9 +1251,9 @@ export default function ProductDetailPage() {
               <div className="inline-flex items-center justify-center w-12 h-12 bg-green-100 rounded-full mb-3">
                 <Check className="h-6 w-6 text-green-600" />
               </div>
-              <h3 className="text-lg font-bold mb-1">장바구니에 담았습니다</h3>
+              <h3 className="text-lg font-bold mb-1">{t('product.addedToCart')}</h3>
               <p className="text-sm text-muted-foreground">
-                장바구니로 이동하시겠습니까?
+                {t('product.goToCartConfirm')}
               </p>
             </div>
 
@@ -1267,13 +1263,13 @@ export default function ProductDetailPage() {
                 className="flex-1"
                 onClick={() => setShowCartModal(false)}
               >
-                쇼핑 계속하기
+                {t('continueShopping')}
               </Button>
               <Button
                 className="flex-1"
                 onClick={() => router.push("/shop/cart")}
               >
-                장바구니로 이동
+                {t('product.goToCart')}
               </Button>
             </div>
           </div>

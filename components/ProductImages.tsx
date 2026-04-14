@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { ChevronLeft, ChevronRight, Package } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
@@ -26,6 +27,7 @@ export default function ProductImages({
   price,
   originPrice,
 }: ProductImagesProps) {
+  const t = useTranslations('shop')
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [thumbStartIndex, setThumbStartIndex] = useState(0)
   const [isZooming, setIsZooming] = useState(false)
@@ -122,7 +124,7 @@ export default function ProductImages({
           )}
           {isSoldOut && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-              <span className="text-white font-bold text-2xl">품절</span>
+              <span className="text-white font-bold text-2xl">{t('product.soldOut')}</span>
             </div>
           )}
           {discountPercent && (

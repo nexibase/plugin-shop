@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { MyPageLayout } from "@/components/layout/MyPageLayout"
 import { Button } from "@/components/ui/button"
@@ -42,19 +43,20 @@ interface Order {
 	}[]
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-	pending: { label: "결제대기", color: "bg-yellow-500" },
-	paid: { label: "결제완료", color: "bg-blue-500" },
-	preparing: { label: "상품준비", color: "bg-indigo-500" },
-	shipping: { label: "배송중", color: "bg-purple-500" },
-	delivered: { label: "배송완료", color: "bg-green-500" },
-	confirmed: { label: "구매확정", color: "bg-green-700" },
-	cancelled: { label: "주문취소", color: "bg-gray-500" },
-	refund_requested: { label: "환불요청", color: "bg-orange-500" },
-	refunded: { label: "환불완료", color: "bg-red-500" },
+const STATUS_META: Record<string, { labelKey: string; color: string }> = {
+	pending: { labelKey: "order.statusPending", color: "bg-yellow-500" },
+	paid: { labelKey: "order.statusPaid", color: "bg-blue-500" },
+	preparing: { labelKey: "order.statusPreparing", color: "bg-indigo-500" },
+	shipping: { labelKey: "order.statusShipping", color: "bg-purple-500" },
+	delivered: { labelKey: "order.statusDelivered", color: "bg-green-500" },
+	confirmed: { labelKey: "order.statusConfirmed", color: "bg-green-700" },
+	cancelled: { labelKey: "order.statusCancelled", color: "bg-gray-500" },
+	refund_requested: { labelKey: "order.statusRefundRequested", color: "bg-orange-500" },
+	refunded: { labelKey: "order.statusRefunded", color: "bg-red-500" },
 }
 
 export default function OrdersPage() {
+	const t = useTranslations('shop')
 	const router = useRouter()
 
 	const [orders, setOrders] = useState<Order[]>([])
@@ -97,7 +99,7 @@ export default function OrdersPage() {
 		setOrdersPage(1)
 	}, [statusFilter])
 
-	const formatPrice = (price: number) => price.toLocaleString() + '원'
+	const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 	const formatDate = (date: string) => {
 		return new Date(date).toLocaleDateString('ko-KR', {
 			year: 'numeric',
@@ -112,13 +114,13 @@ export default function OrdersPage() {
 			<div className="flex justify-end mb-4">
 				<Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
 					<SelectTrigger className="w-[140px]">
-						<SelectValue placeholder="전체 상태" />
+						<SelectValue placeholder={t('order.statusAll')} />
 					</SelectTrigger>
 					<SelectContent>
-						<SelectItem value="all">전체</SelectItem>
-						{Object.entries(STATUS_LABELS).map(([value, { label }]) => (
+						<SelectItem value="all">{t('categoryAll')}</SelectItem>
+						{Object.entries(STATUS_META).map(([value, { labelKey }]) => (
 							<SelectItem key={value} value={value}>
-								{label}
+								{t(labelKey as any)}
 							</SelectItem>
 						))}
 					</SelectContent>
@@ -134,9 +136,9 @@ export default function OrdersPage() {
 				<Card>
 					<CardContent className="py-16 text-center">
 						<Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-						<p className="text-muted-foreground mb-4">주문 내역이 없습니다.</p>
+						<p className="text-muted-foreground mb-4">{t('order.noOrders')}</p>
 						<Button onClick={() => router.push('/shop')}>
-							쇼핑하러 가기
+							{t('goShopping')}
 						</Button>
 					</CardContent>
 				</Card>
@@ -152,8 +154,8 @@ export default function OrdersPage() {
 										</p>
 										<p className="font-mono text-sm">{order.orderNo}</p>
 									</div>
-									<Badge className={STATUS_LABELS[order.status]?.color || 'bg-gray-500'}>
-										{STATUS_LABELS[order.status]?.label || order.status}
+									<Badge className={STATUS_META[order.status]?.color || 'bg-gray-500'}>
+										{STATUS_META[order.status] ? t(STATUS_META[order.status].labelKey as any) : order.status}
 									</Badge>
 								</div>
 							</CardHeader>
@@ -205,27 +207,27 @@ export default function OrdersPage() {
 												<p className="text-sm text-muted-foreground">{item.optionText}</p>
 											)}
 											<p className="text-sm">
-												{formatPrice(item.price)} x {item.quantity}개
+												{formatPrice(item.price)} x {t('order.itemCountShort', { count: item.quantity })}
 											</p>
 										</div>
 									</div>
 								))}
 								{order.items.length > 2 && (
 									<p className="text-sm text-muted-foreground">
-										외 {order.items.length - 2}개 상품
+										{t('order.moreItems', { count: order.items.length - 2 })}
 									</p>
 								)}
 
 								{/* 결제 정보 및 버튼 */}
 								<div className="flex items-center justify-between pt-4 border-t">
 									<div>
-										<p className="text-sm text-muted-foreground">결제금액</p>
+										<p className="text-sm text-muted-foreground">{t('order.paymentAmount')}</p>
 										<p className="font-bold text-lg">{formatPrice(order.finalPrice)}</p>
 									</div>
 									<Link href={`/shop/orders/${order.orderNo}`}>
 										<Button variant="outline">
 											<Eye className="h-4 w-4 mr-2" />
-											상세보기
+											{t('order.viewDetailShort')}
 										</Button>
 									</Link>
 								</div>

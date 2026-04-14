@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -29,6 +30,7 @@ export default function OrderCompletePage() {
 }
 
 function OrderCompleteContent() {
+  const t = useTranslations('shop')
   const router = useRouter()
   const searchParams = useSearchParams()
   const orderNo = searchParams.get("orderNo")
@@ -109,9 +111,9 @@ function OrderCompleteContent() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
             <XCircle className="h-8 w-8 text-red-600" />
           </div>
-          <h1 className="text-2xl font-bold mb-2">결제에 실패했습니다</h1>
+          <h1 className="text-2xl font-bold mb-2">{t('order.paymentFailed')}</h1>
           <p className="text-muted-foreground">
-            {errorMessage || "결제 처리 중 오류가 발생했습니다."}
+            {errorMessage || t('order.paymentFailedMessage')}
           </p>
         </div>
 
@@ -119,17 +121,17 @@ function OrderCompleteContent() {
           <CardHeader className="bg-red-50">
             <CardTitle className="text-lg flex items-center gap-2 text-red-800">
               <AlertCircle className="h-5 w-5" />
-              결제 실패 안내
+              {t('order.paymentFailedTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-4">
             <p className="text-sm mb-4">
-              결제가 정상적으로 처리되지 않았습니다. 다시 시도해주세요.
+              {t('order.paymentFailedDetail')}
             </p>
             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-              <li>카드 잔액이 충분한지 확인해주세요.</li>
-              <li>카드 한도를 초과하지 않았는지 확인해주세요.</li>
-              <li>문제가 지속되면 카드사에 문의해주세요.</li>
+              <li>{t('order.paymentFailedCheck1')}</li>
+              <li>{t('order.paymentFailedCheck2')}</li>
+              <li>{t('order.paymentFailedCheck3')}</li>
             </ul>
           </CardContent>
         </Card>
@@ -140,13 +142,13 @@ function OrderCompleteContent() {
             className="flex-1"
             onClick={() => router.push("/shop")}
           >
-            쇼핑 계속하기
+            {t('continueShopping')}
           </Button>
           <Button
             className="flex-1"
             onClick={() => router.push("/shop/cart")}
           >
-            장바구니로 돌아가기
+            {t('order.backToCart')}
           </Button>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -30,6 +31,7 @@ interface CartItem {
 }
 
 export default function CartPage() {
+  const t = useTranslations('shop')
   const router = useRouter()
   const [cartItems, setCartItems] = useState<CartItem[]>([])
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
@@ -118,7 +120,7 @@ export default function CartPage() {
 
   const handleOrder = () => {
     if (selectedItems.size === 0) {
-      alert("주문할 상품을 선택해주세요.")
+      alert(t('cart.pleaseSelectItems'))
       return
     }
     // 선택된 상품만 주문 정보로 저장
@@ -127,12 +129,12 @@ export default function CartPage() {
     router.push("/shop/order")
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + "원"
+  const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-pulse">로딩 중...</div>
+        <div className="animate-pulse">{t('loading')}</div>
       </div>
     )
   }
@@ -143,7 +145,7 @@ export default function CartPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <ShoppingCart className="h-6 w-6" />
-              장바구니
+              {t('cart.title')}
             </h1>
           </div>
 
@@ -151,9 +153,9 @@ export default function CartPage() {
             <Card>
               <CardContent className="py-16 text-center">
                 <Package className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <p className="text-muted-foreground mb-4">장바구니가 비어있습니다.</p>
+                <p className="text-muted-foreground mb-4">{t('cart.empty')}</p>
                 <Button onClick={() => router.push("/shop")}>
-                  쇼핑 계속하기
+                  {t('continueShopping')}
                 </Button>
               </CardContent>
             </Card>
@@ -170,7 +172,7 @@ export default function CartPage() {
                       onCheckedChange={toggleAll}
                     />
                     <label htmlFor="select-all" className="text-sm cursor-pointer">
-                      전체 선택 ({selectedItems.size}/{cartItems.length})
+                      {t('cart.selectAllWithCount', { selected: selectedItems.size, total: cartItems.length })}
                     </label>
                   </div>
                   <Button
@@ -180,7 +182,7 @@ export default function CartPage() {
                     disabled={selectedItems.size === 0}
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
-                    선택 삭제
+                    {t('cart.deleteSelected')}
                   </Button>
                 </div>
 
@@ -227,7 +229,7 @@ export default function CartPage() {
                             </Link>
                             {item.optionText && (
                               <p className="text-sm text-muted-foreground mt-1">
-                                옵션: {item.optionText}
+                                {t('cart.optionLabel', { text: item.optionText })}
                               </p>
                             )}
                             <p className="font-bold mt-2">{formatPrice(item.price)}</p>
@@ -269,7 +271,7 @@ export default function CartPage() {
 
                           {/* 소계 */}
                           <div className="text-right">
-                            <p className="text-sm text-muted-foreground">소계</p>
+                            <p className="text-sm text-muted-foreground">{t('cart.subtotalLabel')}</p>
                             <p className="font-bold">
                               {formatPrice(item.price * item.quantity)}
                             </p>
@@ -285,30 +287,30 @@ export default function CartPage() {
               <div className="lg:col-span-1">
                 <Card className="sticky top-4">
                   <CardHeader>
-                    <CardTitle className="text-lg">주문 요약</CardTitle>
+                    <CardTitle className="text-lg">{t('cart.summary')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex justify-between text-sm">
-                      <span>선택 상품</span>
-                      <span>{selectedItems.size}개 ({getTotalQuantity()}개)</span>
+                      <span>{t('cart.selectedItems')}</span>
+                      <span>{t('cart.itemCountSummary', { count: selectedItems.size, qty: getTotalQuantity() })}</span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span>상품 금액</span>
+                      <span>{t('cart.subtotal')}</span>
                       <span>{formatPrice(getTotalPrice())}</span>
                     </div>
                     <div className="flex justify-between text-sm text-muted-foreground">
-                      <span>배송비</span>
-                      <span>주문 시 계산</span>
+                      <span>{t('cart.shippingFee')}</span>
+                      <span>{t('cart.shippingCalculated')}</span>
                     </div>
                     <div className="border-t pt-4">
                       <div className="flex justify-between items-center">
-                        <span className="font-medium">예상 결제금액</span>
+                        <span className="font-medium">{t('cart.expectedTotal')}</span>
                         <span className="text-xl font-bold text-primary">
                           {formatPrice(getTotalPrice())}
                         </span>
                       </div>
                       <p className="text-xs text-muted-foreground mt-1">
-                        배송비 별도
+                        {t('cart.shippingSeparate')}
                       </p>
                     </div>
 
@@ -318,7 +320,7 @@ export default function CartPage() {
                       onClick={handleOrder}
                       disabled={selectedItems.size === 0}
                     >
-                      주문하기
+                      {t('cart.checkout')}
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
 
@@ -327,7 +329,7 @@ export default function CartPage() {
                       className="w-full"
                       onClick={() => router.push("/shop")}
                     >
-                      쇼핑 계속하기
+                      {t('continueShopping')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -337,9 +339,9 @@ export default function CartPage() {
                   <div className="flex gap-2">
                     <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p>장바구니는 브라우저에 저장됩니다.</p>
+                      <p>{t('cart.storageNotice')}</p>
                       <p className="mt-1">
-                        브라우저 데이터를 삭제하면 장바구니가 초기화될 수 있습니다.
+                        {t('cart.storageNoticeDetail')}
                       </p>
                     </div>
                   </div>

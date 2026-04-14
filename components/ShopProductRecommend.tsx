@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useRef } from "react"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -61,7 +62,7 @@ export function getViewedProductIds(): number[] {
 
 // 인기 상품 섹션
 export function PopularProducts({
-  title = "인기 상품",
+  title,
   limit = 12,
   excludeId
 }: {
@@ -69,6 +70,8 @@ export function PopularProducts({
   limit?: number
   excludeId?: number
 }) {
+  const t = useTranslations('shop')
+  const resolvedTitle = title ?? t('popular')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -99,7 +102,7 @@ export function PopularProducts({
 
   return (
     <InfiniteProductSlider
-      title={title}
+      title={resolvedTitle}
       icon={<TrendingUp className="h-5 w-5 text-orange-500" />}
       products={products}
     />
@@ -108,7 +111,7 @@ export function PopularProducts({
 
 // 신상품 섹션
 export function NewProducts({
-  title = "신상품",
+  title,
   limit = 12,
   excludeId
 }: {
@@ -116,6 +119,8 @@ export function NewProducts({
   limit?: number
   excludeId?: number
 }) {
+  const t = useTranslations('shop')
+  const resolvedTitle = title ?? t('newArrivals')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -146,7 +151,7 @@ export function NewProducts({
 
   return (
     <InfiniteProductSlider
-      title={title}
+      title={resolvedTitle}
       icon={<Sparkles className="h-5 w-5 text-purple-500" />}
       products={products}
     />
@@ -155,12 +160,14 @@ export function NewProducts({
 
 // 최근 본 상품 섹션 (무한 롤링 아님)
 export function RecentlyViewedProducts({
-  title = "최근 본 상품",
+  title,
   excludeId
 }: {
   title?: string
   excludeId?: number
 }) {
+  const t = useTranslations('shop')
+  const resolvedTitle = title ?? t('recentlyViewed')
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -201,7 +208,7 @@ export function RecentlyViewedProducts({
 
   return (
     <ProductSection
-      title={title}
+      title={resolvedTitle}
       icon={<Clock className="h-5 w-5 text-blue-500" />}
       products={products}
     />
@@ -210,6 +217,7 @@ export function RecentlyViewedProducts({
 
 // 상품 카드 컴포넌트 (재사용)
 function ProductCard({ product, formatPrice }: { product: Product; formatPrice: (price: number) => string }) {
+  const t = useTranslations('shop')
   return (
     <Card className="h-full overflow-hidden hover:shadow-lg transition-shadow group">
       <div className="relative aspect-square bg-muted">
@@ -226,7 +234,7 @@ function ProductCard({ product, formatPrice }: { product: Product; formatPrice: 
         )}
         {product.isSoldOut && (
           <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-            <span className="text-white font-bold">품절</span>
+            <span className="text-white font-bold">{t('product.soldOut')}</span>
           </div>
         )}
         {product.originPrice && product.originPrice > product.price && (
@@ -273,11 +281,12 @@ function InfiniteProductSlider({
   icon: React.ReactNode
   products: Product[]
 }) {
+  const t = useTranslations('shop')
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
 
-  const formatPrice = (price: number) => price.toLocaleString() + '원'
+  const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
   // 스크롤 상태 확인
   const checkScrollState = useCallback(() => {
@@ -386,11 +395,12 @@ function ProductSection({
   icon: React.ReactNode
   products: Product[]
 }) {
+  const t = useTranslations('shop')
   const scrollRef = useRef<HTMLDivElement>(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
 
-  const formatPrice = (price: number) => price.toLocaleString() + '원'
+  const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
   const checkScrollState = useCallback(() => {
     if (!scrollRef.current) return
@@ -494,7 +504,7 @@ function ProductSection({
                 )}
                 {product.isSoldOut && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="text-white font-bold">품절</span>
+                    <span className="text-white font-bold">{t('product.soldOut')}</span>
                   </div>
                 )}
                 {product.originPrice && product.originPrice > product.price && (

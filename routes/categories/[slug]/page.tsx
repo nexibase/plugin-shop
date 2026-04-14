@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react"
 import { useParams, useSearchParams, useRouter } from "next/navigation"
+import { useTranslations } from "next-intl"
 import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
@@ -62,6 +63,7 @@ export default function CategoryPage() {
 }
 
 function CategoryContent() {
+  const t = useTranslations('shop')
   const router = useRouter()
   const params = useParams()
   const searchParams = useSearchParams()
@@ -159,7 +161,7 @@ function CategoryContent() {
     router.push(`/shop/categories/${categorySlug}?${params}`)
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + '원'
+  const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
@@ -171,11 +173,11 @@ function CategoryContent() {
               </Link>
               <h1 className="text-2xl font-bold flex items-center gap-2">
                 <Package className="h-6 w-6" />
-                {category?.name || '카테고리'}
+                {category?.name || t('categories')}
               </h1>
             </div>
             <p className="text-muted-foreground">
-              {category?.name} 카테고리의 상품을 확인하세요
+              {category?.name}
             </p>
           </div>
 
@@ -186,7 +188,7 @@ function CategoryContent() {
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="상품 검색..."
+                  placeholder={t('searchPlaceholder')}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-10 pr-20"
@@ -196,7 +198,7 @@ function CategoryContent() {
                   size="sm"
                   className="absolute right-1 top-1/2 transform -translate-y-1/2"
                 >
-                  검색
+                  {t('searchButton')}
                 </Button>
               </div>
             </form>
@@ -205,10 +207,10 @@ function CategoryContent() {
               {/* 카테고리 필터 */}
               <Select value={categorySlug} onValueChange={handleCategoryChange}>
                 <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="카테고리" />
+                  <SelectValue placeholder={t('categoryPlaceholder')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
+                  <SelectItem value="all">{t('categoryAll')}</SelectItem>
                   {allCategories.map(cat => (
                     <SelectItem key={cat.id} value={cat.slug}>
                       {cat.name} ({cat.productCount})
@@ -223,11 +225,11 @@ function CategoryContent() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="latest">최신순</SelectItem>
-                  <SelectItem value="popular">판매순</SelectItem>
-                  <SelectItem value="review">후기순</SelectItem>
-                  <SelectItem value="price_asc">낮은가격</SelectItem>
-                  <SelectItem value="price_desc">높은가격</SelectItem>
+                  <SelectItem value="latest">{t('sortLatest')}</SelectItem>
+                  <SelectItem value="popular">{t('sortPopular')}</SelectItem>
+                  <SelectItem value="review">{t('sortReview')}</SelectItem>
+                  <SelectItem value="price_asc">{t('sortPriceAsc')}</SelectItem>
+                  <SelectItem value="price_desc">{t('sortPriceDesc')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -241,7 +243,7 @@ function CategoryContent() {
                 className="cursor-pointer"
                 onClick={() => handleCategoryChange('all')}
               >
-                전체
+                {t('categoryAll')}
               </Badge>
               {allCategories.map(cat => (
                 <Badge
@@ -259,8 +261,8 @@ function CategoryContent() {
           {/* 결과 정보 */}
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-muted-foreground">
-              총 {total}개의 상품
-              {searchQuery && ` (검색: "${searchQuery}")`}
+              {t('totalCount', { total })}
+              {searchQuery && ` (${t('searchedFor', { query: searchQuery })})`}
             </p>
           </div>
 
@@ -272,7 +274,7 @@ function CategoryContent() {
           ) : products.length === 0 ? (
             <div className="text-center py-20">
               <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">상품이 없습니다.</p>
+              <p className="text-muted-foreground">{t('noProducts')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -294,7 +296,7 @@ function CategoryContent() {
                       )}
                       {product.isSoldOut && (
                         <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                          <span className="text-white font-bold text-lg">품절</span>
+                          <span className="text-white font-bold text-lg">{t('product.soldOut')}</span>
                         </div>
                       )}
                       {product.originPrice && product.originPrice > product.price && (

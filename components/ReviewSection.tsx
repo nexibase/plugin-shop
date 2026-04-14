@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
@@ -70,6 +71,7 @@ export default function ReviewSection({
   onFetchReviews,
   onFetchReviewableOrders,
 }: ReviewSectionProps) {
+  const t = useTranslations('shop')
   // 리뷰 작성 상태
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [selectedOrderItem, setSelectedOrderItem] = useState<number | null>(null)
@@ -100,7 +102,7 @@ export default function ReviewSection({
     if (!files || files.length === 0) return
 
     if (reviewImages.length + files.length > 5) {
-      alert('이미지는 최대 5장까지 첨부할 수 있습니다.')
+      alert(t('review.imageLimit'))
       return
     }
 
@@ -130,12 +132,12 @@ export default function ReviewSection({
         const data = await res.json()
 
         if (!res.ok) {
-          failedFiles.push({ name: file.name, size: formatFileSize(file.size), reason: data.error || '업로드 실패' })
+          failedFiles.push({ name: file.name, size: formatFileSize(file.size), reason: data.error || t('review.uploadFailed') })
         } else {
           successUrls.push(data.url)
         }
       } catch {
-        failedFiles.push({ name: file.name, size: formatFileSize(file.size), reason: '네트워크 오류' })
+        failedFiles.push({ name: file.name, size: formatFileSize(file.size), reason: t('review.networkError') })
       }
     }
 
@@ -147,7 +149,7 @@ export default function ReviewSection({
       const failedMessage = failedFiles
         .map(f => `• ${f.name} (${f.size}): ${f.reason}`)
         .join('\n')
-      alert(`일부 이미지 업로드 실패:\n${failedMessage}`)
+      alert(t('review.partialUploadFailed', { message: failedMessage }))
     }
 
     setUploadingImage(false)
@@ -183,10 +185,10 @@ export default function ReviewSection({
         onFetchReviewableOrders()
       } else {
         const data = await res.json()
-        alert(data.error || '리뷰 작성에 실패했습니다.')
+        alert(data.error || t('review.writeFailed'))
       }
     } catch {
-      alert('리뷰 작성에 실패했습니다.')
+      alert(t('review.writeFailed'))
     } finally {
       setSubmittingReview(false)
     }
@@ -241,10 +243,10 @@ export default function ReviewSection({
         onFetchReviews(reviewPage)
       } else {
         const data = await res.json()
-        alert(data.error || '리뷰 수정에 실패했습니다.')
+        alert(data.error || t('review.editFailed'))
       }
     } catch {
-      alert('리뷰 수정에 실패했습니다.')
+      alert(t('review.editFailed'))
     } finally {
       setSubmittingReview(false)
     }
@@ -252,7 +254,7 @@ export default function ReviewSection({
 
   // 리뷰 삭제
   const deleteReview = async (reviewId: number) => {
-    if (!confirm('리뷰를 삭제하시겠습니까?')) return
+    if (!confirm(t('review.confirmDelete'))) return
 
     try {
       const res = await fetch(`/api/shop/products/${slug}/reviews?reviewId=${reviewId}`, {
@@ -263,10 +265,10 @@ export default function ReviewSection({
         onFetchReviewableOrders()
       } else {
         const data = await res.json()
-        alert(data.error || '리뷰 삭제에 실패했습니다.')
+        alert(data.error || t('review.deleteFailed'))
       }
     } catch {
-      alert('리뷰 삭제에 실패했습니다.')
+      alert(t('review.deleteFailed'))
     }
   }
 
@@ -293,7 +295,7 @@ export default function ReviewSection({
                   />
                 ))}
               </div>
-              <p className="text-sm text-muted-foreground mt-1">{reviewTotal}개 리뷰</p>
+              <p className="text-sm text-muted-foreground mt-1">{t('review.averageLabel', { count: reviewTotal })}</p>
             </div>
           </div>
         )}
@@ -303,10 +305,10 @@ export default function ReviewSection({
           <div className="mb-6">
             <Button onClick={() => setShowReviewForm(true)}>
               <Star className="h-4 w-4 mr-2" />
-              리뷰 작성
+              {t('review.writeBtn')}
             </Button>
             <p className="text-sm text-muted-foreground mt-2">
-              작성 가능한 리뷰: {reviewableOrders.length}건
+              {t('review.availableCount', { count: reviewableOrders.length })}
             </p>
           </div>
         )}
@@ -318,18 +320,18 @@ export default function ReviewSection({
               {/* 주문 선택 */}
               {reviewableOrders.length > 1 ? (
                 <div>
-                  <Label>주문 선택</Label>
+                  <Label>{t('review.selectOrder')}</Label>
                   <Select
                     value={selectedOrderItem?.toString() || ''}
                     onValueChange={(v) => setSelectedOrderItem(parseInt(v))}
                   >
                     <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="리뷰를 작성할 주문을 선택하세요" />
+                      <SelectValue placeholder={t('review.selectOrderPlaceholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {reviewableOrders.map(order => (
                         <SelectItem key={order.orderItemId} value={order.orderItemId.toString()}>
-                          [{order.orderNo}] {order.optionText || '기본 옵션'}
+                          [{order.orderNo}] {order.optionText || t('review.defaultOption')}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -337,12 +339,12 @@ export default function ReviewSection({
                 </div>
               ) : reviewableOrders.length === 1 ? (
                 <div className="p-3 bg-muted rounded-lg text-sm">
-                  <span className="text-muted-foreground">주문번호:</span>{' '}
+                  <span className="text-muted-foreground">{t('review.orderNoLabel')}</span>{' '}
                   <span className="font-medium">{reviewableOrders[0].orderNo}</span>
                   {reviewableOrders[0].optionText && (
                     <>
                       <span className="mx-2 text-muted-foreground">|</span>
-                      <span className="text-muted-foreground">옵션:</span>{' '}
+                      <span className="text-muted-foreground">{t('review.optionLabel')}</span>{' '}
                       <span className="font-medium">{reviewableOrders[0].optionText}</span>
                     </>
                   )}
@@ -350,7 +352,7 @@ export default function ReviewSection({
               ) : null}
 
               <div>
-                <Label>별점</Label>
+                <Label>{t('review.rating')}</Label>
                 <div className="flex gap-1 mt-1">
                   {[1, 2, 3, 4, 5].map(i => (
                     <button
@@ -372,11 +374,11 @@ export default function ReviewSection({
               </div>
 
               <div>
-                <Label>리뷰 내용</Label>
+                <Label>{t('review.contentLabel')}</Label>
                 <Textarea
                   value={reviewContent}
                   onChange={(e) => setReviewContent(e.target.value)}
-                  placeholder="상품에 대한 솔직한 리뷰를 작성해주세요."
+                  placeholder={t('review.contentPlaceholder')}
                   className="mt-1"
                   rows={4}
                 />
@@ -384,7 +386,7 @@ export default function ReviewSection({
 
               {/* 이미지 업로드 */}
               <div>
-                <Label>사진 첨부 (최대 5장)</Label>
+                <Label>{t('review.imageUpload')}</Label>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {reviewImages.map((img, idx) => (
                     <div key={idx} className="relative w-20 h-20">
@@ -405,7 +407,7 @@ export default function ReviewSection({
                       ) : (
                         <>
                           <ImagePlus className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground mt-1">추가</span>
+                          <span className="text-xs text-muted-foreground mt-1">{t('review.add')}</span>
                         </>
                       )}
                       <input
@@ -423,14 +425,14 @@ export default function ReviewSection({
 
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={() => { setShowReviewForm(false); setReviewImages([]) }}>
-                  취소
+                  {t('review.cancel')}
                 </Button>
                 <Button
                   onClick={submitReview}
                   disabled={submittingReview || uploadingImage || !selectedOrderItem || !reviewContent.trim()}
                 >
                   {submittingReview ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                  등록
+                  {t('review.submit')}
                 </Button>
               </div>
             </CardContent>
@@ -442,11 +444,11 @@ export default function ReviewSection({
           <Card className="mb-6">
             <CardContent className="p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium">리뷰 수정</h4>
+                <h4 className="font-medium">{t('review.edit')}</h4>
               </div>
 
               <div>
-                <Label>별점</Label>
+                <Label>{t('review.rating')}</Label>
                 <div className="flex gap-1 mt-1">
                   {[1, 2, 3, 4, 5].map(i => (
                     <button
@@ -468,11 +470,11 @@ export default function ReviewSection({
               </div>
 
               <div>
-                <Label>리뷰 내용</Label>
+                <Label>{t('review.contentLabel')}</Label>
                 <Textarea
                   value={reviewContent}
                   onChange={(e) => setReviewContent(e.target.value)}
-                  placeholder="상품에 대한 솔직한 리뷰를 작성해주세요."
+                  placeholder={t('review.contentPlaceholder')}
                   className="mt-1"
                   rows={4}
                 />
@@ -480,7 +482,7 @@ export default function ReviewSection({
 
               {/* 이미지 업로드 */}
               <div>
-                <Label>사진 첨부 (최대 5장)</Label>
+                <Label>{t('review.imageUpload')}</Label>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {reviewImages.map((img, idx) => (
                     <div key={idx} className="relative w-20 h-20">
@@ -501,7 +503,7 @@ export default function ReviewSection({
                       ) : (
                         <>
                           <ImagePlus className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-xs text-muted-foreground mt-1">추가</span>
+                          <span className="text-xs text-muted-foreground mt-1">{t('review.add')}</span>
                         </>
                       )}
                       <input
@@ -519,14 +521,14 @@ export default function ReviewSection({
 
               <div className="flex gap-2 justify-end">
                 <Button variant="outline" onClick={cancelEditReview}>
-                  취소
+                  {t('review.cancel')}
                 </Button>
                 <Button
                   onClick={submitEditReview}
                   disabled={submittingReview || uploadingImage || !reviewContent.trim()}
                 >
                   {submittingReview ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Pencil className="h-4 w-4 mr-2" />}
-                  수정
+                  {t('review.update')}
                 </Button>
               </div>
             </CardContent>
@@ -571,7 +573,7 @@ export default function ReviewSection({
                             className="h-7 px-2 text-muted-foreground hover:text-foreground"
                           >
                             <Pencil className="h-3 w-3 mr-1" />
-                            수정
+                            {t('review.update')}
                           </Button>
                           <Button
                             variant="ghost"
@@ -580,7 +582,7 @@ export default function ReviewSection({
                             className="h-7 px-2 text-muted-foreground hover:text-red-500"
                           >
                             <X className="h-3 w-3 mr-1" />
-                            삭제
+                            {t('review.delete')}
                           </Button>
                         </div>
                       )}
@@ -616,7 +618,7 @@ export default function ReviewSection({
                     {/* 관리자 답변 */}
                     {review.reply && (
                       <div className="mt-3 p-3 bg-muted rounded-lg">
-                        <p className="text-sm font-medium mb-1">판매자 답변</p>
+                        <p className="text-sm font-medium mb-1">{t('review.sellerReply')}</p>
                         <p className="text-sm whitespace-pre-wrap">{review.reply}</p>
                       </div>
                     )}
@@ -634,7 +636,7 @@ export default function ReviewSection({
                   onClick={() => onFetchReviews(reviewPage - 1)}
                   disabled={reviewPage <= 1}
                 >
-                  이전
+                  {t('prev')}
                 </Button>
                 <span className="flex items-center px-3 text-sm">
                   {reviewPage} / {Math.ceil(reviewTotal / 10)}
@@ -645,14 +647,14 @@ export default function ReviewSection({
                   onClick={() => onFetchReviews(reviewPage + 1)}
                   disabled={reviewPage >= Math.ceil(reviewTotal / 10)}
                 >
-                  다음
+                  {t('next')}
                 </Button>
               </div>
             )}
           </div>
         ) : (
           <p className="text-muted-foreground text-center py-12">
-            아직 등록된 리뷰가 없습니다.
+            {t('review.noReviews')}
           </p>
         )}
       </div>

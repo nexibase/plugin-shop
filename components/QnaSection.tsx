@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -45,6 +46,7 @@ export default function QnaSection({
   qnaPage,
   onFetchQnas,
 }: QnaSectionProps) {
+  const t = useTranslations('shop')
   const [showQnaForm, setShowQnaForm] = useState(false)
   const [qnaContent, setQnaContent] = useState('')
   const [qnaIsSecret, setQnaIsSecret] = useState(false)
@@ -79,10 +81,10 @@ export default function QnaSection({
         onFetchQnas(1)
       } else {
         const data = await res.json()
-        alert(data.error || 'Q&A 작성에 실패했습니다.')
+        alert(data.error || t('qna.writeFailed'))
       }
     } catch {
-      alert('Q&A 작성에 실패했습니다.')
+      alert(t('qna.writeFailed'))
     } finally {
       setSubmittingQna(false)
     }
@@ -121,10 +123,10 @@ export default function QnaSection({
         onFetchQnas(qnaPage)
       } else {
         const data = await res.json()
-        alert(data.error || 'Q&A 수정에 실패했습니다.')
+        alert(data.error || t('qna.editFailed'))
       }
     } catch {
-      alert('Q&A 수정에 실패했습니다.')
+      alert(t('qna.editFailed'))
     } finally {
       setSubmittingEdit(false)
     }
@@ -132,7 +134,7 @@ export default function QnaSection({
 
   // Q&A 삭제
   const deleteQna = async (qnaId: number) => {
-    if (!confirm('정말 삭제하시겠습니까?')) return
+    if (!confirm(t('qna.confirmDelete'))) return
     setDeletingId(qnaId)
     try {
       const res = await fetch(`/api/shop/products/${slug}/qna?id=${qnaId}`, {
@@ -142,10 +144,10 @@ export default function QnaSection({
         onFetchQnas(qnaPage)
       } else {
         const data = await res.json()
-        alert(data.error || 'Q&A 삭제에 실패했습니다.')
+        alert(data.error || t('qna.deleteFailed'))
       }
     } catch {
-      alert('Q&A 삭제에 실패했습니다.')
+      alert(t('qna.deleteFailed'))
     } finally {
       setDeletingId(null)
     }
@@ -158,7 +160,7 @@ export default function QnaSection({
         <div className="mb-6">
           <Button onClick={() => setShowQnaForm(true)}>
             <MessageSquare className="h-4 w-4 mr-2" />
-            문의하기
+            {t('qna.ask')}
           </Button>
         </div>
       )}
@@ -168,11 +170,11 @@ export default function QnaSection({
         <Card className="mb-6">
           <CardContent className="p-4 space-y-4">
             <div>
-              <Label>문의 내용</Label>
+              <Label>{t('qna.contentLabel')}</Label>
               <Textarea
                 value={qnaContent}
                 onChange={(e) => setQnaContent(e.target.value)}
-                placeholder="상품에 대해 궁금한 점을 문의해주세요."
+                placeholder={t('qna.contentPlaceholder')}
                 className="mt-1"
                 rows={4}
               />
@@ -186,20 +188,20 @@ export default function QnaSection({
               />
               <Label htmlFor="qna-secret" className="flex items-center gap-1 cursor-pointer">
                 <Lock className="h-4 w-4" />
-                비밀글로 작성
+                {t('qna.writeSecret')}
               </Label>
             </div>
 
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowQnaForm(false)}>
-                취소
+                {t('qna.cancel')}
               </Button>
               <Button
                 onClick={submitQna}
                 disabled={submittingQna || !qnaContent.trim()}
               >
                 {submittingQna ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
-                등록
+                {t('qna.submit')}
               </Button>
             </div>
           </CardContent>
@@ -221,7 +223,7 @@ export default function QnaSection({
                     {qna.isSecret && (
                       <Badge variant="secondary" className="text-xs">
                         <Lock className="h-3 w-3 mr-1" />
-                        비밀글
+                        {t('qna.secret')}
                       </Badge>
                     )}
                     <span className="font-medium text-sm">{qna.user.nickname}</span>
@@ -230,7 +232,7 @@ export default function QnaSection({
                     </span>
                     {qna.answer && (
                       <Badge variant="outline" className="text-xs text-green-600 border-green-600">
-                        답변완료
+                        {t('qna.answered')}
                       </Badge>
                     )}
                     {/* 수정/삭제 버튼: 본인 글이고 답변 전에만 표시 */}
@@ -243,7 +245,7 @@ export default function QnaSection({
                           onClick={() => startEdit(qna)}
                         >
                           <Pencil className="h-3 w-3 mr-1" />
-                          수정
+                          {t('qna.edit')}
                         </Button>
                         <Button
                           variant="ghost"
@@ -257,7 +259,7 @@ export default function QnaSection({
                           ) : (
                             <X className="h-3 w-3 mr-1" />
                           )}
-                          삭제
+                          {t('qna.delete')}
                         </Button>
                       </div>
                     )}
@@ -279,12 +281,12 @@ export default function QnaSection({
                         />
                         <Label htmlFor={`edit-secret-${qna.id}`} className="flex items-center gap-1 cursor-pointer text-sm">
                           <Lock className="h-3.5 w-3.5" />
-                          비밀글
+                          {t('qna.secret')}
                         </Label>
                       </div>
                       <div className="flex gap-2 justify-end">
                         <Button variant="outline" size="sm" onClick={cancelEdit}>
-                          취소
+                          {t('qna.cancel')}
                         </Button>
                         <Button
                           size="sm"
@@ -292,7 +294,7 @@ export default function QnaSection({
                           disabled={submittingEdit || !editContent.trim()}
                         >
                           {submittingEdit && <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" />}
-                          수정
+                          {t('qna.edit')}
                         </Button>
                       </div>
                     </div>
@@ -314,7 +316,7 @@ export default function QnaSection({
                             {qna.isSecret && (
                               <span className="text-xs text-muted-foreground flex items-center gap-1">
                                 <Lock className="h-3 w-3" />
-                                비밀 답변
+                                {t('qna.secretAnswer')}
                               </span>
                             )}
                           </div>
@@ -339,7 +341,7 @@ export default function QnaSection({
                 onClick={() => onFetchQnas(qnaPage - 1)}
                 disabled={qnaPage <= 1}
               >
-                이전
+                {t('prev')}
               </Button>
               <span className="flex items-center px-3 text-sm">
                 {qnaPage} / {Math.ceil(qnaTotal / 10)}
@@ -350,14 +352,14 @@ export default function QnaSection({
                 onClick={() => onFetchQnas(qnaPage + 1)}
                 disabled={qnaPage >= Math.ceil(qnaTotal / 10)}
               >
-                다음
+                {t('next')}
               </Button>
             </div>
           )}
         </div>
       ) : (
         <p className="text-muted-foreground text-center py-12">
-          아직 등록된 Q&A가 없습니다.
+          {t('qna.noQuestions')}
         </p>
       )}
     </div>
