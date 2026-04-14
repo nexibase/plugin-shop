@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from 'next-intl'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -74,6 +75,7 @@ const DEFAULT_SETTINGS: ShopSettings = {
 }
 
 export default function ShopSettingsPage() {
+  const t = useTranslations('shop.admin')
   const [settings, setSettings] = useState<ShopSettings>(DEFAULT_SETTINGS)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -114,14 +116,14 @@ export default function ShopSettingsPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error || "저장에 실패했습니다.")
+        setError(data.error || t('saveFailedErr'))
         return
       }
 
       setSuccess(true)
       setTimeout(() => setSuccess(false), 2000)
-    } catch (err) {
-      setError("저장 중 오류가 발생했습니다.")
+    } catch {
+      setError(t('saveErrorErr'))
     } finally {
       setSaving(false)
     }
@@ -152,22 +154,22 @@ export default function ShopSettingsPage() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Settings className="h-6 w-6" />
-            쇼핑몰 설정
+            {t('shopSettingsTitle')}
           </h1>
           <p className="text-muted-foreground">
-            쇼핑몰 기본 정보를 설정합니다.
+            {t('settingsTitleDesc')}
           </p>
         </div>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? (
             <>
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              저장 중...
+              {t('saving')}
             </>
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              저장
+              {t('save')}
             </>
           )}
         </Button>
@@ -183,7 +185,7 @@ export default function ShopSettingsPage() {
       {success && (
         <div className="flex items-center gap-2 p-4 bg-green-100 text-green-800 rounded-lg">
           <Check className="h-4 w-4" />
-          설정이 저장되었습니다.
+          {t('settingsSaved')}
         </div>
       )}
 
@@ -193,39 +195,39 @@ export default function ShopSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
-              기본 정보
+              {t('basicInfo')}
             </CardTitle>
             <CardDescription>
-              쇼핑몰의 기본 정보를 입력합니다.
+              {t('basicInfoDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="shop_name">쇼핑몰 이름</Label>
+              <Label htmlFor="shop_name">{t('shopName')}</Label>
               <Input
                 id="shop_name"
                 value={settings.shop_name}
                 onChange={(e) => handleChange("shop_name", e.target.value)}
-                placeholder="예: 스타일리스트"
+                placeholder={t('shopNamePlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="shop_tel">연락처</Label>
+              <Label htmlFor="shop_tel">{t('shopTel')}</Label>
               <Input
                 id="shop_tel"
                 value={settings.shop_tel}
                 onChange={(e) => handleChange("shop_tel", e.target.value)}
-                placeholder="예: 02-1234-5678"
+                placeholder={t('shopTelPlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="shop_email">이메일</Label>
+              <Label htmlFor="shop_email">{t('shopEmail')}</Label>
               <Input
                 id="shop_email"
                 type="email"
                 value={settings.shop_email}
                 onChange={(e) => handleChange("shop_email", e.target.value)}
-                placeholder="예: cs@stylist.co.kr"
+                placeholder={t('shopEmailPlaceholder')}
               />
             </div>
           </CardContent>
@@ -236,24 +238,24 @@ export default function ShopSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
-              결제 정보
+              {t('paymentInfo')}
             </CardTitle>
             <CardDescription>
-              무통장입금 계좌 정보를 입력합니다.
+              {t('paymentInfoDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="bank_info">입금 계좌 안내</Label>
+              <Label htmlFor="bank_info">{t('bankInfoLabel')}</Label>
               <Textarea
                 id="bank_info"
                 value={settings.bank_info}
                 onChange={(e) => handleChange("bank_info", e.target.value)}
-                placeholder="예: 국민은행 123-456-789012 (주)스타일리스트"
+                placeholder={t('bankInfoPlaceholder')}
                 rows={5}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                주문 완료 시 고객에게 표시됩니다.
+                {t('bankInfoHint')}
               </p>
             </div>
           </CardContent>
@@ -264,20 +266,20 @@ export default function ShopSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Truck className="h-5 w-5" />
-              배송 안내
+              {t('deliveryNotice')}
             </CardTitle>
             <CardDescription>
-              배송 관련 안내 문구를 입력합니다.
+              {t('deliveryNoticeDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div>
-              <Label htmlFor="delivery_notice">배송 안내 문구</Label>
+              <Label htmlFor="delivery_notice">{t('deliveryNoticeLabel')}</Label>
               <Textarea
                 id="delivery_notice"
                 value={settings.delivery_notice}
                 onChange={(e) => handleChange("delivery_notice", e.target.value)}
-                placeholder="예: 평일 오후 2시 이전 주문 시 당일 발송&#10;제주/도서산간 지역은 추가 배송비가 발생합니다."
+                placeholder={t('deliveryNoticePlaceholder')}
                 rows={5}
               />
             </div>
@@ -289,15 +291,15 @@ export default function ShopSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              환불 정책
+              {t('refundPolicy')}
             </CardTitle>
             <CardDescription>
-              교환/환불 관련 정책을 입력합니다.
+              {t('refundPolicyDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="return_shipping_fee">반품 배송비</Label>
+              <Label htmlFor="return_shipping_fee">{t('returnShippingFeeLabel')}</Label>
               <div className="flex items-center gap-2">
                 <Input
                   id="return_shipping_fee"
@@ -307,19 +309,19 @@ export default function ShopSettingsPage() {
                   placeholder="5000"
                   className="max-w-[150px]"
                 />
-                <span className="text-sm text-muted-foreground">원</span>
+                <span className="text-sm text-muted-foreground">{t('wonSuffix')}</span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
-                배송 후 취소/반품 시 고객에게 차감되는 금액 (배송 전 취소는 전액 환불)
+                {t('returnShippingFeeHint')}
               </p>
             </div>
             <div>
-              <Label htmlFor="refund_policy">환불 정책 안내</Label>
+              <Label htmlFor="refund_policy">{t('refundPolicyLabel')}</Label>
               <Textarea
                 id="refund_policy"
                 value={settings.refund_policy}
                 onChange={(e) => handleChange("refund_policy", e.target.value)}
-                placeholder="예: 상품 수령 후 7일 이내 환불 가능합니다.&#10;단, 착용 흔적이 있거나 택이 제거된 상품은 환불이 불가합니다."
+                placeholder={t('refundPolicyPlaceholder')}
                 rows={5}
               />
             </div>
@@ -331,45 +333,45 @@ export default function ShopSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <RotateCcw className="h-5 w-5" />
-              반품/교환 안내
+              {t('returnExchangeInfo')}
             </CardTitle>
             <CardDescription>
-              반품/교환 관련 안내 정보를 입력합니다. 주문서 및 상품 상세 페이지에 표시됩니다.
+              {t('returnExchangeDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="exchange_info">교환 안내</Label>
+                <Label htmlFor="exchange_info">{t('exchangeInfoLabel')}</Label>
                 <Textarea
                   id="exchange_info"
                   value={settings.exchange_info}
                   onChange={(e) => handleChange("exchange_info", e.target.value)}
-                  placeholder="예: 상품 수령 후 7일 이내 교환 가능&#10;다른 색상/사이즈로 1회 무료 교환&#10;단순 변심 시 왕복 배송비 고객 부담"
+                  placeholder={t('exchangeInfoPlaceholder')}
                   rows={4}
                 />
               </div>
               <div>
-                <Label htmlFor="return_info">반품 안내</Label>
+                <Label htmlFor="return_info">{t('returnInfoLabel')}</Label>
                 <Textarea
                   id="return_info"
                   value={settings.return_info}
                   onChange={(e) => handleChange("return_info", e.target.value)}
-                  placeholder="예: 상품 수령 후 7일 이내 반품 가능&#10;택 제거/착용 흔적 있는 경우 반품 불가&#10;단순 변심 시 반품 배송비 차감"
+                  placeholder={t('returnInfoPlaceholder')}
                   rows={4}
                 />
               </div>
             </div>
             <div>
-              <Label htmlFor="return_address">반품/교환 주소</Label>
+              <Label htmlFor="return_address">{t('returnAddressLabel')}</Label>
               <Input
                 id="return_address"
                 value={settings.return_address}
                 onChange={(e) => handleChange("return_address", e.target.value)}
-                placeholder="예: 서울시 성동구 성수이로 123, 스타일리스트 물류센터"
+                placeholder={t('returnAddressPlaceholder')}
               />
               <p className="text-xs text-muted-foreground mt-1">
-                고객이 반품/교환 시 발송할 주소입니다.
+                {t('returnAddressHint')}
               </p>
             </div>
           </CardContent>
@@ -380,39 +382,39 @@ export default function ShopSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings className="h-5 w-5" />
-              옵션명 설정
+              {t('optionNameSettings')}
             </CardTitle>
             <CardDescription>
-              상품 옵션의 표시명을 설정합니다. (관리자 화면에서 사용)
+              {t('optionNameSettingsDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="option1_name">1단계 옵션명</Label>
+                <Label htmlFor="option1_name">{t('optionName1')}</Label>
                 <Input
                   id="option1_name"
                   value={settings.option1_name}
                   onChange={(e) => handleChange("option1_name", e.target.value)}
-                  placeholder="예: 색상"
+                  placeholder={t('optionExample1')}
                 />
               </div>
               <div>
-                <Label htmlFor="option2_name">2단계 옵션명</Label>
+                <Label htmlFor="option2_name">{t('optionName2')}</Label>
                 <Input
                   id="option2_name"
                   value={settings.option2_name}
                   onChange={(e) => handleChange("option2_name", e.target.value)}
-                  placeholder="예: 사이즈"
+                  placeholder={t('optionExample2')}
                 />
               </div>
               <div>
-                <Label htmlFor="option3_name">3단계 옵션명</Label>
+                <Label htmlFor="option3_name">{t('optionName3')}</Label>
                 <Input
                   id="option3_name"
                   value={settings.option3_name}
                   onChange={(e) => handleChange("option3_name", e.target.value)}
-                  placeholder="예: 소재"
+                  placeholder={t('optionExample3')}
                 />
               </div>
             </div>
@@ -424,24 +426,24 @@ export default function ShopSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CreditCard className="h-5 w-5" />
-              PG 결제 설정 (이니시스)
+              {t('pgSettings')}
             </CardTitle>
             <CardDescription>
-              카드결제를 위한 이니시스 PG 설정입니다. 테스트 모드에서는 실제 결제가 되지 않습니다.
+              {t('pgSettingsDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="pg_mid">상점 ID (MID)</Label>
+                <Label htmlFor="pg_mid">{t('merchantId')}</Label>
                 <Input
                   id="pg_mid"
                   value={settings.pg_mid}
                   onChange={(e) => handleChange("pg_mid", e.target.value)}
-                  placeholder="예: INIpayTest"
+                  placeholder={t('merchantIdPlaceholder')}
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  이니시스에서 발급받은 상점 아이디
+                  {t('merchantIdHint')}
                 </p>
               </div>
               <div>
@@ -452,7 +454,7 @@ export default function ShopSettingsPage() {
                     type={showSignKey ? "text" : "password"}
                     value={settings.pg_signkey}
                     onChange={(e) => handleChange("pg_signkey", e.target.value)}
-                    placeholder="SignKey를 입력하세요"
+                    placeholder={t('signKeyPlaceholder')}
                     className="pr-10"
                   />
                   <button
@@ -464,18 +466,18 @@ export default function ShopSettingsPage() {
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  이니시스에서 발급받은 서명키 (결제 승인용)
+                  {t('signKeyHint')}
                 </p>
               </div>
               <div>
-                <Label htmlFor="pg_apikey">API Key (취소용)</Label>
+                <Label htmlFor="pg_apikey">{t('apiKeyLabel')}</Label>
                 <div className="relative">
                   <Input
                     id="pg_apikey"
                     type={showApiKey ? "text" : "password"}
                     value={settings.pg_apikey}
                     onChange={(e) => handleChange("pg_apikey", e.target.value)}
-                    placeholder="API Key를 입력하세요"
+                    placeholder={t('apiKeyPlaceholder')}
                     className="pr-10"
                   />
                   <button
@@ -487,7 +489,7 @@ export default function ShopSettingsPage() {
                   </button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
-                  이니시스에서 발급받은 INIAPIKey (결제 취소용)
+                  {t('apiKeyHint')}
                 </p>
               </div>
             </div>
@@ -500,16 +502,16 @@ export default function ShopSettingsPage() {
                 className="rounded"
               />
               <label htmlFor="pg_test_mode" className="text-sm cursor-pointer">
-                테스트 모드 (실제 결제 안됨)
+                {t('testMode')}
               </label>
             </div>
             <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-lg text-sm">
-              <p className="font-medium text-amber-600 dark:text-amber-400 mb-2">테스트 모드 안내</p>
+              <p className="font-medium text-amber-600 dark:text-amber-400 mb-2">{t('testModeInfo')}</p>
               <ul className="list-disc list-inside text-amber-700 dark:text-amber-300 space-y-1">
-                <li>테스트 MID: <code className="bg-amber-500/20 px-1.5 py-0.5 rounded font-mono text-amber-800 dark:text-amber-200">INIpayTest</code></li>
-                <li>테스트 API Key: <code className="bg-amber-500/20 px-1.5 py-0.5 rounded font-mono text-amber-800 dark:text-amber-200">ItEQKi3rY7uvDS8l</code></li>
-                <li>테스트 SignKey: 이니시스 개발자센터에서 확인</li>
-                <li>실제 운영 시 테스트 모드를 해제하세요</li>
+                <li>{t('testModeItem1')} <code className="bg-amber-500/20 px-1.5 py-0.5 rounded font-mono text-amber-800 dark:text-amber-200">INIpayTest</code></li>
+                <li>{t('testModeItem2')} <code className="bg-amber-500/20 px-1.5 py-0.5 rounded font-mono text-amber-800 dark:text-amber-200">ItEQKi3rY7uvDS8l</code></li>
+                <li>{t('testModeItem3')}</li>
+                <li>{t('testModeItem4')}</li>
               </ul>
             </div>
           </CardContent>
@@ -520,28 +522,28 @@ export default function ShopSettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Bell className="h-5 w-5" />
-              주문 알림 설정
+              {t('orderNotificationSettings')}
             </CardTitle>
             <CardDescription>
-              새 주문이 들어올 때 알림을 받을 관리자를 설정합니다.
+              {t('orderNotificationDesc')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label htmlFor="order_notification_target">주문 알림 수신 대상</Label>
+              <Label htmlFor="order_notification_target">{t('notificationTarget')}</Label>
               <select
                 id="order_notification_target"
                 value={settings.order_notification_target}
                 onChange={(e) => handleChange("order_notification_target", e.target.value)}
                 className="flex h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <option value="admin">관리자만</option>
-                <option value="manager">부관리자만</option>
-                <option value="both">관리자 + 부관리자</option>
-                <option value="none">알림 안 받음</option>
+                <option value="admin">{t('notifAdmin')}</option>
+                <option value="manager">{t('notifManager')}</option>
+                <option value="both">{t('notifBoth')}</option>
+                <option value="none">{t('notifNone')}</option>
               </select>
               <p className="text-xs text-muted-foreground mt-1">
-                새 주문 발생 시 선택한 권한을 가진 사용자에게 알림이 발송됩니다.
+                {t('notifTargetHint')}
               </p>
             </div>
             <div className="flex items-center gap-2 pt-2 border-t">
@@ -553,13 +555,13 @@ export default function ShopSettingsPage() {
                 className="rounded"
               />
               <label htmlFor="email_notification_enabled" className="text-sm cursor-pointer">
-                이메일 알림 발송
+                {t('emailNotification')}
               </label>
             </div>
             <p className="text-xs text-muted-foreground">
-              활성화 시 주문 상태 변경, 새 주문 접수 등의 알림을 이메일로도 발송합니다.
+              {t('emailNotificationHint')}
               <br />
-              SMTP 설정이 필요합니다. (.env 파일의 SMTP_HOST, SMTP_USER, SMTP_PASS)
+              {t('smtpRequired')}
             </p>
           </CardContent>
         </Card>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from 'next-intl'
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Sidebar } from "@/components/admin/Sidebar"
@@ -129,18 +130,23 @@ const CARD_NAMES: Record<string, string> = {
   "44": "토스뱅크카드",
 }
 
-const STATUS_OPTIONS = [
-  { value: "pending", label: "결제대기" },
-  { value: "paid", label: "결제완료" },
-  { value: "preparing", label: "상품준비" },
-  { value: "shipping", label: "배송중" },
-  { value: "delivered", label: "배송완료" },
-  { value: "confirmed", label: "구매확정" },
-  { value: "cancel_requested", label: "취소요청" },
-  { value: "cancelled", label: "주문취소" },
-  { value: "refund_requested", label: "환불요청" },
-  { value: "refunded", label: "환불완료" },
-]
+const STATUS_VALUES = [
+  "pending", "paid", "preparing", "shipping", "delivered",
+  "confirmed", "cancel_requested", "cancelled", "refund_requested", "refunded",
+] as const
+
+const STATUS_I18N_KEY: Record<string, string> = {
+  pending: 'statusPending',
+  paid: 'statusPaid',
+  preparing: 'statusPreparing',
+  shipping: 'statusShipping',
+  delivered: 'statusDelivered',
+  confirmed: 'statusConfirmed',
+  cancel_requested: 'statusCancelRequested',
+  cancelled: 'statusCancelled',
+  refund_requested: 'statusRefundRequested',
+  refunded: 'statusRefunded',
+}
 
 const STATUS_COLORS: Record<string, string> = {
   pending: "bg-yellow-500",
@@ -158,6 +164,9 @@ const STATUS_COLORS: Record<string, string> = {
 const DELIVERY_COMPANIES = DELIVERY_LIST.map(c => c.name)
 
 export default function AdminOrderDetailPage() {
+  const t = useTranslations('shop.admin')
+  const to = useTranslations('shop.order')
+  const tp = useTranslations('shop.policy')
   const params = useParams()
   const router = useRouter()
   const orderId = params.id as string
@@ -204,7 +213,7 @@ export default function AdminOrderDetailPage() {
     try {
       const res = await fetch(`/api/admin/shop/orders/${orderId}`)
       if (!res.ok) {
-        setError("주문을 찾을 수 없습니다.")
+        setError(t('orderNotFound'))
         return
       }
       const data = await res.json()
@@ -215,8 +224,8 @@ export default function AdminOrderDetailPage() {
       setTrackingCompany(data.order.trackingCompany || "")
       setTrackingNumber(data.order.trackingNumber || "")
       setAdminMemo(data.order.adminMemo || "")
-    } catch (err) {
-      setError("주문을 불러오는데 실패했습니다.")
+    } catch {
+      setError(t('orderLoadFailed'))
     } finally {
       setLoading(false)
     }
@@ -243,15 +252,15 @@ export default function AdminOrderDetailPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error || "저장에 실패했습니다.")
+        setError(data.error || t('saveFailedErr'))
         return
       }
 
-      setSuccessMessage("저장되었습니다.")
+      setSuccessMessage(t('saved'))
       fetchOrder()
       setTimeout(() => setSuccessMessage(null), 2000)
-    } catch (err) {
-      setError("저장 중 오류가 발생했습니다.")
+    } catch {
+      setError(t('saveErrorErr'))
     } finally {
       setSaving(false)
     }
@@ -266,14 +275,14 @@ export default function AdminOrderDetailPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        setError(data.error || "삭제에 실패했습니다.")
+        setError(data.error || t('deleteFailed'))
         setDeleteDialogOpen(false)
         return
       }
 
       router.push("/admin/shop/orders")
-    } catch (err) {
-      setError("삭제 중 오류가 발생했습니다.")
+    } catch {
+      setError(t('deleteError'))
       setDeleteDialogOpen(false)
     } finally {
       setDeleting(false)
@@ -284,7 +293,7 @@ export default function AdminOrderDetailPage() {
   const handleConfirmPayment = async () => {
     if (!order) return
 
-    if (!confirm("입금을 확인하셨습니까?\n결제완료 상태로 변경됩니다.")) {
+    if (!confirm(t('confirmDepositQuestion'))) {
       return
     }
 
@@ -303,15 +312,15 @@ export default function AdminOrderDetailPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "입금확인 처리에 실패했습니다.")
+        setError(data.error || t('confirmDepositFailed'))
         return
       }
 
-      setSuccessMessage("입금이 확인되었습니다.")
+      setSuccessMessage(t('confirmDepositSuccess'))
       fetchOrder()
       setTimeout(() => setSuccessMessage(null), 2000)
-    } catch (err) {
-      setError("입금확인 처리 중 오류가 발생했습니다.")
+    } catch {
+      setError(t('confirmDepositError'))
     } finally {
       setProcessingAction(null)
     }
@@ -321,13 +330,13 @@ export default function AdminOrderDetailPage() {
   const handleRequestAction = async (action: "approve" | "reject", requestType: "cancel" | "refund") => {
     if (!order) return
 
-    const actionLabel = action === "approve" ? "승인" : "거절"
-    const typeLabel = requestType === "cancel" ? "취소" : "환불"
+    const actionLabel = action === "approve" ? t('actionApprove') : t('actionReject')
+    const typeLabel = requestType === "cancel" ? t('cancelRequestText') : t('refundRequestText')
 
     // 승인 시 카드 결제 안내 메시지 추가
-    let confirmMessage = `${typeLabel} 요청을 ${actionLabel}하시겠습니까?`
+    let confirmMessage = t('confirmActionPrompt', { type: typeLabel, action: actionLabel })
     if (action === "approve" && order.paymentMethod === "card") {
-      confirmMessage += `\n\n[카드 결제]\nPG사(이니시스)로 결제 승인 취소 요청이 함께 진행됩니다.`
+      confirmMessage += t('cardPgCancelNotice')
     }
 
     if (!confirm(confirmMessage)) {
@@ -349,25 +358,25 @@ export default function AdminOrderDetailPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || `${actionLabel}에 실패했습니다.`)
+        setError(data.error || t('actionFailed', { action: actionLabel }))
         return
       }
 
       // 카드 결제 취소/환불 결과 메시지 생성
-      let message = `${typeLabel} 요청이 ${actionLabel}되었습니다.`
+      let message = t('actionResultSuccess', { type: typeLabel, action: actionLabel })
       if (action === "approve" && data.pgCancelResult) {
         if (data.pgCancelResult.success) {
-          message += " (카드 결제 승인 취소 완료)"
+          message += t('cardCancelDone')
         } else {
-          message += ` (카드 취소 실패: ${data.pgCancelResult.message})`
+          message += t('cardCancelFailed', { msg: data.pgCancelResult.message })
         }
       }
 
       setSuccessMessage(message)
       fetchOrder()
       setTimeout(() => setSuccessMessage(null), 3000)
-    } catch (err) {
-      setError(`${actionLabel} 중 오류가 발생했습니다.`)
+    } catch {
+      setError(t('actionError', { action: actionLabel }))
     } finally {
       setProcessingAction(null)
     }
@@ -378,9 +387,9 @@ export default function AdminOrderDetailPage() {
     if (!order || !cancelReason.trim()) return
 
     // 카드 결제 안내 메시지
-    let confirmMessage = `주문번호 ${order.orderNo}을(를) 취소하시겠습니까?\n\n취소 사유: ${cancelReason}`
+    let confirmMessage = t('orderCanceledConfirm', { orderNo: order.orderNo, reason: cancelReason })
     if (order.paymentMethod === "card") {
-      confirmMessage += `\n\n[카드 결제]\nPG사(이니시스)로 결제 승인 취소 요청이 함께 진행됩니다.`
+      confirmMessage += t('cardPgCancelNotice')
     }
 
     if (!confirm(confirmMessage)) {
@@ -403,17 +412,17 @@ export default function AdminOrderDetailPage() {
       const data = await res.json()
 
       if (!res.ok) {
-        setError(data.error || "주문 취소에 실패했습니다.")
+        setError(data.error || t('orderCancelFailed'))
         return
       }
 
       // 성공 메시지
-      let message = "주문이 취소되었습니다."
+      let message = t('orderCanceledMsg')
       if (data.pgCancelResult) {
         if (data.pgCancelResult.success) {
-          message += " (카드 결제 승인 취소 완료)"
+          message += t('cardCancelDone')
         } else {
-          message += ` (카드 취소 실패: ${data.pgCancelResult.message})`
+          message += t('cardCancelFailed', { msg: data.pgCancelResult.message })
         }
       }
 
@@ -422,17 +431,17 @@ export default function AdminOrderDetailPage() {
       setCancelReason("")
       fetchOrder()
       setTimeout(() => setSuccessMessage(null), 3000)
-    } catch (err) {
-      setError("주문 취소 중 오류가 발생했습니다.")
+    } catch {
+      setError(t('orderCancelError'))
     } finally {
       setProcessingAction(null)
     }
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + "원"
+  const formatPrice = (price: number) => tp('won', { amount: price.toLocaleString() })
   const formatDate = (date: string | null) => {
     if (!date) return "-"
-    return new Date(date).toLocaleString("ko-KR")
+    return new Date(date).toLocaleString()
   }
 
   // paymentInfo에서 취소/환불 정보 파싱
@@ -469,7 +478,7 @@ export default function AdminOrderDetailPage() {
             <AlertCircle className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
             <p className="text-muted-foreground mb-4">{error}</p>
             <Button onClick={() => router.push("/admin/shop/orders")}>
-              목록으로
+              {t('backToList')}
             </Button>
           </div>
         </main>
@@ -489,16 +498,16 @@ export default function AdminOrderDetailPage() {
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={() => router.push("/admin/shop/orders")}>
             <ChevronLeft className="h-4 w-4 mr-1" />
-            목록
+            {t('list')}
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">주문 상세</h1>
+            <h1 className="text-2xl font-bold">{t('orderDetail')}</h1>
             <p className="text-muted-foreground font-mono">{order.orderNo}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge className={STATUS_COLORS[order.status] || "bg-gray-500"}>
-            {STATUS_OPTIONS.find(s => s.value === order.status)?.label || order.status}
+            {STATUS_I18N_KEY[order.status] ? to(STATUS_I18N_KEY[order.status]) : order.status}
           </Badge>
           <Button
             variant="outline"
@@ -506,7 +515,7 @@ export default function AdminOrderDetailPage() {
             onClick={() => window.open(`/api/admin/shop/orders/${order.id}/label`, '_blank')}
           >
             <Printer className="h-4 w-4 mr-1" />
-            라벨 출력
+            {t('printLabel')}
           </Button>
           <Button
             variant="outline"
@@ -515,7 +524,7 @@ export default function AdminOrderDetailPage() {
             onClick={() => setDeleteDialogOpen(true)}
           >
             <Trash2 className="h-4 w-4 mr-1" />
-            삭제
+            {t('deleteBtn')}
           </Button>
         </div>
       </div>
@@ -528,7 +537,7 @@ export default function AdminOrderDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="h-5 w-5" />
-                주문 상품
+                {t('orderItemsCard')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -559,7 +568,7 @@ export default function AdminOrderDetailPage() {
                       <p className="text-sm text-muted-foreground">{item.optionText}</p>
                     )}
                     <p className="text-sm">
-                      {formatPrice(item.price)} × {item.quantity}개
+                      {formatPrice(item.price)} × {item.quantity}
                     </p>
                   </div>
                   <div className="text-right">
@@ -575,27 +584,27 @@ export default function AdminOrderDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
-                주문자 정보
+                {t('ordererInfo')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex">
-                <span className="w-24 text-muted-foreground">주문자</span>
+                <span className="w-24 text-muted-foreground">{t('orderer')}</span>
                 <span>{order.ordererName}</span>
               </div>
               <div className="flex">
-                <span className="w-24 text-muted-foreground">연락처</span>
+                <span className="w-24 text-muted-foreground">{t('phoneLabel')}</span>
                 <span>{order.ordererPhone}</span>
               </div>
               {order.ordererEmail && (
                 <div className="flex">
-                  <span className="w-24 text-muted-foreground">이메일</span>
+                  <span className="w-24 text-muted-foreground">{t('emailLabel')}</span>
                   <span>{order.ordererEmail}</span>
                 </div>
               )}
               <div className="border-t pt-2 mt-2">
                 <div className="flex">
-                  <span className="w-24 text-muted-foreground">회원정보</span>
+                  <span className="w-24 text-muted-foreground">{t('memberInfo')}</span>
                   <span>
                     {order.user.nickname} ({order.user.email})
                   </span>
@@ -609,20 +618,20 @@ export default function AdminOrderDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Truck className="h-5 w-5" />
-                배송지 정보
+                {t('shippingInfo')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex">
-                <span className="w-24 text-muted-foreground">받는 분</span>
+                <span className="w-24 text-muted-foreground">{t('recipientLabel')}</span>
                 <span>{order.recipientName}</span>
               </div>
               <div className="flex">
-                <span className="w-24 text-muted-foreground">연락처</span>
+                <span className="w-24 text-muted-foreground">{t('phoneLabel')}</span>
                 <span>{order.recipientPhone}</span>
               </div>
               <div className="flex">
-                <span className="w-24 text-muted-foreground">주소</span>
+                <span className="w-24 text-muted-foreground">{t('addressLabel')}</span>
                 <span>
                   [{order.zipCode}] {order.address}
                   {order.addressDetail && ` ${order.addressDetail}`}
@@ -630,7 +639,7 @@ export default function AdminOrderDetailPage() {
               </div>
               {order.deliveryMemo && (
                 <div className="flex">
-                  <span className="w-24 text-muted-foreground">배송 메모</span>
+                  <span className="w-24 text-muted-foreground">{t('deliveryMemo')}</span>
                   <span>{order.deliveryMemo}</span>
                 </div>
               )}
@@ -642,31 +651,31 @@ export default function AdminOrderDetailPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <CreditCard className="h-5 w-5" />
-                결제 정보
+                {t('paymentInfoCard')}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">상품 금액</span>
+                <span className="text-muted-foreground">{t('productAmount')}</span>
                 <span>{formatPrice(order.totalPrice)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">배송비</span>
+                <span className="text-muted-foreground">{t('shippingFee')}</span>
                 <span>{formatPrice(order.deliveryFee)}</span>
               </div>
               <div className="flex justify-between border-t pt-2">
-                <span className="font-medium">총 결제금액</span>
+                <span className="font-medium">{t('totalPayment')}</span>
                 <span className="text-lg font-bold text-primary">
                   {formatPrice(order.finalPrice)}
                 </span>
               </div>
               <div className="flex justify-between pt-2">
-                <span className="text-muted-foreground">결제 방법</span>
-                <span>{order.paymentMethod === "bank" ? "무통장입금" : "카드결제"}</span>
+                <span className="text-muted-foreground">{t('paymentMethod')}</span>
+                <span>{order.paymentMethod === "bank" ? t('bankTransfer') : t('cardPayment')}</span>
               </div>
               {order.paidAt && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">결제일시</span>
+                  <span className="text-muted-foreground">{t('paymentDate')}</span>
                   <span>{formatDate(order.paidAt)}</span>
                 </div>
               )}
@@ -674,32 +683,32 @@ export default function AdminOrderDetailPage() {
               {/* 카드 결제 정보 */}
               {cardInfo && (
                 <div className="pt-3 mt-3 border-t space-y-2">
-                  <p className="text-xs font-medium text-muted-foreground">카드 결제 정보</p>
+                  <p className="text-xs font-medium text-muted-foreground">{t('cardPaymentInfo')}</p>
                   {cardInfo.cardName && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">카드사</span>
+                      <span className="text-muted-foreground">{t('cardCompany')}</span>
                       <span>{CARD_NAMES[cardInfo.cardName] || cardInfo.cardName}</span>
                     </div>
                   )}
                   {cardInfo.cardNo && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">카드번호</span>
+                      <span className="text-muted-foreground">{t('cardNumber')}</span>
                       <span className="font-mono">{cardInfo.cardNo}</span>
                     </div>
                   )}
                   {cardInfo.applNum && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">승인번호</span>
+                      <span className="text-muted-foreground">{t('approvalNumber')}</span>
                       <span className="font-mono">{cardInfo.applNum}</span>
                     </div>
                   )}
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">할부</span>
-                    <span>{cardInfo.cardQuota === "00" ? "일시불" : `${cardInfo.cardQuota}개월`}</span>
+                    <span className="text-muted-foreground">{t('installment')}</span>
+                    <span>{cardInfo.cardQuota === "00" ? t('lumpSum') : t('months', { count: cardInfo.cardQuota })}</span>
                   </div>
                   {cardInfo.tid && (
                     <div className="flex justify-between">
-                      <span className="text-muted-foreground">거래번호(TID)</span>
+                      <span className="text-muted-foreground">{t('tid')}</span>
                       <span className="font-mono text-xs">{cardInfo.tid}</span>
                     </div>
                   )}
@@ -708,7 +717,7 @@ export default function AdminOrderDetailPage() {
 
               {order.refundAmount && (
                 <div className="flex justify-between text-red-500">
-                  <span>환불금액</span>
+                  <span>{t('refundAmount')}</span>
                   <span>{formatPrice(order.refundAmount)}</span>
                 </div>
               )}
@@ -719,37 +728,37 @@ export default function AdminOrderDetailPage() {
           {(order.cancelReason || cancelInfo) && (
             <Card>
               <CardHeader>
-                <CardTitle>취소/환불 정보</CardTitle>
+                <CardTitle>{t('cancelRefundInfo')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {order.cancelReason && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">사유</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('reason')}</p>
                     <p className="text-sm">{order.cancelReason}</p>
                   </div>
                 )}
                 {order.cancelledAt && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">취소일시</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('cancelDate')}</p>
                     <p className="text-sm">{formatDate(order.cancelledAt)}</p>
                   </div>
                 )}
                 {order.refundedAt && order.status === 'refunded' && (
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-1">환불일시</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-1">{t('refundDate')}</p>
                     <p className="text-sm">{formatDate(order.refundedAt)}</p>
                   </div>
                 )}
                 {cancelInfo && (
                   <div className="pt-3 border-t">
-                    <p className="text-sm font-medium text-muted-foreground mb-2">PG 처리 이력</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">{t('pgHistory')}</p>
                     <div className="text-xs space-y-1 bg-muted/50 p-3 rounded-lg">
                       <p>
-                        <span className="text-muted-foreground">처리자:</span>{" "}
-                        {cancelInfo.cancelledBy === 'admin' ? '관리자' : '고객'}
+                        <span className="text-muted-foreground">{t('handler')}</span>{" "}
+                        {cancelInfo.cancelledBy === 'admin' ? t('handlerAdmin') : t('handlerCustomer')}
                       </p>
                       <p>
-                        <span className="text-muted-foreground">처리일시:</span>{" "}
+                        <span className="text-muted-foreground">{t('handledAt')}</span>{" "}
                         {cancelInfo.cancelledAt || cancelInfo.refundedAt
                           ? formatDate(cancelInfo.cancelledAt || cancelInfo.refundedAt)
                           : '-'}
@@ -757,9 +766,9 @@ export default function AdminOrderDetailPage() {
                       {cancelInfo.pgResult && (
                         <>
                           <p>
-                            <span className="text-muted-foreground">PG 결과:</span>{" "}
+                            <span className="text-muted-foreground">{t('pgResult')}</span>{" "}
                             <span className={cancelInfo.pgResult.success ? 'text-green-600' : 'text-red-600'}>
-                              {cancelInfo.pgResult.success ? '성공' : '실패'}
+                              {cancelInfo.pgResult.success ? t('success') : t('failed')}
                             </span>
                             {cancelInfo.pgResult.message && ` (${cancelInfo.pgResult.message})`}
                           </p>
@@ -784,19 +793,19 @@ export default function AdminOrderDetailPage() {
           {/* 주문 상태 변경 */}
           <Card>
             <CardHeader>
-              <CardTitle>주문 상태 관리</CardTitle>
+              <CardTitle>{t('orderStatusManage')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label>주문 상태</Label>
+                <Label>{t('orderStatusLabel')}</Label>
                 <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {STATUS_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
+                    {STATUS_VALUES.map((v) => (
+                      <SelectItem key={v} value={v}>
+                        {to(STATUS_I18N_KEY[v])}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -807,10 +816,10 @@ export default function AdminOrderDetailPage() {
               {(status === "shipping" || status === "delivered") && (
                 <>
                   <div>
-                    <Label>택배사</Label>
+                    <Label>{t('carrier')}</Label>
                     <Select value={trackingCompany} onValueChange={setTrackingCompany}>
                       <SelectTrigger>
-                        <SelectValue placeholder="택배사 선택" />
+                        <SelectValue placeholder={t('carrierSelect')} />
                       </SelectTrigger>
                       <SelectContent>
                         {DELIVERY_COMPANIES.map((company) => (
@@ -822,12 +831,12 @@ export default function AdminOrderDetailPage() {
                     </Select>
                   </div>
                   <div>
-                    <Label>송장번호</Label>
+                    <Label>{t('trackingNumber')}</Label>
                     <div className="flex gap-2">
                       <Input
                         value={trackingNumber}
                         onChange={(e) => setTrackingNumber(e.target.value)}
-                        placeholder="송장번호 입력"
+                        placeholder={t('trackingNumberPlaceholder')}
                       />
                       {trackingCompany && trackingNumber && (
                         <Button
@@ -838,7 +847,7 @@ export default function AdminOrderDetailPage() {
                             const url = getTrackingUrlByName(trackingCompany, trackingNumber)
                             if (url) window.open(url, '_blank')
                           }}
-                          title="배송조회"
+                          title={t('trackOrder')}
                         >
                           <ExternalLink className="h-4 w-4" />
                         </Button>
@@ -849,11 +858,11 @@ export default function AdminOrderDetailPage() {
               )}
 
               <div>
-                <Label>관리자 메모</Label>
+                <Label>{t('adminMemo')}</Label>
                 <Textarea
                   value={adminMemo}
                   onChange={(e) => setAdminMemo(e.target.value)}
-                  placeholder="내부 메모 (고객에게 보이지 않음)"
+                  placeholder={t('adminMemoPlaceholder')}
                   rows={4}
                 />
               </div>
@@ -862,16 +871,16 @@ export default function AdminOrderDetailPage() {
               {order.paymentMethod === "bank" && order.status === "pending" && (
                 <div className="p-4 bg-primary/10 border border-primary/30 rounded-lg space-y-3">
                   <p className="text-sm font-medium text-primary">
-                    무통장입금 주문입니다.
+                    {t('bankOrder')}
                   </p>
                   {bankInfo && (
                     <div className="p-3 bg-background rounded border text-sm">
-                      <p className="text-xs text-muted-foreground mb-1">입금 계좌</p>
+                      <p className="text-xs text-muted-foreground mb-1">{t('bankAccount')}</p>
                       <p className="whitespace-pre-line">{bankInfo}</p>
                     </div>
                   )}
                   <p className="text-sm text-muted-foreground">
-                    입금 확인 후 버튼을 눌러주세요.
+                    {t('confirmPaymentPrompt')}
                   </p>
                   <Button
                     className="w-full"
@@ -883,7 +892,7 @@ export default function AdminOrderDetailPage() {
                     ) : (
                       <CreditCard className="h-4 w-4 mr-2" />
                     )}
-                    입금확인
+                    {t('confirmPayment')}
                   </Button>
                 </div>
               )}
@@ -892,10 +901,10 @@ export default function AdminOrderDetailPage() {
               {order.status === "cancel_requested" && (
                 <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg space-y-3">
                   <p className="text-sm font-medium text-orange-800">
-                    고객이 취소를 요청했습니다.
+                    {t('customerCancelRequest')}
                   </p>
                   {order.cancelReason && (
-                    <p className="text-sm text-orange-700">사유: {order.cancelReason}</p>
+                    <p className="text-sm text-orange-700">{t('reasonLabel', { reason: order.cancelReason })}</p>
                   )}
                   <div className="flex gap-2">
                     <Button
@@ -907,7 +916,7 @@ export default function AdminOrderDetailPage() {
                       {processingAction === "cancel_approve" ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        "취소 승인"
+                        t('approveCancel')
                       )}
                     </Button>
                     <Button
@@ -920,7 +929,7 @@ export default function AdminOrderDetailPage() {
                       {processingAction === "cancel_reject" ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        "거절 (배송중으로)"
+                        t('rejectBackToShipping')
                       )}
                     </Button>
                   </div>
@@ -931,14 +940,14 @@ export default function AdminOrderDetailPage() {
               {order.status === "refund_requested" && (
                 <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg space-y-3">
                   <p className="text-sm font-medium text-orange-800">
-                    고객이 환불을 요청했습니다.
+                    {t('customerRefundRequest')}
                   </p>
                   {order.cancelReason && (
-                    <p className="text-sm text-orange-700">사유: {order.cancelReason}</p>
+                    <p className="text-sm text-orange-700">{t('reasonLabel', { reason: order.cancelReason })}</p>
                   )}
                   {order.refundAmount && (
                     <p className="text-sm text-orange-700">
-                      예상 환불금액: {formatPrice(order.refundAmount)}
+                      {t('expectedRefund', { amount: formatPrice(order.refundAmount) })}
                     </p>
                   )}
                   <div className="flex gap-2">
@@ -951,7 +960,7 @@ export default function AdminOrderDetailPage() {
                       {processingAction === "refund_approve" ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        "환불 승인"
+                        t('approveRefund')
                       )}
                     </Button>
                     <Button
@@ -964,7 +973,7 @@ export default function AdminOrderDetailPage() {
                       {processingAction === "refund_reject" ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
-                        "거절"
+                        t('reject')
                       )}
                     </Button>
                   </div>
@@ -989,12 +998,12 @@ export default function AdminOrderDetailPage() {
                 {saving ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    저장 중...
+                    {t('saving')}
                   </>
                 ) : (
                   <>
                     <Save className="h-4 w-4 mr-2" />
-                    저장
+                    {t('save')}
                   </>
                 )}
               </Button>
@@ -1004,40 +1013,40 @@ export default function AdminOrderDetailPage() {
           {/* 주문 이력 */}
           <Card>
             <CardHeader>
-              <CardTitle>주문 이력</CardTitle>
+              <CardTitle>{t('orderHistoryCard')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">주문일시</span>
+                <span className="text-muted-foreground">{t('orderDate')}</span>
                 <span>{formatDate(order.createdAt)}</span>
               </div>
               {order.paidAt && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">결제일시</span>
+                  <span className="text-muted-foreground">{t('paymentDate')}</span>
                   <span>{formatDate(order.paidAt)}</span>
                 </div>
               )}
               {order.shippedAt && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">배송시작</span>
+                  <span className="text-muted-foreground">{t('shippingStarted')}</span>
                   <span>{formatDate(order.shippedAt)}</span>
                 </div>
               )}
               {order.deliveredAt && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">배송완료</span>
+                  <span className="text-muted-foreground">{t('deliveryCompleted')}</span>
                   <span>{formatDate(order.deliveredAt)}</span>
                 </div>
               )}
               {order.cancelledAt && (
                 <div className="flex justify-between text-red-500">
-                  <span>취소일시</span>
+                  <span>{t('cancelDate')}</span>
                   <span>{formatDate(order.cancelledAt)}</span>
                 </div>
               )}
               {order.refundedAt && (
                 <div className="flex justify-between text-red-500">
-                  <span>환불일시</span>
+                  <span>{t('refundDate')}</span>
                   <span>{formatDate(order.refundedAt)}</span>
                 </div>
               )}
@@ -1052,7 +1061,7 @@ export default function AdminOrderDetailPage() {
                     disabled={!!processingAction}
                   >
                     <AlertCircle className="h-4 w-4 mr-2" />
-                    관리자 주문 취소
+                    {t('adminCancelOrder')}
                   </Button>
                 </div>
               )}
@@ -1065,16 +1074,16 @@ export default function AdminOrderDetailPage() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>주문 삭제</DialogTitle>
+            <DialogTitle>{t('deleteOrderTitle')}</DialogTitle>
             <DialogDescription>
-              주문번호 <span className="font-mono font-bold">{order.orderNo}</span>을(를) 삭제하시겠습니까?
+              {t('deleteOrderConfirm', { orderNo: order.orderNo })}
               <br />
-              이 작업은 되돌릴 수 없습니다.
+              {t('deleteIrreversible')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              취소
+              {t('cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -1084,7 +1093,7 @@ export default function AdminOrderDetailPage() {
               {deleting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                "삭제"
+                t('deleteBtn')
               )}
             </Button>
           </DialogFooter>
@@ -1095,26 +1104,26 @@ export default function AdminOrderDetailPage() {
       <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>관리자 주문 취소</DialogTitle>
+            <DialogTitle>{t('adminCancelTitle')}</DialogTitle>
             <DialogDescription>
-              주문자 <span className="font-bold">{order.ordererName}</span> 님, 주문번호 <span className="font-mono font-bold">{order.orderNo}</span>을(를) 취소합니다.
+              {t('adminCancelDescription', { name: order.ordererName, orderNo: order.orderNo })}
               <br />
-              취소 사유는 고객에게 알림으로 전송됩니다.
+              {t('cancelReasonCustomerNotice')}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label htmlFor="cancelReason">취소 사유 *</Label>
+            <Label htmlFor="cancelReason">{t('cancelReasonLabel')}</Label>
             <Textarea
               id="cancelReason"
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="고객에게 전달할 취소 사유를 입력하세요"
+              placeholder={t('cancelReasonPlaceholder')}
               rows={3}
               className="mt-2"
             />
             {order.paymentMethod === "card" && (
               <p className="text-xs text-orange-600 mt-2">
-                * 카드 결제 주문입니다. 취소 시 PG사로 환불 요청이 함께 진행됩니다.
+                {t('cardCancelPgNotice')}
               </p>
             )}
           </div>
@@ -1126,7 +1135,7 @@ export default function AdminOrderDetailPage() {
                 setCancelReason("")
               }}
             >
-              닫기
+              {t('close')}
             </Button>
             <Button
               variant="destructive"
@@ -1136,7 +1145,7 @@ export default function AdminOrderDetailPage() {
               {processingAction === "admin_cancel" ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
-              주문 취소
+              {t('cancelOrderBtn')}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from 'next-intl'
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/admin/Sidebar"
 import { Button } from "@/components/ui/button"
@@ -71,6 +72,7 @@ function ProductModal({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSave: (data: any) => void
 }) {
+  const t = useTranslations('shop.admin')
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -121,7 +123,7 @@ function ProductModal({
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-background rounded-lg shadow-xl w-full max-w-md mx-4">
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 className="text-lg font-semibold">상품 추가</h2>
+          <h2 className="text-lg font-semibold">{t('addProduct')}</h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -129,7 +131,7 @@ function ProductModal({
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <Label htmlFor="name">상품명 *</Label>
+            <Label htmlFor="name">{t('productNameRequired')}</Label>
             <Input
               id="name"
               value={formData.name}
@@ -140,13 +142,13 @@ function ProductModal({
                   slug: generateSlug(e.target.value)
                 })
               }}
-              placeholder="상품명"
+              placeholder={t('productName')}
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="slug">슬러그 *</Label>
+            <Label htmlFor="slug">{t('slugRequired')}</Label>
             <Input
               id="slug"
               value={formData.slug}
@@ -157,16 +159,16 @@ function ProductModal({
           </div>
 
           <div>
-            <Label htmlFor="category">카테고리</Label>
+            <Label htmlFor="category">{t('category')}</Label>
             <Select
               value={formData.categoryId || 'none'}
               onValueChange={(value) => setFormData({ ...formData, categoryId: value === 'none' ? '' : value })}
             >
               <SelectTrigger>
-                <SelectValue placeholder="카테고리 선택" />
+                <SelectValue placeholder={t('categorySelect')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">없음</SelectItem>
+                <SelectItem value="none">{t('none')}</SelectItem>
                 {categories.map(cat => (
                   <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                 ))}
@@ -175,7 +177,7 @@ function ProductModal({
           </div>
 
           <div>
-            <Label htmlFor="price">판매가 *</Label>
+            <Label htmlFor="price">{t('priceRequired')}</Label>
             <Input
               id="price"
               type="number"
@@ -187,7 +189,7 @@ function ProductModal({
           </div>
 
           <div>
-            <Label htmlFor="originPrice">정가 (할인 표시용)</Label>
+            <Label htmlFor="originPrice">{t('originPriceLabel')}</Label>
             <Input
               id="originPrice"
               type="number"
@@ -198,17 +200,17 @@ function ProductModal({
           </div>
 
           <div>
-            <Label htmlFor="description">짧은 설명</Label>
+            <Label htmlFor="description">{t('shortDescription')}</Label>
             <Input
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="상품 한 줄 설명"
+              placeholder={t('shortDescPlaceholder')}
             />
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="isActive">바로 판매 시작</Label>
+            <Label htmlFor="isActive">{t('startSellingNow')}</Label>
             <Switch
               id="isActive"
               checked={formData.isActive}
@@ -218,11 +220,11 @@ function ProductModal({
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              취소
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              추가
+              {t('add')}
             </Button>
           </div>
         </form>
@@ -232,6 +234,8 @@ function ProductModal({
 }
 
 export default function ShopProductsPage() {
+  const t = useTranslations('shop.admin')
+  const tp = useTranslations('shop.policy')
   const router = useRouter()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -310,16 +314,16 @@ export default function ShopProductsPage() {
         router.push(`/admin/shop/products/${result.product.id}`)
       } else {
         const error = await res.json()
-        alert(error.error || '저장 실패')
+        alert(error.error || t('saveFailed'))
       }
     } catch (error) {
       console.error('저장 에러:', error)
-      alert('저장 중 오류가 발생했습니다.')
+      alert(t('saveError'))
     }
   }
 
   const handleDelete = async (ids: number[]) => {
-    if (!confirm(`${ids.length}개의 상품을 삭제하시겠습니까?`)) return
+    if (!confirm(t('deleteNProductsConfirm', { count: ids.length }))) return
 
     try {
       const res = await fetch(`/api/admin/shop/products?ids=${ids.join(',')}`, {
@@ -330,11 +334,11 @@ export default function ShopProductsPage() {
         fetchProducts()
       } else {
         const error = await res.json()
-        alert(error.error || '삭제 실패')
+        alert(error.error || t('deleteFailed'))
       }
     } catch (error) {
       console.error('삭제 에러:', error)
-      alert('삭제 중 오류가 발생했습니다.')
+      alert(t('deleteError'))
     }
   }
 
@@ -351,9 +355,7 @@ export default function ShopProductsPage() {
 
   const selectedProducts = products.filter(p => p.selected)
 
-  const formatPrice = (price: number) => {
-    return price.toLocaleString() + '원'
-  }
+  const formatPrice = (price: number) => tp('won', { amount: price.toLocaleString() })
 
   return (
     <div className="flex min-h-screen bg-muted/30">
@@ -363,12 +365,12 @@ export default function ShopProductsPage() {
           {/* 헤더 */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold">상품 관리</h1>
-              <p className="text-muted-foreground">쇼핑몰 상품을 관리합니다.</p>
+              <h1 className="text-2xl font-bold">{t('products')}</h1>
+              <p className="text-muted-foreground">{t('productsDesc')}</p>
             </div>
             <Button onClick={() => setModalOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
-              상품 추가
+              {t('addProduct')}
             </Button>
           </div>
 
@@ -378,7 +380,7 @@ export default function ShopProductsPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Package className="h-4 w-4" />
-                  전체 상품
+                  {t('allProducts')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -389,7 +391,7 @@ export default function ShopProductsPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Check className="h-4 w-4" />
-                  판매중
+                  {t('onSale')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -400,7 +402,7 @@ export default function ShopProductsPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />
-                  품절
+                  {t('soldOut')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -414,7 +416,7 @@ export default function ShopProductsPage() {
             <div className="relative flex-1 min-w-[200px] max-w-sm">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="상품 검색..."
+                placeholder={t('productSearchPlaceholder')}
                 value={search}
                 onChange={(e) => { setSearch(e.target.value); setPage(1) }}
                 className="pl-10"
@@ -423,10 +425,10 @@ export default function ShopProductsPage() {
 
             <Select value={categoryFilter || 'all'} onValueChange={(v) => { setCategoryFilter(v === 'all' ? '' : v); setPage(1) }}>
               <SelectTrigger className="w-[150px]">
-                <SelectValue placeholder="카테고리" />
+                <SelectValue placeholder={t('category')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
+                <SelectItem value="all">{t('all')}</SelectItem>
                 {categories.map(cat => (
                   <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                 ))}
@@ -435,13 +437,13 @@ export default function ShopProductsPage() {
 
             <Select value={statusFilter || 'all'} onValueChange={(v) => { setStatusFilter(v === 'all' ? '' : v); setPage(1) }}>
               <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="상태" />
+                <SelectValue placeholder={t('status')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">전체</SelectItem>
-                <SelectItem value="active">판매중</SelectItem>
-                <SelectItem value="inactive">비활성</SelectItem>
-                <SelectItem value="soldout">품절</SelectItem>
+                <SelectItem value="all">{t('all')}</SelectItem>
+                <SelectItem value="active">{t('onSale')}</SelectItem>
+                <SelectItem value="inactive">{t('inactive')}</SelectItem>
+                <SelectItem value="soldout">{t('soldOut')}</SelectItem>
               </SelectContent>
             </Select>
 
@@ -452,7 +454,7 @@ export default function ShopProductsPage() {
                 onClick={() => handleDelete(selectedProducts.map(p => p.id))}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                선택 삭제 ({selectedProducts.length})
+                {t('deleteSelectedWithCount', { count: selectedProducts.length })}
               </Button>
             )}
           </div>
@@ -471,13 +473,13 @@ export default function ShopProductsPage() {
                         className="rounded border-input"
                       />
                     </th>
-                    <th className="p-3 text-left font-medium w-16">이미지</th>
-                    <th className="p-3 text-left font-medium">상품명</th>
-                    <th className="p-3 text-left font-medium">카테고리</th>
-                    <th className="p-3 text-left font-medium">가격</th>
-                    <th className="p-3 text-left font-medium">옵션</th>
-                    <th className="p-3 text-left font-medium">상태</th>
-                    <th className="p-3 text-left font-medium">관리</th>
+                    <th className="p-3 text-left font-medium w-16">{t('image')}</th>
+                    <th className="p-3 text-left font-medium">{t('productName')}</th>
+                    <th className="p-3 text-left font-medium">{t('category')}</th>
+                    <th className="p-3 text-left font-medium">{t('productPrice')}</th>
+                    <th className="p-3 text-left font-medium">{t('productOptions')}</th>
+                    <th className="p-3 text-left font-medium">{t('status')}</th>
+                    <th className="p-3 text-left font-medium">{t('manage')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -490,7 +492,7 @@ export default function ShopProductsPage() {
                   ) : products.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="p-8 text-center text-muted-foreground">
-                        상품이 없습니다.
+                        {t('noProducts')}
                       </td>
                     </tr>
                   ) : (
@@ -538,7 +540,7 @@ export default function ShopProductsPage() {
                         </td>
                         <td className="p-3">
                           {product.optionCount > 0 ? (
-                            <span className="text-sm">{product.optionCount}개</span>
+                            <span className="text-sm">{product.optionCount}</span>
                           ) : (
                             <span className="text-sm text-muted-foreground">-</span>
                           )}
@@ -550,11 +552,11 @@ export default function ShopProductsPage() {
                                 ? 'bg-green-500/10 text-green-600'
                                 : 'bg-gray-500/10 text-gray-600'
                             }`}>
-                              {product.isActive ? '판매중' : '비활성'}
+                              {product.isActive ? t('onSale') : t('inactive')}
                             </span>
                             {product.isSoldOut && (
                               <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500/10 text-red-600">
-                                품절
+                                {t('soldOut')}
                               </span>
                             )}
                           </div>

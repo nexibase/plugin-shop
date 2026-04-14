@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Sidebar } from "@/components/admin/Sidebar"
@@ -40,6 +41,7 @@ interface Stats {
 }
 
 export default function AdminQnaPage() {
+  const t = useTranslations('shop.admin')
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -121,24 +123,24 @@ export default function AdminQnaPage() {
         fetchQnas()
       } else {
         const data = await res.json()
-        alert(data.error || '답변 등록에 실패했습니다.')
+        alert(data.error || t('replyFailed'))
       }
     } catch {
-      alert('답변 등록에 실패했습니다.')
+      alert(t('replyFailed'))
     } finally {
       setSubmitting(false)
     }
   }
 
   const deleteQna = async (id: number) => {
-    if (!confirm('이 Q&A를 삭제하시겠습니까?')) return
+    if (!confirm(t('deleteQnaConfirm'))) return
     try {
       const res = await fetch(`/api/admin/shop/qna/${id}`, { method: 'DELETE' })
       if (res.ok) {
         fetchQnas()
       }
     } catch {
-      alert('삭제에 실패했습니다.')
+      alert(t('deleteFailedGeneric'))
     }
   }
 
@@ -152,10 +154,10 @@ export default function AdminQnaPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <MessageSquare className="h-6 w-6" />
-              Q&A 관리
+              {t('qnaTitle')}
             </h1>
             <p className="text-muted-foreground mt-1">
-              상품 문의에 답변하세요
+              {t('qnaSubtitle')}
             </p>
           </div>
 
@@ -168,7 +170,7 @@ export default function AdminQnaPage() {
               >
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold">{stats.all}</div>
-                  <div className="text-sm text-muted-foreground">전체</div>
+                  <div className="text-sm text-muted-foreground">{t('total')}</div>
                 </CardContent>
               </Card>
               <Card
@@ -177,7 +179,7 @@ export default function AdminQnaPage() {
               >
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-orange-600">{stats.unanswered}</div>
-                  <div className="text-sm text-muted-foreground">미답변</div>
+                  <div className="text-sm text-muted-foreground">{t('unanswered')}</div>
                 </CardContent>
               </Card>
               <Card
@@ -186,7 +188,7 @@ export default function AdminQnaPage() {
               >
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-green-600">{stats.answered}</div>
-                  <div className="text-sm text-muted-foreground">답변완료</div>
+                  <div className="text-sm text-muted-foreground">{t('answered')}</div>
                 </CardContent>
               </Card>
             </div>
@@ -197,14 +199,14 @@ export default function AdminQnaPage() {
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="상품명, 질문, 작성자 검색"
+                placeholder={t('qnaSearchPlaceholder')}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 className="pl-9"
               />
             </div>
-            <Button onClick={handleSearch}>검색</Button>
+            <Button onClick={handleSearch}>{t('search')}</Button>
           </div>
 
           {/* Q&A 목록 */}
@@ -231,16 +233,16 @@ export default function AdminQnaPage() {
                         {qna.isSecret && (
                           <Badge variant="secondary" className="text-xs">
                             <Lock className="h-3 w-3 mr-1" />
-                            비밀글
+                            {t('secret')}
                           </Badge>
                         )}
                         {qna.answer ? (
                           <Badge variant="outline" className="text-xs text-green-600 border-green-600">
-                            답변완료
+                            {t('answered')}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs text-orange-600 border-orange-600">
-                            미답변
+                            {t('unanswered')}
                           </Badge>
                         )}
                       </div>
@@ -283,7 +285,7 @@ export default function AdminQnaPage() {
                       onClick={() => openAnswerModal(qna)}
                     >
                       <Send className="h-4 w-4 mr-1" />
-                      {qna.answer ? '답변 수정' : '답변하기'}
+                      {qna.answer ? t('replyEdit') : t('replyCreate')}
                     </Button>
                   </CardContent>
                 </Card>
@@ -301,7 +303,7 @@ export default function AdminQnaPage() {
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <span className="text-sm px-4">
-                    {page} / {totalPages} ({total}개)
+                    {t('pageXofY', { page, total: totalPages, count: total })}
                   </span>
                   <Button
                     variant="outline"
@@ -316,7 +318,7 @@ export default function AdminQnaPage() {
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              Q&A가 없습니다.
+              {t('noQna')}
             </div>
           )}
         </div>
@@ -337,7 +339,7 @@ export default function AdminQnaPage() {
               <X className="h-5 w-5" />
             </button>
 
-            <h3 className="text-lg font-bold mb-4">Q&A 답변</h3>
+            <h3 className="text-lg font-bold mb-4">{t('qnaReply')}</h3>
 
             {/* 질문 표시 */}
             <div className="mb-4 p-3 bg-muted rounded-lg">
@@ -354,14 +356,14 @@ export default function AdminQnaPage() {
             <Textarea
               value={answerText}
               onChange={(e) => setAnswerText(e.target.value)}
-              placeholder="답변을 입력하세요"
+              placeholder={t('qnaReplyPlaceholder')}
               rows={5}
               className="mb-4"
             />
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setAnswerModal(null)}>
-                취소
+                {t('cancel')}
               </Button>
               <Button
                 onClick={submitAnswer}
@@ -372,7 +374,7 @@ export default function AdminQnaPage() {
                 ) : (
                   <Send className="h-4 w-4 mr-2" />
                 )}
-                {answerModal.answer ? '수정' : '등록'}
+                {answerModal.answer ? t('edit') : t('register')}
               </Button>
             </div>
           </div>

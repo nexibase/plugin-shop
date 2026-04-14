@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from 'next-intl'
 import { Sidebar } from "@/components/admin/Sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -41,6 +42,7 @@ function DeliveryModal({
   delivery: DeliveryFee | null
   onSave: (data: Partial<DeliveryFee>) => void
 }) {
+  const t = useTranslations('shop.admin')
   const [formData, setFormData] = useState({
     name: '',
     regions: '',
@@ -105,7 +107,7 @@ function DeliveryModal({
       <div className="bg-background rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">
-            {delivery ? '배송비 정책 수정' : '배송비 정책 추가'}
+            {delivery ? t('editDeliveryPolicy') : t('addDeliveryPolicy')}
           </h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -114,18 +116,18 @@ function DeliveryModal({
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <Label htmlFor="name">정책 이름 *</Label>
+            <Label htmlFor="name">{t('policyNameRequired')}</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="예: 기본, 제주, 도서산간"
+              placeholder={t('policyNamePlaceholder')}
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="fee">배송비 *</Label>
+            <Label htmlFor="fee">{t('deliveryFeeRequired')}</Label>
             <Input
               id="fee"
               type="number"
@@ -137,39 +139,35 @@ function DeliveryModal({
           </div>
 
           <div>
-            <Label htmlFor="freeAmount">무료배송 기준금액</Label>
+            <Label htmlFor="freeAmount">{t('freeAmountLabel')}</Label>
             <Input
               id="freeAmount"
               type="number"
               value={formData.freeAmount}
               onChange={(e) => setFormData({ ...formData, freeAmount: e.target.value })}
-              placeholder="비워두면 무료배송 없음"
+              placeholder={t('freeAmountPlaceholder')}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              이 금액 이상 구매 시 무료배송
+              {t('freeAmountHint')}
             </p>
           </div>
 
           <div>
-            <Label htmlFor="regions">적용 지역 (우편번호)</Label>
+            <Label htmlFor="regions">{t('regionsLabel')}</Label>
             <textarea
               id="regions"
               value={formData.regions}
               onChange={(e) => setFormData({ ...formData, regions: e.target.value })}
               className="w-full min-h-[120px] p-3 border rounded-md bg-background text-sm"
-              placeholder={`우편번호 범위를 한 줄에 하나씩 입력
-예시:
-63000-63644
-69000-69999
-40000`}
+              placeholder={t('regionsPlaceholder')}
             />
             <p className="text-xs text-muted-foreground mt-1">
-              기본 배송비는 지역을 비워두세요. 지역별 배송비는 우편번호 범위(63000-63644) 또는 단일 우편번호를 입력하세요.
+              {t('regionsHint')}
             </p>
           </div>
 
           <div>
-            <Label htmlFor="sortOrder">정렬순서</Label>
+            <Label htmlFor="sortOrder">{t('sortOrder')}</Label>
             <Input
               id="sortOrder"
               type="number"
@@ -180,8 +178,8 @@ function DeliveryModal({
 
           <div className="flex items-center justify-between">
             <div>
-              <Label htmlFor="isDefault">기본 배송비로 설정</Label>
-              <p className="text-xs text-muted-foreground">지역 매칭이 안 될 때 적용</p>
+              <Label htmlFor="isDefault">{t('setAsDefault')}</Label>
+              <p className="text-xs text-muted-foreground">{t('setAsDefaultHint')}</p>
             </div>
             <Switch
               id="isDefault"
@@ -191,7 +189,7 @@ function DeliveryModal({
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="isActive">활성화</Label>
+            <Label htmlFor="isActive">{t('activate')}</Label>
             <Switch
               id="isActive"
               checked={formData.isActive}
@@ -201,11 +199,11 @@ function DeliveryModal({
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              취소
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {delivery ? '수정' : '추가'}
+              {delivery ? t('edit') : t('add')}
             </Button>
           </div>
         </form>
@@ -215,6 +213,8 @@ function DeliveryModal({
 }
 
 export default function ShopDeliveryPage() {
+  const t = useTranslations('shop.admin')
+  const tp = useTranslations('shop.policy')
   const [deliveryFees, setDeliveryFees] = useState<DeliveryFee[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -253,16 +253,16 @@ export default function ShopDeliveryPage() {
         fetchDeliveryFees()
       } else {
         const error = await res.json()
-        alert(error.error || '저장 실패')
+        alert(error.error || t('saveFailed'))
       }
     } catch (error) {
       console.error('저장 에러:', error)
-      alert('저장 중 오류가 발생했습니다.')
+      alert(t('saveError'))
     }
   }
 
   const handleDelete = async (id: number) => {
-    if (!confirm('이 배송비 정책을 삭제하시겠습니까?')) return
+    if (!confirm(t('deletePolicyConfirm'))) return
 
     try {
       const res = await fetch(`/api/admin/shop/delivery?ids=${id}`, {
@@ -273,17 +273,17 @@ export default function ShopDeliveryPage() {
         fetchDeliveryFees()
       } else {
         const error = await res.json()
-        alert(error.error || '삭제 실패')
+        alert(error.error || t('deleteFailed'))
       }
     } catch (error) {
       console.error('삭제 에러:', error)
-      alert('삭제 중 오류가 발생했습니다.')
+      alert(t('deleteError'))
     }
   }
 
   // 기본 배송비 정책 생성
   const handleCreateDefaults = async () => {
-    if (!confirm('기본 배송비 정책(기본, 제주, 도서산간)을 생성하시겠습니까?')) return
+    if (!confirm(t('createDefaultPolicyConfirm'))) return
 
     const defaults = [
       { name: '기본', fee: 3000, freeAmount: 50000, regions: [], isDefault: true, sortOrder: 0 },
@@ -302,7 +302,7 @@ export default function ShopDeliveryPage() {
     fetchDeliveryFees()
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + '원'
+  const formatPrice = (price: number) => tp('won', { amount: price.toLocaleString() })
 
   return (
     <div className="flex min-h-screen bg-muted/30">
@@ -312,18 +312,18 @@ export default function ShopDeliveryPage() {
           {/* 헤더 */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold">배송비 정책</h1>
-              <p className="text-muted-foreground">지역별 배송비를 설정합니다.</p>
+              <h1 className="text-2xl font-bold">{t('deliveryPolicyTitle')}</h1>
+              <p className="text-muted-foreground">{t('deliveryDesc')}</p>
             </div>
             <div className="flex gap-2">
               {deliveryFees.length === 0 && (
                 <Button variant="outline" onClick={handleCreateDefaults}>
-                  기본 정책 생성
+                  {t('createDefaultPolicy')}
                 </Button>
               )}
               <Button onClick={() => { setEditingDelivery(null); setModalOpen(true) }}>
                 <Plus className="h-4 w-4 mr-2" />
-                정책 추가
+                {t('addPolicy')}
               </Button>
             </div>
           </div>
@@ -331,12 +331,12 @@ export default function ShopDeliveryPage() {
           {/* 안내 */}
           <Card className="mb-6 bg-muted/50">
             <CardContent className="p-4">
-              <h3 className="font-medium mb-2">배송비 계산 방식</h3>
+              <h3 className="font-medium mb-2">{t('deliveryCalcTitle')}</h3>
               <ul className="text-sm text-muted-foreground space-y-1">
-                <li>1. 주문 시 입력된 우편번호로 지역을 판단합니다.</li>
-                <li>2. 우편번호가 매칭되는 정책의 배송비를 적용합니다.</li>
-                <li>3. 매칭되는 정책이 없으면 기본 배송비가 적용됩니다.</li>
-                <li>4. 무료배송 기준금액 이상 구매 시 해당 지역은 무료배송됩니다.</li>
+                <li>{t('deliveryCalc1')}</li>
+                <li>{t('deliveryCalc2')}</li>
+                <li>{t('deliveryCalc3')}</li>
+                <li>{t('deliveryCalc4')}</li>
               </ul>
             </CardContent>
           </Card>
@@ -347,7 +347,7 @@ export default function ShopDeliveryPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Truck className="h-4 w-4" />
-                  전체 정책
+                  {t('totalPolicies')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -358,7 +358,7 @@ export default function ShopDeliveryPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Check className="h-4 w-4" />
-                  활성 정책
+                  {t('activePolicies')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -371,7 +371,7 @@ export default function ShopDeliveryPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <MapPin className="h-4 w-4" />
-                  지역 정책
+                  {t('regionalPolicies')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -388,12 +388,12 @@ export default function ShopDeliveryPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="p-3 text-left font-medium">정책명</th>
-                    <th className="p-3 text-left font-medium">배송비</th>
-                    <th className="p-3 text-left font-medium">무료배송</th>
-                    <th className="p-3 text-left font-medium">적용 지역</th>
-                    <th className="p-3 text-left font-medium">상태</th>
-                    <th className="p-3 text-left font-medium">관리</th>
+                    <th className="p-3 text-left font-medium">{t('policyName')}</th>
+                    <th className="p-3 text-left font-medium">{t('deliveryFee')}</th>
+                    <th className="p-3 text-left font-medium">{t('freeShipping')}</th>
+                    <th className="p-3 text-left font-medium">{t('appliedRegions')}</th>
+                    <th className="p-3 text-left font-medium">{t('status')}</th>
+                    <th className="p-3 text-left font-medium">{t('manage')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -406,7 +406,7 @@ export default function ShopDeliveryPage() {
                   ) : deliveryFees.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                        배송비 정책이 없습니다. 기본 정책을 생성하거나 직접 추가해주세요.
+                        {t('noDeliveryPolicies')}
                       </td>
                     </tr>
                   ) : (
@@ -417,7 +417,7 @@ export default function ShopDeliveryPage() {
                             <span className="font-medium">{delivery.name}</span>
                             {delivery.isDefault && (
                               <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded">
-                                기본
+                                {t('defaultLabel')}
                               </span>
                             )}
                           </div>
@@ -425,7 +425,7 @@ export default function ShopDeliveryPage() {
                         <td className="p-3 font-medium">{formatPrice(delivery.fee)}</td>
                         <td className="p-3">
                           {delivery.freeAmount ? (
-                            <span>{formatPrice(delivery.freeAmount)} 이상</span>
+                            <span>{t('aboveAmount', { amount: formatPrice(delivery.freeAmount) })}</span>
                           ) : (
                             <span className="text-muted-foreground">-</span>
                           )}
@@ -434,10 +434,10 @@ export default function ShopDeliveryPage() {
                           {delivery.regions.length > 0 ? (
                             <span className="text-sm">
                               {delivery.regions.slice(0, 2).join(', ')}
-                              {delivery.regions.length > 2 && ` 외 ${delivery.regions.length - 2}개`}
+                              {delivery.regions.length > 2 && t('moreRegions', { count: delivery.regions.length - 2 })}
                             </span>
                           ) : (
-                            <span className="text-muted-foreground">전체 (기본)</span>
+                            <span className="text-muted-foreground">{t('allDefaultRegion')}</span>
                           )}
                         </td>
                         <td className="p-3">
@@ -446,7 +446,7 @@ export default function ShopDeliveryPage() {
                               ? 'bg-green-500/10 text-green-600'
                               : 'bg-red-500/10 text-red-600'
                           }`}>
-                            {delivery.isActive ? '활성' : '비활성'}
+                            {delivery.isActive ? t('active') : t('inactive')}
                           </span>
                         </td>
                         <td className="p-3">

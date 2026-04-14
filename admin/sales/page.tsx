@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Sidebar } from "@/components/admin/Sidebar"
@@ -112,26 +113,39 @@ interface SettlementData {
   period: { from: string; to: string }
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  delivered: { label: "배송완료", color: "bg-green-500" },
-  confirmed: { label: "구매확정", color: "bg-green-700" },
+const STATUS_COLORS: Record<string, string> = {
+  delivered: "bg-green-500",
+  confirmed: "bg-green-700",
 }
 
-const PERIOD_OPTIONS = [
-  { value: 'today', label: '오늘' },
-  { value: 'yesterday', label: '어제' },
-  { value: 'week', label: '최근 7일' },
-  { value: 'week14', label: '최근 14일' },
-  { value: 'week28', label: '최근 28일' },
-  { value: 'prev_week', label: '지난 주' },
-  { value: 'prev_month', label: '지난 달' },
-  { value: 'this_week', label: '이번 주' },
-  { value: 'month', label: '이번 달' },
-  { value: 'year', label: '올해' },
-  { value: 'custom', label: '직접 선택' },
-]
+const STATUS_I18N_KEY: Record<string, string> = {
+  delivered: 'statusDelivered',
+  confirmed: 'statusConfirmed',
+}
+
+const PERIOD_VALUES = [
+  'today', 'yesterday', 'week', 'week14', 'week28',
+  'prev_week', 'prev_month', 'this_week', 'month', 'year', 'custom'
+] as const
+
+const PERIOD_I18N_KEY: Record<string, string> = {
+  today: 'periodToday',
+  yesterday: 'periodYesterday',
+  week: 'periodWeek',
+  week14: 'periodWeek14',
+  week28: 'periodWeek28',
+  prev_week: 'periodPrevWeek',
+  prev_month: 'periodPrevMonth',
+  this_week: 'periodThisWeek',
+  month: 'periodMonth',
+  year: 'periodYear',
+  custom: 'periodCustom',
+}
 
 export default function AdminSalesPage() {
+  const t = useTranslations('shop.admin')
+  const to = useTranslations('shop.order')
+  const tp = useTranslations('shop.policy')
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -175,7 +189,7 @@ export default function AdminSalesPage() {
         }
       }
     } catch (error) {
-      console.error('매출 데이터 조회 에러:', error)
+      console.error('매출 데이터 조회 에러:', error) // eslint-disable-line
     } finally {
       setLoading(false)
     }
@@ -204,16 +218,16 @@ export default function AdminSalesPage() {
     setPage(1)
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + '원'
+  const formatPrice = (price: number) => tp('won', { amount: price.toLocaleString() })
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('ko-KR', {
+    return new Date(date).toLocaleDateString(undefined, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
     })
   }
   const formatDateTime = (date: string) => {
-    return new Date(date).toLocaleString('ko-KR', {
+    return new Date(date).toLocaleString(undefined, {
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
@@ -223,7 +237,7 @@ export default function AdminSalesPage() {
 
   const handleExportExcel = async () => {
     // 엑셀 다운로드 구현 (추후)
-    alert('엑셀 다운로드 기능은 준비 중입니다.')
+    alert(t('excelDownloadComingSoon'))
   }
 
   return (
@@ -236,20 +250,20 @@ export default function AdminSalesPage() {
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
                 <BarChart3 className="h-6 w-6" />
-                매출 관리
+                {t('salesManagement')}
               </h1>
               <p className="text-muted-foreground">
-                배송완료 및 구매확정된 주문의 매출 현황
+                {t('salesDesc')}
               </p>
             </div>
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={handleExportExcel}>
                 <Download className="h-4 w-4 mr-2" />
-                엑셀 다운로드
+                {t('excelDownload')}
               </Button>
               <Button variant="outline" onClick={fetchData}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                새로고침
+                {t('refresh')}
               </Button>
             </div>
           </div>
@@ -259,15 +273,15 @@ export default function AdminSalesPage() {
             <CardContent className="pt-6">
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">기간:</span>
+                  <span className="text-sm font-medium">{t('period')}</span>
                   <Select value={period} onValueChange={handlePeriodChange}>
                     <SelectTrigger className="w-[140px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {PERIOD_OPTIONS.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>
-                          {opt.label}
+                      {PERIOD_VALUES.map(v => (
+                        <SelectItem key={v} value={v}>
+                          {t(PERIOD_I18N_KEY[v])}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -288,7 +302,7 @@ export default function AdminSalesPage() {
                       onChange={(e) => setCustomDateTo(e.target.value)}
                       className="w-[160px]"
                     />
-                    <Button onClick={fetchData}>조회</Button>
+                    <Button onClick={fetchData}>{t('lookup')}</Button>
                   </div>
                 )}
                 {summaryData?.period && (
@@ -311,7 +325,7 @@ export default function AdminSalesPage() {
               }`}
             >
               <BarChart3 className="h-4 w-4 inline mr-2" />
-              요약
+              {t('summary')}
             </button>
             <button
               onClick={() => handleTabChange('orders')}
@@ -322,7 +336,7 @@ export default function AdminSalesPage() {
               }`}
             >
               <FileText className="h-4 w-4 inline mr-2" />
-              주문 내역
+              {t('ordersList')}
             </button>
             <button
               onClick={() => handleTabChange('settlement')}
@@ -333,7 +347,7 @@ export default function AdminSalesPage() {
               }`}
             >
               <Calculator className="h-4 w-4 inline mr-2" />
-              정산
+              {t('settlement')}
             </button>
           </div>
 
@@ -350,7 +364,7 @@ export default function AdminSalesPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">총 매출</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('totalSales')}</CardTitle>
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
@@ -368,7 +382,7 @@ export default function AdminSalesPage() {
                             ) : (
                               <TrendingDown className="h-3 w-3" />
                             )}
-                            전월 대비 {summaryData.summary.growthRate}%
+                            {t('growthRate', { rate: summaryData.summary.growthRate })}
                           </p>
                         )}
                       </CardContent>
@@ -376,22 +390,22 @@ export default function AdminSalesPage() {
 
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">주문 건수</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('orderCount')}</CardTitle>
                         <ShoppingCart className="h-4 w-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
-                          {summaryData.summary.orderCount.toLocaleString()}건
+                          {t('orderCountUnit', { count: summaryData.summary.orderCount.toLocaleString() })}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          취소 {summaryData.summary.cancelledCount}건
+                          {t('cancelledCount', { count: summaryData.summary.cancelledCount })}
                         </p>
                       </CardContent>
                     </Card>
 
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">평균 주문금액</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('avgOrderAmount')}</CardTitle>
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
@@ -403,7 +417,7 @@ export default function AdminSalesPage() {
 
                     <Card>
                       <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">순 매출</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('netSales')}</CardTitle>
                         <Wallet className="h-4 w-4 text-muted-foreground" />
                       </CardHeader>
                       <CardContent>
@@ -411,7 +425,7 @@ export default function AdminSalesPage() {
                           {formatPrice(summaryData.summary.netSales)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          환불 {formatPrice(summaryData.summary.refundedAmount)}
+                          {t('refundTotal', { amount: formatPrice(summaryData.summary.refundedAmount) })}
                         </p>
                       </CardContent>
                     </Card>
@@ -423,13 +437,13 @@ export default function AdminSalesPage() {
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-base">
-                          일별 매출 ({PERIOD_OPTIONS.find(p => p.value === period)?.label || '선택 기간'})
+                          {t('dailySales', { period: PERIOD_I18N_KEY[period] ? t(PERIOD_I18N_KEY[period]) : t('selectedPeriod') })}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
                         {summaryData.dailySales.length === 0 ? (
                           <p className="text-center text-muted-foreground py-8">
-                            매출 데이터가 없습니다.
+                            {t('noSalesData')}
                           </p>
                         ) : (
                           <div className="space-y-2 max-h-[400px] overflow-y-auto">
@@ -441,7 +455,7 @@ export default function AdminSalesPage() {
                                 <div>
                                   <span className="font-medium">{formatDate(day.date)}</span>
                                   <span className="text-sm text-muted-foreground ml-2">
-                                    ({day.count}건)
+                                    ({t('countUnit', { count: day.count })})
                                   </span>
                                 </div>
                                 <span className="font-medium">{formatPrice(day.amount)}</span>
@@ -455,12 +469,12 @@ export default function AdminSalesPage() {
                     {/* 인기 상품 */}
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-base">인기 상품 TOP 10</CardTitle>
+                        <CardTitle className="text-base">{t('popularProducts')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         {summaryData.topProducts.length === 0 ? (
                           <p className="text-center text-muted-foreground py-8">
-                            판매 데이터가 없습니다.
+                            {t('noSalesDataProducts')}
                           </p>
                         ) : (
                           <div className="space-y-2">
@@ -492,7 +506,7 @@ export default function AdminSalesPage() {
                                   </span>
                                 </div>
                                 <div className="text-right flex-shrink-0">
-                                  <div className="font-medium">{product.totalQty}개</div>
+                                  <div className="font-medium">{t('qtyUnit', { count: product.totalQty })}</div>
                                   <div className="text-xs text-muted-foreground">
                                     {formatPrice(product.totalAmount)}
                                   </div>
@@ -517,13 +531,13 @@ export default function AdminSalesPage() {
                         <div className="relative flex-1 max-w-md">
                           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                           <Input
-                            placeholder="주문번호, 주문자명, 연락처 검색..."
+                            placeholder={t('orderSearchPlaceholder')}
                             value={searchInput}
                             onChange={(e) => setSearchInput(e.target.value)}
                             className="pl-10"
                           />
                         </div>
-                        <Button type="submit">검색</Button>
+                        <Button type="submit">{t('search')}</Button>
                       </form>
                     </CardContent>
                   </Card>
@@ -534,19 +548,19 @@ export default function AdminSalesPage() {
                       {ordersData.orders.length === 0 ? (
                         <div className="text-center py-20">
                           <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                          <p className="text-muted-foreground">주문이 없습니다.</p>
+                          <p className="text-muted-foreground">{t('noOrders')}</p>
                         </div>
                       ) : (
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead className="w-[140px]">주문번호</TableHead>
-                              <TableHead>주문상품</TableHead>
-                              <TableHead>주문자</TableHead>
-                              <TableHead className="text-right">결제금액</TableHead>
-                              <TableHead>결제방법</TableHead>
-                              <TableHead>상태</TableHead>
-                              <TableHead>결제일시</TableHead>
+                              <TableHead className="w-[140px]">{t('orderNo')}</TableHead>
+                              <TableHead>{t('orderItems')}</TableHead>
+                              <TableHead>{t('orderer')}</TableHead>
+                              <TableHead className="text-right">{t('paymentAmount')}</TableHead>
+                              <TableHead>{t('paymentMethod')}</TableHead>
+                              <TableHead>{t('status')}</TableHead>
+                              <TableHead>{t('paymentDate')}</TableHead>
                               <TableHead className="w-[60px]"></TableHead>
                             </TableRow>
                           </TableHeader>
@@ -575,10 +589,10 @@ export default function AdminSalesPage() {
                                     <div>
                                       <p className="font-medium line-clamp-1">
                                         {order.items[0]?.productName}
-                                        {order.items.length > 1 && ` 외 ${order.items.length - 1}건`}
+                                        {order.items.length > 1 && t('otherItemsMore', { count: order.items.length - 1 })}
                                       </p>
                                       <p className="text-xs text-muted-foreground">
-                                        총 {order.items.reduce((sum, item) => sum + item.quantity, 0)}개
+                                        {t('totalItemsCount', { count: order.items.reduce((sum, item) => sum + item.quantity, 0) })}
                                       </p>
                                     </div>
                                   </div>
@@ -593,11 +607,11 @@ export default function AdminSalesPage() {
                                   {formatPrice(order.finalPrice)}
                                 </TableCell>
                                 <TableCell>
-                                  {order.paymentMethod === 'bank' ? '무통장' : '카드'}
+                                  {order.paymentMethod === 'bank' ? t('bank') : t('card')}
                                 </TableCell>
                                 <TableCell>
-                                  <Badge className={STATUS_LABELS[order.status]?.color || 'bg-gray-500'}>
-                                    {STATUS_LABELS[order.status]?.label || order.status}
+                                  <Badge className={STATUS_COLORS[order.status] || 'bg-gray-500'}>
+                                    {STATUS_I18N_KEY[order.status] ? to(STATUS_I18N_KEY[order.status]) : order.status}
                                   </Badge>
                                 </TableCell>
                                 <TableCell className="text-sm text-muted-foreground">
@@ -652,56 +666,56 @@ export default function AdminSalesPage() {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">총 결제금액</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('totalPaymentAmount')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
                           {formatPrice(settlementData.settlement.totalAmount)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          {settlementData.settlement.orderCount}건
+                          {t('orderCountUnit', { count: settlementData.settlement.orderCount })}
                         </p>
                       </CardContent>
                     </Card>
 
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium">상품금액</CardTitle>
+                        <CardTitle className="text-sm font-medium">{t('productAmountTotal')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold">
                           {formatPrice(settlementData.settlement.productAmount)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          배송비 {formatPrice(settlementData.settlement.deliveryFeeTotal)}
+                          {t('deliveryFeeTotal', { amount: formatPrice(settlementData.settlement.deliveryFeeTotal) })}
                         </p>
                       </CardContent>
                     </Card>
 
                     <Card>
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-red-600">PG 수수료</CardTitle>
+                        <CardTitle className="text-sm font-medium text-red-600">{t('pgFee')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold text-red-600">
                           -{formatPrice(settlementData.settlement.pgFee)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          카드 결제 3.3%
+                          {t('cardFeeRate')}
                         </p>
                       </CardContent>
                     </Card>
 
                     <Card className="border-primary">
                       <CardHeader className="pb-2">
-                        <CardTitle className="text-sm font-medium text-primary">실 정산금액</CardTitle>
+                        <CardTitle className="text-sm font-medium text-primary">{t('actualSettlement')}</CardTitle>
                       </CardHeader>
                       <CardContent>
                         <div className="text-2xl font-bold text-primary">
                           {formatPrice(settlementData.settlement.netSettlement)}
                         </div>
                         <p className="text-xs text-muted-foreground">
-                          총 결제금액 - PG 수수료
+                          {t('actualSettlementFormula')}
                         </p>
                       </CardContent>
                     </Card>
@@ -710,18 +724,18 @@ export default function AdminSalesPage() {
                   {/* 결제수단별 내역 */}
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-base">결제수단별 내역</CardTitle>
+                      <CardTitle className="text-base">{t('paymentMethodBreakdown')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>결제수단</TableHead>
-                            <TableHead className="text-right">결제건수</TableHead>
-                            <TableHead className="text-right">결제금액</TableHead>
-                            <TableHead className="text-right">수수료율</TableHead>
-                            <TableHead className="text-right">수수료</TableHead>
-                            <TableHead className="text-right">정산금액</TableHead>
+                            <TableHead>{t('paymentMethodCol')}</TableHead>
+                            <TableHead className="text-right">{t('paymentCountCol')}</TableHead>
+                            <TableHead className="text-right">{t('paymentAmount')}</TableHead>
+                            <TableHead className="text-right">{t('feeRateCol')}</TableHead>
+                            <TableHead className="text-right">{t('feeCol')}</TableHead>
+                            <TableHead className="text-right">{t('settlementAmountCol')}</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -729,11 +743,11 @@ export default function AdminSalesPage() {
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
                                 <CreditCard className="h-4 w-4" />
-                                카드 결제
+                                {t('cardPayment')}
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
-                              {settlementData.settlement.paymentMethods.card.count}건
+                              {t('orderCountUnit', { count: settlementData.settlement.paymentMethods.card.count })}
                             </TableCell>
                             <TableCell className="text-right">
                               {formatPrice(settlementData.settlement.paymentMethods.card.amount)}
@@ -755,11 +769,11 @@ export default function AdminSalesPage() {
                             <TableCell className="font-medium">
                               <div className="flex items-center gap-2">
                                 <Wallet className="h-4 w-4" />
-                                무통장 입금
+                                {t('bankDeposit')}
                               </div>
                             </TableCell>
                             <TableCell className="text-right">
-                              {settlementData.settlement.paymentMethods.bank.count}건
+                              {t('orderCountUnit', { count: settlementData.settlement.paymentMethods.bank.count })}
                             </TableCell>
                             <TableCell className="text-right">
                               {formatPrice(settlementData.settlement.paymentMethods.bank.amount)}
@@ -768,16 +782,16 @@ export default function AdminSalesPage() {
                               {settlementData.settlement.paymentMethods.bank.feeRate}%
                             </TableCell>
                             <TableCell className="text-right text-muted-foreground">
-                              0원
+                              {formatPrice(0)}
                             </TableCell>
                             <TableCell className="text-right font-medium">
                               {formatPrice(settlementData.settlement.paymentMethods.bank.amount)}
                             </TableCell>
                           </TableRow>
                           <TableRow className="bg-muted/50 font-bold">
-                            <TableCell>합계</TableCell>
+                            <TableCell>{t('totalRow')}</TableCell>
                             <TableCell className="text-right">
-                              {settlementData.settlement.orderCount}건
+                              {t('orderCountUnit', { count: settlementData.settlement.orderCount })}
                             </TableCell>
                             <TableCell className="text-right">
                               {formatPrice(settlementData.settlement.totalAmount)}
@@ -799,9 +813,9 @@ export default function AdminSalesPage() {
                   <Card className="bg-muted/50">
                     <CardContent className="pt-6">
                       <div className="text-sm text-muted-foreground space-y-1">
-                        <p>* 정산금액은 배송완료 및 구매확정된 주문 기준입니다.</p>
-                        <p>* PG 수수료는 카드 결제 기준 3.3%로 계산됩니다. (실제 수수료율은 계약에 따라 다를 수 있습니다)</p>
-                        <p>* 환불/취소된 주문은 정산에서 제외됩니다.</p>
+                        <p>{t('settlementNote1')}</p>
+                        <p>{t('settlementNote2')}</p>
+                        <p>{t('settlementNote3')}</p>
                       </div>
                     </CardContent>
                   </Card>

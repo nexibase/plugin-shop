@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useTranslations } from 'next-intl'
 import { Sidebar } from "@/components/admin/Sidebar"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -52,19 +53,35 @@ interface DashboardStats {
   }[]
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending: { label: "결제대기", color: "bg-yellow-500" },
-  paid: { label: "결제완료", color: "bg-blue-500" },
-  preparing: { label: "상품준비", color: "bg-indigo-500" },
-  shipping: { label: "배송중", color: "bg-purple-500" },
-  delivered: { label: "배송완료", color: "bg-green-500" },
-  confirmed: { label: "구매확정", color: "bg-green-700" },
-  cancelled: { label: "주문취소", color: "bg-gray-500" },
+const STATUS_COLORS: Record<string, string> = {
+  pending: "bg-yellow-500",
+  paid: "bg-blue-500",
+  preparing: "bg-indigo-500",
+  shipping: "bg-purple-500",
+  delivered: "bg-green-500",
+  confirmed: "bg-green-700",
+  cancelled: "bg-gray-500",
 }
 
 export default function ShopDashboardPage() {
+  const t = useTranslations('shop.admin')
+  const to = useTranslations('shop.order')
+  const tp = useTranslations('shop.policy')
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
+
+  const getStatusLabel = (status: string) => {
+    const map: Record<string, string> = {
+      pending: to('statusPending'),
+      paid: to('statusPaid'),
+      preparing: to('statusPreparing'),
+      shipping: to('statusShipping'),
+      delivered: to('statusDelivered'),
+      confirmed: to('statusConfirmed'),
+      cancelled: to('statusCancelled'),
+    }
+    return map[status] || status
+  }
 
   useEffect(() => {
     fetchStats()
@@ -84,7 +101,7 @@ export default function ShopDashboardPage() {
     }
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + "원"
+  const formatPrice = (price: number) => tp('won', { amount: price.toLocaleString() })
   const formatDate = (date: string) => {
     return new Date(date).toLocaleString("ko-KR", {
       month: "short",
@@ -104,10 +121,10 @@ export default function ShopDashboardPage() {
           <div className="mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <BarChart3 className="h-6 w-6" />
-              쇼핑몰 대시보드
+              {t('dashboard')}
             </h2>
             <p className="text-muted-foreground">
-              쇼핑몰 현황을 한눈에 확인하세요
+              {t('dashboardDesc')}
             </p>
           </div>
 
@@ -123,7 +140,7 @@ export default function ShopDashboardPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">오늘 매출</p>
+                        <p className="text-sm text-muted-foreground">{t('salesToday')}</p>
                         <p className="text-2xl font-bold text-green-600">
                           {formatPrice(stats.sales.today)}
                         </p>
@@ -139,7 +156,7 @@ export default function ShopDashboardPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">이번 주 매출</p>
+                        <p className="text-sm text-muted-foreground">{t('salesWeek')}</p>
                         <p className="text-2xl font-bold text-blue-600">
                           {formatPrice(stats.sales.week)}
                         </p>
@@ -155,7 +172,7 @@ export default function ShopDashboardPage() {
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-muted-foreground">이번 달 매출</p>
+                        <p className="text-sm text-muted-foreground">{t('salesMonth')}</p>
                         <p className="text-2xl font-bold text-purple-600">
                           {formatPrice(stats.sales.month)}
                         </p>
@@ -175,7 +192,7 @@ export default function ShopDashboardPage() {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <ShoppingCart className="h-5 w-5" />
-                      주문 현황
+                      {t('orderStatus')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -184,7 +201,7 @@ export default function ShopDashboardPage() {
                         <div className="p-3 rounded-lg bg-yellow-500/10 hover:bg-yellow-500/20 transition-colors cursor-pointer">
                           <div className="flex items-center gap-2 mb-1">
                             <Clock className="h-4 w-4 text-yellow-600" />
-                            <span className="text-sm text-muted-foreground">결제대기</span>
+                            <span className="text-sm text-muted-foreground">{to('statusPending')}</span>
                           </div>
                           <span className="text-xl font-bold text-yellow-600">
                             {stats.orders.pending}
@@ -196,7 +213,7 @@ export default function ShopDashboardPage() {
                         <div className="p-3 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 transition-colors cursor-pointer">
                           <div className="flex items-center gap-2 mb-1">
                             <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                            <span className="text-sm text-muted-foreground">결제완료</span>
+                            <span className="text-sm text-muted-foreground">{to('statusPaid')}</span>
                           </div>
                           <span className="text-xl font-bold text-blue-600">
                             {stats.orders.paid}
@@ -208,7 +225,7 @@ export default function ShopDashboardPage() {
                         <div className="p-3 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 transition-colors cursor-pointer">
                           <div className="flex items-center gap-2 mb-1">
                             <Package className="h-4 w-4 text-indigo-600" />
-                            <span className="text-sm text-muted-foreground">상품준비</span>
+                            <span className="text-sm text-muted-foreground">{to('statusPreparing')}</span>
                           </div>
                           <span className="text-xl font-bold text-indigo-600">
                             {stats.orders.preparing}
@@ -220,7 +237,7 @@ export default function ShopDashboardPage() {
                         <div className="p-3 rounded-lg bg-purple-500/10 hover:bg-purple-500/20 transition-colors cursor-pointer">
                           <div className="flex items-center gap-2 mb-1">
                             <Truck className="h-4 w-4 text-purple-600" />
-                            <span className="text-sm text-muted-foreground">배송중</span>
+                            <span className="text-sm text-muted-foreground">{to('statusShipping')}</span>
                           </div>
                           <span className="text-xl font-bold text-purple-600">
                             {stats.orders.shipping}
@@ -231,11 +248,11 @@ export default function ShopDashboardPage() {
 
                     <div className="mt-4 pt-4 border-t flex items-center justify-between">
                       <div className="text-sm text-muted-foreground">
-                        총 주문: <span className="font-medium text-foreground">{stats.orders.total}건</span>
+                        {t('totalOrders')}: <span className="font-medium text-foreground">{t('ordersCount', { count: stats.orders.total })}</span>
                       </div>
                       <Link href="/admin/shop/orders">
                         <Button variant="ghost" size="sm">
-                          전체보기 <ArrowRight className="h-4 w-4 ml-1" />
+                          {t('viewAll')} <ArrowRight className="h-4 w-4 ml-1" />
                         </Button>
                       </Link>
                     </div>
@@ -247,7 +264,7 @@ export default function ShopDashboardPage() {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Package className="h-5 w-5" />
-                      상품 현황
+                      {t('productStatus')}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -258,7 +275,7 @@ export default function ShopDashboardPage() {
                             <Package className="h-5 w-5 text-primary" />
                           </div>
                           <div>
-                            <p className="text-sm text-muted-foreground">전체 상품</p>
+                            <p className="text-sm text-muted-foreground">{t('allProducts')}</p>
                             <p className="text-xl font-bold">{stats.products.total}</p>
                           </div>
                         </div>
@@ -268,7 +285,7 @@ export default function ShopDashboardPage() {
                         <div className="p-3 rounded-lg bg-green-500/10">
                           <div className="flex items-center gap-2 mb-1">
                             <CheckCircle2 className="h-4 w-4 text-green-600" />
-                            <span className="text-sm text-muted-foreground">판매중</span>
+                            <span className="text-sm text-muted-foreground">{t('onSale')}</span>
                           </div>
                           <span className="text-xl font-bold text-green-600">
                             {stats.products.active}
@@ -278,7 +295,7 @@ export default function ShopDashboardPage() {
                         <div className="p-3 rounded-lg bg-red-500/10">
                           <div className="flex items-center gap-2 mb-1">
                             <AlertCircle className="h-4 w-4 text-red-600" />
-                            <span className="text-sm text-muted-foreground">품절</span>
+                            <span className="text-sm text-muted-foreground">{t('soldOut')}</span>
                           </div>
                           <span className="text-xl font-bold text-red-600">
                             {stats.products.soldOut}
@@ -290,7 +307,7 @@ export default function ShopDashboardPage() {
                     <div className="mt-4 pt-4 border-t flex justify-end">
                       <Link href="/admin/shop/products">
                         <Button variant="ghost" size="sm">
-                          상품관리 <ArrowRight className="h-4 w-4 ml-1" />
+                          {t('productManage')} <ArrowRight className="h-4 w-4 ml-1" />
                         </Button>
                       </Link>
                     </div>
@@ -304,11 +321,11 @@ export default function ShopDashboardPage() {
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg flex items-center gap-2">
                       <Clock className="h-5 w-5" />
-                      최근 주문
+                      {t('recentOrders')}
                     </CardTitle>
                     <Link href="/admin/shop/orders">
                       <Button variant="ghost" size="sm">
-                        전체보기 <ArrowRight className="h-4 w-4 ml-1" />
+                        {t('viewAll')} <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
                     </Link>
                   </div>
@@ -331,13 +348,13 @@ export default function ShopDashboardPage() {
                                 <div className="flex items-center gap-2">
                                   <span className="font-medium">{order.orderNo}</span>
                                   <Badge
-                                    className={`${STATUS_LABELS[order.status]?.color || "bg-gray-500"} text-white text-xs`}
+                                    className={`${STATUS_COLORS[order.status] || "bg-gray-500"} text-white text-xs`}
                                   >
-                                    {STATUS_LABELS[order.status]?.label || order.status}
+                                    {getStatusLabel(order.status)}
                                   </Badge>
                                 </div>
                                 <p className="text-sm text-muted-foreground">
-                                  {order.ordererName} · {order.itemCount}개 상품
+                                  {order.ordererName} · {t('itemsCount', { count: order.itemCount })}
                                 </p>
                               </div>
                             </div>
@@ -353,7 +370,7 @@ export default function ShopDashboardPage() {
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
-                      아직 주문이 없습니다.
+                      {t('noRecentOrders')}
                     </div>
                   )}
                 </CardContent>
@@ -365,7 +382,7 @@ export default function ShopDashboardPage() {
                   <Card className="hover:border-primary/50 hover:shadow-md transition-all cursor-pointer">
                     <CardContent className="p-4 flex items-center gap-3">
                       <Package className="h-5 w-5 text-primary" />
-                      <span className="font-medium">상품관리</span>
+                      <span className="font-medium">{t('productManage')}</span>
                     </CardContent>
                   </Card>
                 </Link>
@@ -373,7 +390,7 @@ export default function ShopDashboardPage() {
                   <Card className="hover:border-primary/50 hover:shadow-md transition-all cursor-pointer">
                     <CardContent className="p-4 flex items-center gap-3">
                       <ShoppingCart className="h-5 w-5 text-primary" />
-                      <span className="font-medium">카테고리</span>
+                      <span className="font-medium">{t('categoryManage')}</span>
                     </CardContent>
                   </Card>
                 </Link>
@@ -381,7 +398,7 @@ export default function ShopDashboardPage() {
                   <Card className="hover:border-primary/50 hover:shadow-md transition-all cursor-pointer">
                     <CardContent className="p-4 flex items-center gap-3">
                       <TrendingUp className="h-5 w-5 text-primary" />
-                      <span className="font-medium">주문관리</span>
+                      <span className="font-medium">{t('orderManage')}</span>
                     </CardContent>
                   </Card>
                 </Link>
@@ -389,7 +406,7 @@ export default function ShopDashboardPage() {
                   <Card className="hover:border-primary/50 hover:shadow-md transition-all cursor-pointer">
                     <CardContent className="p-4 flex items-center gap-3">
                       <AlertCircle className="h-5 w-5 text-primary" />
-                      <span className="font-medium">쇼핑몰설정</span>
+                      <span className="font-medium">{t('shopSettings')}</span>
                     </CardContent>
                   </Card>
                 </Link>
@@ -397,7 +414,7 @@ export default function ShopDashboardPage() {
             </>
           ) : (
             <div className="text-center py-20 text-muted-foreground">
-              데이터를 불러올 수 없습니다.
+              {t('dataLoadError')}
             </div>
           )}
         </div>

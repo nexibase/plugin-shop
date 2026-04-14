@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from 'next-intl'
 import { Sidebar } from "@/components/admin/Sidebar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -45,6 +46,7 @@ function CategoryModal({
   category: Category | null
   onSave: (data: Partial<Category>) => void
 }) {
+  const t = useTranslations('shop.admin')
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -96,7 +98,7 @@ function CategoryModal({
       <div className="bg-background rounded-lg shadow-xl w-full max-w-md mx-4">
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-semibold">
-            {category ? '카테고리 수정' : '카테고리 추가'}
+            {category ? t('editCategory') : t('addCategory')}
           </h2>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -105,7 +107,7 @@ function CategoryModal({
 
         <form onSubmit={handleSubmit} className="p-4 space-y-4">
           <div>
-            <Label htmlFor="name">이름 *</Label>
+            <Label htmlFor="name">{t('nameRequired')}</Label>
             <Input
               id="name"
               value={formData.name}
@@ -116,13 +118,13 @@ function CategoryModal({
                   slug: !category ? generateSlug(e.target.value) : formData.slug
                 })
               }}
-              placeholder="카테고리 이름"
+              placeholder={t('categoryNamePlaceholder')}
               required
             />
           </div>
 
           <div>
-            <Label htmlFor="slug">슬러그 *</Label>
+            <Label htmlFor="slug">{t('slugRequired')}</Label>
             <Input
               id="slug"
               value={formData.slug}
@@ -131,22 +133,22 @@ function CategoryModal({
               required
             />
             <p className="text-xs text-muted-foreground mt-1">
-              URL에 사용됩니다. 영문, 숫자, 하이픈만 사용하세요.
+              {t('slugHint')}
             </p>
           </div>
 
           <div>
-            <Label htmlFor="description">설명</Label>
+            <Label htmlFor="description">{t('description')}</Label>
             <Input
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="카테고리 설명"
+              placeholder={t('categoryDescPlaceholder')}
             />
           </div>
 
           <div>
-            <Label htmlFor="sortOrder">정렬순서</Label>
+            <Label htmlFor="sortOrder">{t('sortOrder')}</Label>
             <Input
               id="sortOrder"
               type="number"
@@ -156,7 +158,7 @@ function CategoryModal({
           </div>
 
           <div className="flex items-center justify-between">
-            <Label htmlFor="isActive">활성화</Label>
+            <Label htmlFor="isActive">{t('activate')}</Label>
             <Switch
               id="isActive"
               checked={formData.isActive}
@@ -166,11 +168,11 @@ function CategoryModal({
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={onClose}>
-              취소
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {category ? '수정' : '추가'}
+              {category ? t('edit') : t('add')}
             </Button>
           </div>
         </form>
@@ -180,6 +182,7 @@ function CategoryModal({
 }
 
 export default function ShopCategoriesPage() {
+  const t = useTranslations('shop.admin')
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -219,16 +222,16 @@ export default function ShopCategoriesPage() {
         fetchCategories()
       } else {
         const error = await res.json()
-        alert(error.error || '저장 실패')
+        alert(error.error || t('saveFailed'))
       }
     } catch (error) {
       console.error('저장 에러:', error)
-      alert('저장 중 오류가 발생했습니다.')
+      alert(t('saveError'))
     }
   }
 
   const handleDelete = async (ids: number[]) => {
-    if (!confirm(`${ids.length}개의 카테고리를 삭제하시겠습니까?`)) return
+    if (!confirm(t('deleteNCategoriesConfirm', { count: ids.length }))) return
 
     try {
       const res = await fetch(`/api/admin/shop/categories?ids=${ids.join(',')}`, {
@@ -239,11 +242,11 @@ export default function ShopCategoriesPage() {
         fetchCategories()
       } else {
         const error = await res.json()
-        alert(error.error || '삭제 실패')
+        alert(error.error || t('deleteFailed'))
       }
     } catch (error) {
       console.error('삭제 에러:', error)
-      alert('삭제 중 오류가 발생했습니다.')
+      alert(t('deleteError'))
     }
   }
 
@@ -282,12 +285,12 @@ export default function ShopCategoriesPage() {
           {/* 헤더 */}
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h1 className="text-2xl font-bold">상품 카테고리</h1>
-              <p className="text-muted-foreground">쇼핑몰 상품 카테고리를 관리합니다.</p>
+              <h1 className="text-2xl font-bold">{t('productCategories')}</h1>
+              <p className="text-muted-foreground">{t('categoriesDesc')}</p>
             </div>
             <Button onClick={() => { setEditingCategory(null); setModalOpen(true) }}>
               <Plus className="h-4 w-4 mr-2" />
-              카테고리 추가
+              {t('addCategory')}
             </Button>
           </div>
 
@@ -297,7 +300,7 @@ export default function ShopCategoriesPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <FolderOpen className="h-4 w-4" />
-                  전체 카테고리
+                  {t('totalCategories')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -308,7 +311,7 @@ export default function ShopCategoriesPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Check className="h-4 w-4" />
-                  활성 카테고리
+                  {t('activeCategories')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -319,7 +322,7 @@ export default function ShopCategoriesPage() {
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                   <Package className="h-4 w-4" />
-                  등록 상품
+                  {t('registeredProducts')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -333,7 +336,7 @@ export default function ShopCategoriesPage() {
             <div className="relative flex-1 max-w-sm">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="카테고리 검색..."
+                placeholder={t('categorySearchPlaceholder')}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="pl-10"
@@ -346,7 +349,7 @@ export default function ShopCategoriesPage() {
                 onClick={() => handleDelete(selectedCategories.map(c => c.id))}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                선택 삭제 ({selectedCategories.length})
+                {t('deleteSelectedWithCount', { count: selectedCategories.length })}
               </Button>
             )}
           </div>
@@ -365,12 +368,12 @@ export default function ShopCategoriesPage() {
                         className="rounded border-input"
                       />
                     </th>
-                    <th className="p-3 text-left font-medium">이름</th>
-                    <th className="p-3 text-left font-medium">슬러그</th>
-                    <th className="p-3 text-left font-medium">상품수</th>
-                    <th className="p-3 text-left font-medium">정렬</th>
-                    <th className="p-3 text-left font-medium">상태</th>
-                    <th className="p-3 text-left font-medium">관리</th>
+                    <th className="p-3 text-left font-medium">{t('name')}</th>
+                    <th className="p-3 text-left font-medium">{t('slug')}</th>
+                    <th className="p-3 text-left font-medium">{t('productCountCol')}</th>
+                    <th className="p-3 text-left font-medium">{t('sortCol')}</th>
+                    <th className="p-3 text-left font-medium">{t('status')}</th>
+                    <th className="p-3 text-left font-medium">{t('manage')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -383,7 +386,7 @@ export default function ShopCategoriesPage() {
                   ) : filteredCategories.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="p-8 text-center text-muted-foreground">
-                        카테고리가 없습니다.
+                        {t('noCategories')}
                       </td>
                     </tr>
                   ) : (
@@ -412,7 +415,7 @@ export default function ShopCategoriesPage() {
                               ? 'bg-green-500/10 text-green-600'
                               : 'bg-red-500/10 text-red-600'
                           }`}>
-                            {category.isActive ? '활성' : '비활성'}
+                            {category.isActive ? t('active') : t('inactive')}
                           </span>
                         </td>
                         <td className="p-3">

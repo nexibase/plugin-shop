@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, use } from "react"
+import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from "next/navigation"
 import { Sidebar } from "@/components/admin/Sidebar"
 import { Button } from "@/components/ui/button"
@@ -56,7 +57,7 @@ const TiptapEditor = dynamic(
   () => import("@/components/editors/TiptapEditor").then(mod => mod.TiptapEditor),
   {
     ssr: false,
-    loading: () => <div className="h-[400px] border rounded-md flex items-center justify-center text-muted-foreground">에디터 로딩 중...</div>
+    loading: () => <div className="h-[400px] border rounded-md flex items-center justify-center text-muted-foreground">Loading editor...</div>
   }
 )
 
@@ -115,6 +116,7 @@ function SortableOptionRow({
   onUpdate: (optionId: number, field: string, value: string | number) => void
   onDelete: (optionId: number) => void
 }) {
+  const t = useTranslations('shop.admin')
   const {
     attributes,
     listeners,
@@ -216,6 +218,7 @@ function SortableImage({
   isFirst: boolean
   onRemove: () => void
 }) {
+  const t = useTranslations('shop.admin')
   const {
     attributes,
     listeners,
@@ -240,7 +243,7 @@ function SortableImage({
     >
       <img
         src={url}
-        alt={`상품 이미지 ${index + 1}`}
+        alt={t('productImageAlt', { index: index + 1 })}
         className="w-full aspect-square object-cover rounded-lg border"
       />
       <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg flex items-center justify-center gap-2">
@@ -263,7 +266,7 @@ function SortableImage({
       </div>
       {isFirst && (
         <span className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded">
-          대표
+          {t('representative')}
         </span>
       )}
     </div>
@@ -271,6 +274,7 @@ function SortableImage({
 }
 
 export default function ProductEditPage({ params }: { params: Promise<{ id: string }> }) {
+  const t = useTranslations('shop.admin')
   const { id } = use(params)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -448,15 +452,15 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
       })
 
       if (res.ok) {
-        alert('저장되었습니다.')
+        alert(t('saved'))
         fetchProduct()
       } else {
         const error = await res.json()
-        alert(error.error || '저장 실패')
+        alert(error.error || t('saveFailed'))
       }
     } catch (error) {
       console.error('저장 에러:', error)
-      alert('저장 중 오류가 발생했습니다.')
+      alert(t('saveError'))
     } finally {
       setSaving(false)
     }
@@ -465,7 +469,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
   // 옵션 추가
   const handleAddOption = async () => {
     if (!newOption.price) {
-      alert('가격은 필수입니다.')
+      alert(t('priceRequiredMsg'))
       return
     }
 
@@ -488,7 +492,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         fetchProduct()
       } else {
         const error = await res.json()
-        alert(error.error || '추가 실패')
+        alert(error.error || t('addFailed'))
       }
     } catch (error) {
       console.error('옵션 추가 에러:', error)
@@ -511,7 +515,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         fetchProduct()
       } else {
         const error = await res.json()
-        alert(error.error || '수정 실패')
+        alert(error.error || t('editFailed'))
       }
     } catch (error) {
       console.error('옵션 수정 에러:', error)
@@ -520,7 +524,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
 
   // 옵션 삭제
   const handleDeleteOption = async (optionId: number) => {
-    if (!confirm('이 옵션을 삭제하시겠습니까?')) return
+    if (!confirm(t('deleteOptionConfirm'))) return
 
     try {
       const res = await fetch(`/api/admin/shop/products/${id}/options?optionIds=${optionId}`, {
@@ -531,7 +535,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         fetchProduct()
       } else {
         const error = await res.json()
-        alert(error.error || '삭제 실패')
+        alert(error.error || t('deleteFailed'))
       }
     } catch (error) {
       console.error('옵션 삭제 에러:', error)
@@ -563,7 +567,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
           newImages.push(data.url)
         } else {
           const error = await res.json()
-          alert(error.error || '이미지 업로드 실패')
+          alert(error.error || t('imageUploadFailed'))
         }
       } catch (error) {
         console.error('이미지 업로드 에러:', error)
@@ -609,7 +613,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
       <div className="flex min-h-screen bg-muted/30">
         <Sidebar />
         <main className="flex-1 p-6 flex items-center justify-center">
-          <p className="text-muted-foreground">상품을 찾을 수 없습니다.</p>
+          <p className="text-muted-foreground">{t('productNotFound')}</p>
         </main>
       </div>
     )
@@ -629,7 +633,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                 </Button>
               </Link>
               <div>
-                <h1 className="text-2xl font-bold">상품 수정</h1>
+                <h1 className="text-2xl font-bold">{t('editProductTitle')}</h1>
                 <p className="text-muted-foreground">{product.name}</p>
               </div>
             </div>
@@ -637,12 +641,12 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
               <Link href={`/shop/products/${product.slug}`} target="_blank">
                 <Button variant="outline">
                   <ExternalLink className="h-4 w-4 mr-2" />
-                  바로가기
+                  {t('shortcut')}
                 </Button>
               </Link>
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
-                저장
+                {t('save')}
               </Button>
             </div>
           </div>
@@ -654,28 +658,28 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
               onClick={() => setActiveTab('basic')}
             >
               <Package className="h-4 w-4 mr-2" />
-              기본
+              {t('tabBasic')}
             </Button>
             <Button
               variant={activeTab === 'description' ? 'default' : 'outline'}
               onClick={() => setActiveTab('description')}
             >
               <FileText className="h-4 w-4 mr-2" />
-              설명
+              {t('tabDescription')}
             </Button>
             <Button
               variant={activeTab === 'options' ? 'default' : 'outline'}
               onClick={() => setActiveTab('options')}
             >
               <Settings className="h-4 w-4 mr-2" />
-              옵션 ({options.length})
+              {t('tabOptions')} ({options.length})
             </Button>
             <Button
               variant={activeTab === 'images' ? 'default' : 'outline'}
               onClick={() => setActiveTab('images')}
             >
               <ImageIcon className="h-4 w-4 mr-2" />
-              이미지 ({images.length})
+              {t('tabImages')} ({images.length})
             </Button>
           </div>
 
@@ -685,7 +689,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
               <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">상품명 *</Label>
+                    <Label htmlFor="name">{t('productNameRequired')}</Label>
                     <Input
                       id="name"
                       value={formData.name}
@@ -693,7 +697,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                     />
                   </div>
                   <div>
-                    <Label htmlFor="slug">슬러그 *</Label>
+                    <Label htmlFor="slug">{t('slugRequired')}</Label>
                     <Input
                       id="slug"
                       value={formData.slug}
@@ -704,16 +708,16 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="category">카테고리</Label>
+                    <Label htmlFor="category">{t('category')}</Label>
                     <Select
                       value={formData.categoryId || 'none'}
                       onValueChange={(v) => setFormData({ ...formData, categoryId: v === 'none' ? '' : v })}
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="카테고리 선택" />
+                        <SelectValue placeholder={t('categorySelect')} />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">없음</SelectItem>
+                        <SelectItem value="none">{t('none')}</SelectItem>
                         {categories.map(cat => (
                           <SelectItem key={cat.id} value={String(cat.id)}>{cat.name}</SelectItem>
                         ))}
@@ -721,7 +725,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="sortOrder">정렬순서</Label>
+                    <Label htmlFor="sortOrder">{t('sortOrder')}</Label>
                     <Input
                       id="sortOrder"
                       type="number"
@@ -735,7 +739,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="price">판매가 *</Label>
+                    <Label htmlFor="price">{t('priceRequired')}</Label>
                     <Input
                       id="price"
                       type="number"
@@ -744,7 +748,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                     />
                   </div>
                   <div>
-                    <Label htmlFor="originPrice">정가 (할인 표시용)</Label>
+                    <Label htmlFor="originPrice">{t('originPriceLabel')}</Label>
                     <Input
                       id="originPrice"
                       type="number"
@@ -753,7 +757,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                     />
                   </div>
                   <div>
-                    <Label htmlFor="stock">재고 (옵션 없는 상품용)</Label>
+                    <Label htmlFor="stock">{t('stockLabel')}</Label>
                     <Input
                       id="stock"
                       type="number"
@@ -764,7 +768,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                     />
                     {options.length > 0 && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        옵션이 있는 상품은 옵션 탭에서 재고를 관리합니다.
+                        {t('stockOptionNote')}
                       </p>
                     )}
                   </div>
@@ -773,36 +777,36 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                 <Separator />
 
                 <div>
-                  <h3 className="font-medium mb-3">옵션명 설정</h3>
+                  <h3 className="font-medium mb-3">{t('optionNameSetting')}</h3>
                   <p className="text-sm text-muted-foreground mb-4">
-                    3단계 옵션을 사용할 경우 각 단계의 이름을 설정하세요.
+                    {t('optionNameSettingDesc')}
                   </p>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                      <Label htmlFor="optionName1">1단계 옵션명</Label>
+                      <Label htmlFor="optionName1">{t('optionName1')}</Label>
                       <Input
                         id="optionName1"
                         value={formData.optionName1}
                         onChange={(e) => setFormData({ ...formData, optionName1: e.target.value })}
-                        placeholder="예: 색상"
+                        placeholder={t('optionExample1')}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="optionName2">2단계 옵션명</Label>
+                      <Label htmlFor="optionName2">{t('optionName2')}</Label>
                       <Input
                         id="optionName2"
                         value={formData.optionName2}
                         onChange={(e) => setFormData({ ...formData, optionName2: e.target.value })}
-                        placeholder="예: 사이즈"
+                        placeholder={t('optionExample2')}
                       />
                     </div>
                     <div>
-                      <Label htmlFor="optionName3">3단계 옵션명</Label>
+                      <Label htmlFor="optionName3">{t('optionName3')}</Label>
                       <Input
                         id="optionName3"
                         value={formData.optionName3}
                         onChange={(e) => setFormData({ ...formData, optionName3: e.target.value })}
-                        placeholder="예: 소재"
+                        placeholder={t('optionExample3')}
                       />
                     </div>
                   </div>
@@ -812,8 +816,8 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>판매 상태</Label>
-                    <p className="text-sm text-muted-foreground">상품을 쇼핑몰에 표시합니다.</p>
+                    <Label>{t('sellStatus')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('sellStatusDesc')}</p>
                   </div>
                   <Switch
                     checked={formData.isActive}
@@ -823,8 +827,8 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label>품절 표시</Label>
-                    <p className="text-sm text-muted-foreground">상품을 품절로 표시합니다.</p>
+                    <Label>{t('soldOutDisplay')}</Label>
+                    <p className="text-sm text-muted-foreground">{t('soldOutDisplayDesc')}</p>
                   </div>
                   <Switch
                     checked={formData.isSoldOut}
@@ -840,25 +844,25 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
             <Card>
               <CardContent className="p-6 space-y-6">
                 <div>
-                  <Label htmlFor="description">짧은 설명</Label>
+                  <Label htmlFor="description">{t('shortDescription')}</Label>
                   <Input
                     id="description"
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="상품 목록에 표시되는 한 줄 설명"
+                    placeholder={t('shortDescDetailPlaceholder')}
                     className="mt-1"
                   />
                   <p className="text-xs text-muted-foreground mt-1">
-                    상품 목록 및 검색 결과에서 상품명 아래에 표시됩니다.
+                    {t('shortDescNote')}
                   </p>
                 </div>
 
                 <Separator />
 
                 <div>
-                  <Label htmlFor="content">상세 설명</Label>
+                  <Label htmlFor="content">{t('detailDescription')}</Label>
                   <p className="text-xs text-muted-foreground mb-2">
-                    상품 상세 페이지에 표시되는 내용입니다. 이미지, 표, 동영상 등을 삽입할 수 있습니다.
+                    {t('detailDescriptionNote')}
                   </p>
                   <TiptapEditor
                     content={formData.content}
@@ -875,7 +879,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
               {/* 옵션 추가 */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">옵션 추가</CardTitle>
+                  <CardTitle className="text-lg">{t('addOption')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
@@ -885,7 +889,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                         <Input
                           value={newOption.option1}
                           onChange={(e) => setNewOption({ ...newOption, option1: e.target.value })}
-                          placeholder={`예: 빨강`}
+                          placeholder={t('optionExampleRed')}
                         />
                       </div>
                     )}
@@ -895,7 +899,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                         <Input
                           value={newOption.option2}
                           onChange={(e) => setNewOption({ ...newOption, option2: e.target.value })}
-                          placeholder={`예: L`}
+                          placeholder={t('optionExampleL')}
                         />
                       </div>
                     )}
@@ -905,12 +909,12 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                         <Input
                           value={newOption.option3}
                           onChange={(e) => setNewOption({ ...newOption, option3: e.target.value })}
-                          placeholder={`예: 프리미엄`}
+                          placeholder={t('optionExamplePremium')}
                         />
                       </div>
                     )}
                     <div>
-                      <Label>가격 *</Label>
+                      <Label>{t('priceRequired2')}</Label>
                       <Input
                         type="number"
                         value={newOption.price}
@@ -919,7 +923,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                       />
                     </div>
                     <div>
-                      <Label>재고</Label>
+                      <Label>{t('stockField')}</Label>
                       <Input
                         type="number"
                         value={newOption.stock}
@@ -932,18 +936,18 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                       <Input
                         value={newOption.sku}
                         onChange={(e) => setNewOption({ ...newOption, sku: e.target.value })}
-                        placeholder="재고관리코드"
+                        placeholder={t('skuPlaceholder')}
                       />
                     </div>
                   </div>
                   <Button onClick={handleAddOption}>
                     <Plus className="h-4 w-4 mr-2" />
-                    옵션 추가
+                    {t('addOption')}
                   </Button>
 
                   {!formData.optionName1 && !formData.optionName2 && !formData.optionName3 && (
                     <p className="text-sm text-muted-foreground mt-4">
-                      옵션을 사용하려면 먼저 기본 정보에서 옵션명을 설정하세요.
+                      {t('optionNamesRequired')}
                     </p>
                   )}
                 </CardContent>
@@ -952,12 +956,12 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
               {/* 옵션 목록 */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">등록된 옵션 ({options.length})</CardTitle>
+                  <CardTitle className="text-lg">{t('registeredOptions', { count: options.length })}</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {options.length === 0 ? (
                     <p className="text-muted-foreground text-center py-8">
-                      등록된 옵션이 없습니다.
+                      {t('noOptions')}
                     </p>
                   ) : (
                     <DndContext
@@ -973,8 +977,8 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                               {formData.optionName1 && <th className="p-2 text-left font-medium">{formData.optionName1}</th>}
                               {formData.optionName2 && <th className="p-2 text-left font-medium">{formData.optionName2}</th>}
                               {formData.optionName3 && <th className="p-2 text-left font-medium">{formData.optionName3}</th>}
-                              <th className="p-2 text-left font-medium">가격</th>
-                              <th className="p-2 text-left font-medium">재고</th>
+                              <th className="p-2 text-left font-medium">{t('productPrice')}</th>
+                              <th className="p-2 text-left font-medium">{t('stockField')}</th>
                               <th className="p-2 text-left font-medium">SKU</th>
                               <th className="p-2 text-left font-medium w-16"></th>
                             </tr>
@@ -996,7 +1000,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                       </div>
                       <p className="text-sm text-muted-foreground mt-4">
                         <GripVertical className="h-4 w-4 inline mr-1" />
-                        아이콘을 드래그하여 옵션 순서를 변경할 수 있습니다.
+                        {t('optionDragHint')}
                       </p>
                     </DndContext>
                   )}
@@ -1009,7 +1013,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
           {activeTab === 'images' && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">상품 이미지</CardTitle>
+                <CardTitle className="text-lg">{t('productImagesTitle')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <DndContext
@@ -1045,7 +1049,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                         ) : (
                           <>
                             <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                            <span className="text-sm text-muted-foreground">이미지 추가</span>
+                            <span className="text-sm text-muted-foreground">{t('addImage')}</span>
                           </>
                         )}
                       </label>
@@ -1054,7 +1058,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
                 </DndContext>
 
                 <p className="text-sm text-muted-foreground">
-                  첫 번째 이미지가 대표 이미지로 사용됩니다. 이미지 위에 마우스를 올리고 <GripVertical className="h-4 w-4 inline" /> 아이콘을 드래그하여 순서를 변경할 수 있습니다.
+                  {t('imageDragHint')} <GripVertical className="h-4 w-4 inline" /> {t('imageDragHintSuffix')}
                 </p>
               </CardContent>
             </Card>

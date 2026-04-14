@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Sidebar } from "@/components/admin/Sidebar"
@@ -70,20 +71,41 @@ interface Stats {
   deleted: number
 }
 
-const STATUS_LABELS: Record<string, { label: string; color: string }> = {
-  pending: { label: "결제대기", color: "bg-yellow-500" },
-  paid: { label: "결제완료", color: "bg-blue-500" },
-  preparing: { label: "상품준비", color: "bg-indigo-500" },
-  shipping: { label: "배송중", color: "bg-purple-500" },
-  delivered: { label: "배송완료", color: "bg-green-500" },
-  confirmed: { label: "구매확정", color: "bg-green-700" },
-  cancel_requested: { label: "취소요청", color: "bg-orange-500" },
-  cancelled: { label: "주문취소", color: "bg-gray-500" },
-  refund_requested: { label: "환불요청", color: "bg-amber-500" },
-  refunded: { label: "환불완료", color: "bg-red-500" },
+const STATUS_COLORS: Record<string, string> = {
+  pending: "bg-yellow-500",
+  paid: "bg-blue-500",
+  preparing: "bg-indigo-500",
+  shipping: "bg-purple-500",
+  delivered: "bg-green-500",
+  confirmed: "bg-green-700",
+  cancel_requested: "bg-orange-500",
+  cancelled: "bg-gray-500",
+  refund_requested: "bg-amber-500",
+  refunded: "bg-red-500",
+}
+
+const STATUS_KEYS = [
+  'pending', 'paid', 'preparing', 'shipping', 'delivered',
+  'confirmed', 'cancel_requested', 'cancelled', 'refund_requested', 'refunded'
+] as const
+
+const STATUS_I18N_KEY: Record<string, string> = {
+  pending: 'statusPending',
+  paid: 'statusPaid',
+  preparing: 'statusPreparing',
+  shipping: 'statusShipping',
+  delivered: 'statusDelivered',
+  confirmed: 'statusConfirmed',
+  cancel_requested: 'statusCancelRequested',
+  cancelled: 'statusCancelled',
+  refund_requested: 'statusRefundRequested',
+  refunded: 'statusRefunded',
 }
 
 export default function AdminOrdersPage() {
+  const t = useTranslations('shop.admin')
+  const to = useTranslations('shop.order')
+  const tp = useTranslations('shop.policy')
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -156,7 +178,7 @@ export default function AdminOrdersPage() {
   // 다중 라벨 출력
   const handlePrintLabels = async () => {
     if (selectedOrders.length === 0) {
-      alert('출력할 주문을 선택해주세요.')
+      alert(t('selectOrdersToPrint'))
       return
     }
 
@@ -190,7 +212,7 @@ export default function AdminOrdersPage() {
 
       if (!res.ok) {
         const data = await res.json()
-        alert(data.error || '라벨 출력에 실패했습니다.')
+        alert(data.error || t('labelPrintFailed'))
         return
       }
 
@@ -200,7 +222,7 @@ export default function AdminOrdersPage() {
       window.open(url, '_blank')
     } catch (error) {
       console.error('라벨 출력 에러:', error)
-      alert('라벨 출력 중 오류가 발생했습니다.')
+      alert(t('labelPrintError'))
     }
 
     document.body.removeChild(form)
@@ -224,7 +246,7 @@ export default function AdminOrdersPage() {
   }
 
   const handleRestore = async (orderId: number) => {
-    if (!confirm('이 주문을 복원하시겠습니까?')) return
+    if (!confirm(t('restoreConfirm'))) return
 
     try {
       const res = await fetch(`/api/admin/shop/orders/${orderId}`, {
@@ -237,11 +259,11 @@ export default function AdminOrdersPage() {
         fetchOrders()
       } else {
         const data = await res.json()
-        alert(data.error || '복원에 실패했습니다.')
+        alert(data.error || t('restoreFailed'))
       }
     } catch (error) {
       console.error('복원 에러:', error)
-      alert('복원 중 오류가 발생했습니다.')
+      alert(t('restoreError'))
     }
   }
 
@@ -257,9 +279,9 @@ export default function AdminOrdersPage() {
     router.push(`/admin/shop/orders?${params}`)
   }
 
-  const formatPrice = (price: number) => price.toLocaleString() + '원'
+  const formatPrice = (price: number) => tp('won', { amount: price.toLocaleString() })
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleString('ko-KR', {
+    return new Date(date).toLocaleString(undefined, {
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
@@ -279,24 +301,24 @@ export default function AdminOrdersPage() {
                 {showDeleted ? (
                   <span className="flex items-center gap-2">
                     <Trash2 className="h-6 w-6 text-red-500" />
-                    삭제된 주문
+                    {t('deletedOrders')}
                   </span>
-                ) : '주문 관리'}
+                ) : t('orderManagement')}
               </h1>
               <p className="text-muted-foreground">
-                총 {total}개의 {showDeleted ? '삭제된 ' : ''}주문
+                {t('totalOrdersText', { total, deleted: showDeleted ? t('deletedPrefix') : '' })}
               </p>
             </div>
             <div className="flex items-center gap-2">
               {selectedOrders.length > 0 && (
                 <Button variant="outline" onClick={handlePrintLabels}>
                   <Printer className="h-4 w-4 mr-2" />
-                  라벨 출력 ({selectedOrders.length})
+                  {t('printLabelWithCount', { count: selectedOrders.length })}
                 </Button>
               )}
               <Button variant="outline" onClick={fetchOrders}>
                 <RefreshCw className="h-4 w-4 mr-2" />
-                새로고침
+                {t('refresh')}
               </Button>
             </div>
           </div>
@@ -311,9 +333,9 @@ export default function AdminOrdersPage() {
                 }`}
               >
                 <p className="text-lg font-bold">{stats.all}</p>
-                <p className="text-xs">전체</p>
+                <p className="text-xs">{t('all')}</p>
               </button>
-              {Object.entries(STATUS_LABELS).map(([key, { label }]) => (
+              {STATUS_KEYS.map((key) => (
                 <button
                   key={key}
                   onClick={() => handleStatusChange(key)}
@@ -322,7 +344,7 @@ export default function AdminOrdersPage() {
                   }`}
                 >
                   <p className="text-lg font-bold">{stats[key as keyof Stats] || 0}</p>
-                  <p className="text-xs">{label}</p>
+                  <p className="text-xs">{to(STATUS_I18N_KEY[key])}</p>
                 </button>
               ))}
               <button
@@ -334,7 +356,7 @@ export default function AdminOrdersPage() {
                 <p className="text-lg font-bold">{stats.deleted || 0}</p>
                 <p className="text-xs flex items-center justify-center gap-1">
                   <Trash2 className="h-3 w-3" />
-                  삭제됨
+                  {t('deletedLabel')}
                 </p>
               </button>
             </div>
@@ -347,13 +369,13 @@ export default function AdminOrdersPage() {
                 <div className="relative flex-1 max-w-md">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="주문번호, 주문자명, 연락처 검색..."
+                    placeholder={t('orderSearchPlaceholder')}
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
                     className="pl-10"
                   />
                 </div>
-                <Button type="submit">검색</Button>
+                <Button type="submit">{t('search')}</Button>
               </form>
             </CardContent>
           </Card>
@@ -368,7 +390,7 @@ export default function AdminOrdersPage() {
               ) : orders.length === 0 ? (
                 <div className="text-center py-20">
                   <Package className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <p className="text-muted-foreground">주문이 없습니다.</p>
+                  <p className="text-muted-foreground">{t('noOrders')}</p>
                 </div>
               ) : (
                 <Table>
@@ -380,13 +402,13 @@ export default function AdminOrdersPage() {
                           onCheckedChange={handleSelectAll}
                         />
                       </TableHead>
-                      <TableHead className="w-[140px]">주문번호</TableHead>
-                      <TableHead>주문상품</TableHead>
-                      <TableHead>주문자</TableHead>
-                      <TableHead className="text-right">결제금액</TableHead>
-                      <TableHead>결제방법</TableHead>
-                      <TableHead>상태</TableHead>
-                      <TableHead>주문일시</TableHead>
+                      <TableHead className="w-[140px]">{t('orderNo')}</TableHead>
+                      <TableHead>{t('orderItems')}</TableHead>
+                      <TableHead>{t('orderer')}</TableHead>
+                      <TableHead className="text-right">{t('paymentAmount')}</TableHead>
+                      <TableHead>{t('paymentMethod')}</TableHead>
+                      <TableHead>{t('status')}</TableHead>
+                      <TableHead>{t('orderDate')}</TableHead>
                       <TableHead className="w-[80px]"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -421,10 +443,10 @@ export default function AdminOrdersPage() {
                             <div>
                               <p className="font-medium line-clamp-1">
                                 {order.items[0]?.productName}
-                                {order.items.length > 1 && ` 외 ${order.items.length - 1}건`}
+                                {order.items.length > 1 && t('otherItemsMore', { count: order.items.length - 1 })}
                               </p>
                               <p className="text-xs text-muted-foreground">
-                                총 {order.items.reduce((sum, item) => sum + item.quantity, 0)}개
+                                {t('totalItemsCount', { count: order.items.reduce((sum, item) => sum + item.quantity, 0) })}
                               </p>
                             </div>
                           </div>
@@ -439,11 +461,11 @@ export default function AdminOrdersPage() {
                           {formatPrice(order.finalPrice)}
                         </TableCell>
                         <TableCell>
-                          {order.paymentMethod === 'bank' ? '무통장' : '카드'}
+                          {order.paymentMethod === 'bank' ? t('bank') : t('card')}
                         </TableCell>
                         <TableCell>
-                          <Badge className={STATUS_LABELS[order.status]?.color || 'bg-gray-500'}>
-                            {STATUS_LABELS[order.status]?.label || order.status}
+                          <Badge className={STATUS_COLORS[order.status] || 'bg-gray-500'}>
+                            {STATUS_I18N_KEY[order.status] ? to(STATUS_I18N_KEY[order.status]) : order.status}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-sm text-muted-foreground">
@@ -461,7 +483,7 @@ export default function AdminOrdersPage() {
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => handleRestore(order.id)}
-                                title="복원"
+                                title={t('restore')}
                               >
                                 <RotateCcw className="h-4 w-4 text-green-600" />
                               </Button>

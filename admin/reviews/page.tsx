@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Sidebar } from "@/components/admin/Sidebar"
@@ -43,6 +44,7 @@ interface Stats {
 }
 
 export default function AdminReviewsPage() {
+  const t = useTranslations('shop.admin')
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -158,17 +160,17 @@ export default function AdminReviewsPage() {
         fetchReviews()
       } else {
         const data = await res.json()
-        alert(data.error || '답변 등록에 실패했습니다.')
+        alert(data.error || t('replyFailed'))
       }
     } catch {
-      alert('답변 등록에 실패했습니다.')
+      alert(t('replyFailed'))
     } finally {
       setSubmitting(false)
     }
   }
 
   const deleteReview = async (id: number, restore: boolean = false) => {
-    const message = restore ? '이 리뷰를 복구하시겠습니까?' : '이 리뷰를 삭제하시겠습니까?'
+    const message = restore ? t('restoreReviewConfirm') : t('deleteReviewConfirm')
     if (!confirm(message)) return
     try {
       const url = restore
@@ -179,7 +181,7 @@ export default function AdminReviewsPage() {
         fetchReviews()
       }
     } catch {
-      alert('처리에 실패했습니다.')
+      alert(t('processFailed'))
     }
   }
 
@@ -206,10 +208,10 @@ export default function AdminReviewsPage() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Star className="h-6 w-6" />
-              리뷰 관리
+              {t('reviewsTitle')}
             </h1>
             <p className="text-muted-foreground mt-1">
-              상품 리뷰를 관리하고 답변하세요
+              {t('reviewsSubtitle')}
             </p>
           </div>
 
@@ -226,19 +228,19 @@ export default function AdminReviewsPage() {
               >
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold">{stats.all}</div>
-                  <div className="text-sm text-muted-foreground">전체</div>
+                  <div className="text-sm text-muted-foreground">{t('total')}</div>
                 </CardContent>
               </Card>
               <Card className="cursor-default">
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-blue-600">{stats.noReply}</div>
-                  <div className="text-sm text-muted-foreground">미답변</div>
+                  <div className="text-sm text-muted-foreground">{t('unanswered')}</div>
                 </CardContent>
               </Card>
               <Card className="cursor-default">
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-green-600">{stats.replied}</div>
-                  <div className="text-sm text-muted-foreground">답변완료</div>
+                  <div className="text-sm text-muted-foreground">{t('answered')}</div>
                 </CardContent>
               </Card>
               <Card
@@ -247,7 +249,7 @@ export default function AdminReviewsPage() {
               >
                 <CardContent className="p-4">
                   <div className="text-2xl font-bold text-red-600">{stats.deleted}</div>
-                  <div className="text-sm text-muted-foreground">삭제됨</div>
+                  <div className="text-sm text-muted-foreground">{t('deletedItems')}</div>
                 </CardContent>
               </Card>
             </div>
@@ -264,7 +266,7 @@ export default function AdminReviewsPage() {
                   size="sm"
                   onClick={() => handleRatingFilter(rating === String(star) ? '' : String(star))}
                 >
-                  {star}점
+                  {t('starFilter', { star })}
                 </Button>
               ))}
             </div>
@@ -274,14 +276,14 @@ export default function AdminReviewsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="상품명, 내용, 작성자 검색"
+                  placeholder={t('reviewSearchPlaceholder')}
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                   className="pl-9"
                 />
               </div>
-              <Button onClick={handleSearch}>검색</Button>
+              <Button onClick={handleSearch}>{t('search')}</Button>
             </div>
           </div>
 
@@ -308,15 +310,15 @@ export default function AdminReviewsPage() {
                         </Link>
                         {renderStars(review.rating)}
                         {!review.isActive && (
-                          <Badge variant="destructive" className="text-xs">삭제됨</Badge>
+                          <Badge variant="destructive" className="text-xs">{t('deletedItems')}</Badge>
                         )}
                         {review.reply ? (
                           <Badge variant="outline" className="text-xs text-green-600 border-green-600">
-                            답변완료
+                            {t('answered')}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs text-blue-600 border-blue-600">
-                            미답변
+                            {t('unanswered')}
                           </Badge>
                         )}
                       </div>
@@ -327,7 +329,7 @@ export default function AdminReviewsPage() {
                             size="icon"
                             className="h-8 w-8 text-muted-foreground hover:text-green-600"
                             onClick={() => deleteReview(review.id, true)}
-                            title="복구"
+                            title={t('restore')}
                           >
                             <RotateCcw className="h-4 w-4" />
                           </Button>
@@ -337,7 +339,7 @@ export default function AdminReviewsPage() {
                             size="icon"
                             className="h-8 w-8 text-muted-foreground hover:text-red-600"
                             onClick={() => deleteReview(review.id)}
-                            title="삭제"
+                            title={t('deleteBtn')}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -377,7 +379,7 @@ export default function AdminReviewsPage() {
                     {review.reply && (
                       <div className="p-3 bg-muted rounded-lg mb-3">
                         <div className="text-xs text-muted-foreground mb-1">
-                          관리자 답변 · {review.repliedAt && new Date(review.repliedAt).toLocaleString('ko-KR')}
+                          {t('adminReply')} · {review.repliedAt && new Date(review.repliedAt).toLocaleString()}
                         </div>
                         <p className="text-sm whitespace-pre-wrap">{review.reply}</p>
                       </div>
@@ -391,7 +393,7 @@ export default function AdminReviewsPage() {
                         onClick={() => openReplyModal(review)}
                       >
                         <Send className="h-4 w-4 mr-1" />
-                        {review.reply ? '답변 수정' : '답변하기'}
+                        {review.reply ? t('replyEdit') : t('replyCreate')}
                       </Button>
                     )}
                   </CardContent>
@@ -410,7 +412,7 @@ export default function AdminReviewsPage() {
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                   <span className="text-sm px-4">
-                    {page} / {totalPages} ({total}개)
+                    {t('pageXofY', { page, total: totalPages, count: total })}
                   </span>
                   <Button
                     variant="outline"
@@ -425,7 +427,7 @@ export default function AdminReviewsPage() {
             </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
-              리뷰가 없습니다.
+              {t('noReviews')}
             </div>
           )}
         </div>
@@ -446,7 +448,7 @@ export default function AdminReviewsPage() {
               <X className="h-5 w-5" />
             </button>
 
-            <h3 className="text-lg font-bold mb-4">리뷰 답변</h3>
+            <h3 className="text-lg font-bold mb-4">{t('reviewReply')}</h3>
 
             {/* 리뷰 표시 */}
             <div className="mb-4 p-3 bg-muted rounded-lg">
@@ -461,14 +463,14 @@ export default function AdminReviewsPage() {
             <Textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}
-              placeholder="답변을 입력하세요 (비워두면 답변 삭제)"
+              placeholder={t('replyPlaceholder')}
               rows={5}
               className="mb-4"
             />
 
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setReplyModal(null)}>
-                취소
+                {t('cancel')}
               </Button>
               <Button onClick={submitReply} disabled={submitting}>
                 {submitting ? (
@@ -476,7 +478,7 @@ export default function AdminReviewsPage() {
                 ) : (
                   <Send className="h-4 w-4 mr-2" />
                 )}
-                {replyModal.reply ? '수정' : '등록'}
+                {replyModal.reply ? t('edit') : t('register')}
               </Button>
             </div>
           </div>
