@@ -928,6 +928,37 @@
       "emailNotification": "Send email notifications",
       "emailNotificationHint": "When enabled, status changes and new orders are also sent via email.",
       "smtpRequired": "SMTP settings required (.env: SMTP_HOST, SMTP_USER, SMTP_PASS)"
+    },
+    "adminMenu": {
+      "shop": "Shop",
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "categories": "Categories",
+      "orders": "Orders",
+      "sales": "Sales",
+      "reviews": "Reviews",
+      "qna": "Q&A",
+      "delivery": "Delivery policy",
+      "settings": "Shop settings"
+    },
+    "optionDefault": {
+      "color": "Color",
+      "size": "Size",
+      "material": "Material"
+    },
+    "deliveryZone": {
+      "default": "Standard",
+      "jeju": "Jeju",
+      "remote": "Remote islands"
+    },
+    "meta": {
+      "name": "Shop",
+      "description": "Product sales, orders, and payment system"
+    },
+    "nav": {
+      "orders": "Order history",
+      "wishlist": "Wishlist",
+      "addresses": "Addresses"
     }
   }
 }

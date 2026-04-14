@@ -928,6 +928,37 @@
       "emailNotification": "이메일 알림 발송",
       "emailNotificationHint": "활성화하면 상태 변경 및 신규 주문 시 이메일도 발송됩니다.",
       "smtpRequired": "SMTP 설정 필요 (.env: SMTP_HOST, SMTP_USER, SMTP_PASS)"
+    },
+    "adminMenu": {
+      "shop": "쇼핑몰",
+      "dashboard": "대시보드",
+      "products": "상품관리",
+      "categories": "카테고리",
+      "orders": "주문관리",
+      "sales": "매출관리",
+      "reviews": "리뷰관리",
+      "qna": "Q&A관리",
+      "delivery": "배송비정책",
+      "settings": "쇼핑몰설정"
+    },
+    "optionDefault": {
+      "color": "색상",
+      "size": "사이즈",
+      "material": "소재"
+    },
+    "deliveryZone": {
+      "default": "기본",
+      "jeju": "제주",
+      "remote": "도서산간"
+    },
+    "meta": {
+      "name": "쇼핑몰",
+      "description": "상품 판매, 주문, 결제 시스템"
+    },
+    "nav": {
+      "orders": "주문내역",
+      "wishlist": "찜 목록",
+      "addresses": "배송지"
     }
   }
 }

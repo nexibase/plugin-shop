@@ -49,7 +49,7 @@ interface ShopSettings {
   email_notification_enabled: string  // true, false
 }
 
-const DEFAULT_SETTINGS: ShopSettings = {
+const DEFAULT_SETTINGS_BASE = {
   shop_name: "",
   shop_tel: "",
   shop_email: "",
@@ -60,9 +60,6 @@ const DEFAULT_SETTINGS: ShopSettings = {
   exchange_info: "",
   return_info: "",
   return_address: "",
-  option1_name: "색상",
-  option2_name: "사이즈",
-  option3_name: "소재",
   // PG 설정
   pg_provider: "inicis",
   pg_mid: "",
@@ -76,6 +73,13 @@ const DEFAULT_SETTINGS: ShopSettings = {
 
 export default function ShopSettingsPage() {
   const t = useTranslations('shop.admin')
+  const tShop = useTranslations('shop')
+  const DEFAULT_SETTINGS: ShopSettings = {
+    ...DEFAULT_SETTINGS_BASE,
+    option1_name: tShop('optionDefault.color'),
+    option2_name: tShop('optionDefault.size'),
+    option3_name: tShop('optionDefault.material'),
+  }
   const [settings, setSettings] = useState<ShopSettings>(DEFAULT_SETTINGS)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)

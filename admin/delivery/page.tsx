@@ -215,6 +215,7 @@ function DeliveryModal({
 export default function ShopDeliveryPage() {
   const t = useTranslations('shop.admin')
   const tp = useTranslations('shop.policy')
+  const tShop = useTranslations('shop')
   const [deliveryFees, setDeliveryFees] = useState<DeliveryFee[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
@@ -286,9 +287,9 @@ export default function ShopDeliveryPage() {
     if (!confirm(t('createDefaultPolicyConfirm'))) return
 
     const defaults = [
-      { name: '기본', fee: 3000, freeAmount: 50000, regions: [], isDefault: true, sortOrder: 0 },
-      { name: '제주', fee: 6000, freeAmount: 50000, regions: ['63000-63644'], sortOrder: 1 },
-      { name: '도서산간', fee: 8000, freeAmount: null, regions: ['23000-23010', '40200-40240'], sortOrder: 2 }
+      { name: tShop('deliveryZone.default'), fee: 3000, freeAmount: 50000, regions: [], isDefault: true, sortOrder: 0 },
+      { name: tShop('deliveryZone.jeju'), fee: 6000, freeAmount: 50000, regions: ['63000-63644'], sortOrder: 1 },
+      { name: tShop('deliveryZone.remote'), fee: 8000, freeAmount: null, regions: ['23000-23010', '40200-40240'], sortOrder: 2 }
     ]
 
     for (const policy of defaults) {
