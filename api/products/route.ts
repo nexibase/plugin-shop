@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // 정렬
+    // Sort
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let orderBy: any = { createdAt: 'desc' }
     switch (sort) {

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminUser } from '@/lib/auth'
 
-// 상품 목록 조회
+// Fetch product list
 export async function GET(request: NextRequest) {
   try {
     const admin = await getAdminUser()
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// 상품 생성
+// Create product
 export async function POST(request: NextRequest) {
   try {
     const admin = await getAdminUser()

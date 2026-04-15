@@ -101,7 +101,7 @@ function CategoryContent() {
         setTotal(data.pagination.total)
       }
     } catch (error) {
-      console.error('상품 조회 에러:', error)
+      console.error('failed to fetch product:', error)
     } finally {
       setLoading(false)
     }
@@ -118,7 +118,7 @@ function CategoryContent() {
         setCategory(current || null)
       }
     } catch (error) {
-      console.error('카테고리 조회 에러:', error)
+      console.error('failed to fetch categories:', error)
     }
   }, [categorySlug])
 
@@ -165,7 +165,7 @@ function CategoryContent() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="mb-6">
             <div className="flex items-center gap-2 mb-2">
               <Link href="/shop" className="text-muted-foreground hover:text-foreground">
@@ -183,7 +183,7 @@ function CategoryContent() {
 
           {/* 필터 영역 */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
-            {/* 검색 */}
+            {/* Search */}
             <form onSubmit={handleSearch} className="flex-1 max-w-md">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -281,7 +281,7 @@ function CategoryContent() {
               {products.map((product) => (
                 <Link key={product.id} href={`/shop/products/${product.slug}`}>
                   <Card className="h-full overflow-hidden hover:shadow-lg transition-shadow group">
-                    {/* 이미지 */}
+                    {/* Image */}
                     <div className="relative aspect-square bg-muted">
                       {product.image ? (
                         <img
@@ -306,7 +306,7 @@ function CategoryContent() {
                       )}
                     </div>
 
-                    {/* 정보 */}
+                    {/* Info */}
                     <CardContent className="p-3">
                       {product.category && (
                         <p className="text-xs text-muted-foreground mb-1">
@@ -344,7 +344,7 @@ function CategoryContent() {
             </div>
           )}
 
-          {/* 페이지네이션 */}
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-8">
               <Button

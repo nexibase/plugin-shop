@@ -150,7 +150,7 @@ export default function AdminQnaPage() {
 
       <main className="flex-1 p-6">
         <div className="max-w-6xl mx-auto">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <MessageSquare className="h-6 w-6" />
@@ -161,7 +161,7 @@ export default function AdminQnaPage() {
             </p>
           </div>
 
-          {/* 통계 카드 */}
+          {/* Stats cards */}
           {stats && (
             <div className="grid grid-cols-3 gap-4 mb-6">
               <Card
@@ -194,7 +194,7 @@ export default function AdminQnaPage() {
             </div>
           )}
 
-          {/* 검색 */}
+          {/* Search */}
           <div className="flex gap-2 mb-6">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -256,7 +256,7 @@ export default function AdminQnaPage() {
                       </Button>
                     </div>
 
-                    {/* 작성자 정보 */}
+                    {/* Author info */}
                     <div className="text-xs text-muted-foreground mb-2">
                       {qna.user.nickname} ({qna.user.email}) · {new Date(qna.createdAt).toLocaleString('ko-KR')}
                     </div>
@@ -267,7 +267,7 @@ export default function AdminQnaPage() {
                       <span className="text-sm whitespace-pre-wrap">{qna.question}</span>
                     </div>
 
-                    {/* 답변 */}
+                    {/* Reply */}
                     {qna.answer ? (
                       <div className="p-3 bg-muted rounded-lg mb-3">
                         <span className="inline-block px-2 py-0.5 bg-green-600 text-white text-xs font-medium rounded mr-2 align-top">A</span>
@@ -291,7 +291,7 @@ export default function AdminQnaPage() {
                 </Card>
               ))}
 
-              {/* 페이지네이션 */}
+              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6">
                   <Button

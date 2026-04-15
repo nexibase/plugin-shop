@@ -17,7 +17,7 @@ export async function GET(
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
 
-    // 상품 찾기
+    // Find product
     const product = await prisma.product.findUnique({
       where: { slug },
       select: { id: true }
@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: '상품을 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // 리뷰 조회
+    // Fetch review
     const [reviews, total] = await Promise.all([
       prisma.productReview.findMany({
         where: {
@@ -86,7 +86,7 @@ export async function GET(
   }
 }
 
-// 리뷰 작성
+// Write review
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -101,7 +101,7 @@ export async function POST(
     const body = await request.json()
     const { orderItemId, rating, content, images } = body
 
-    // 상품 찾기
+    // Find product
     const product = await prisma.product.findUnique({
       where: { slug },
       select: { id: true }
@@ -199,7 +199,7 @@ export async function PUT(
       return NextResponse.json({ error: '리뷰 ID가 필요합니다.' }, { status: 400 })
     }
 
-    // 상품 찾기
+    // Find product
     const product = await prisma.product.findUnique({
       where: { slug },
       select: { id: true }
@@ -246,12 +246,12 @@ export async function PUT(
           try {
             await unlink(filePath)
           } catch {
-            // 파일이 없어도 무시
+            // Ignore when the file does not exist
           }
           try {
             await unlink(thumbPath)
           } catch {
-            // 파일이 없어도 무시
+            // Ignore when the file does not exist
           }
         }
       } catch {
@@ -309,7 +309,7 @@ export async function DELETE(
       return NextResponse.json({ error: '리뷰 ID가 필요합니다.' }, { status: 400 })
     }
 
-    // 상품 찾기
+    // Find product
     const product = await prisma.product.findUnique({
       where: { slug },
       select: { id: true }
@@ -346,20 +346,20 @@ export async function DELETE(
           for (const imageUrl of images) {
             // /uploads/2025/12/xxx.webp -> public/uploads/2025/12/xxx.webp
             const filePath = path.join(process.cwd(), 'public', imageUrl)
-            // 썸네일 경로: xxx.webp -> xxx-thumb.webp
+            // Thumbnail path: xxx.webp -> xxx-thumb.webp
             const thumbPath = filePath.replace(/(\.(webp|gif))$/i, '-thumb.webp')
 
-            // 원본 이미지 삭제
+            // Delete the original image
             try {
               await unlink(filePath)
             } catch {
-              // 파일이 없어도 무시
+              // Ignore when the file does not exist
             }
-            // 썸네일 이미지 삭제
+            // Delete the thumbnail image
             try {
               await unlink(thumbPath)
             } catch {
-              // 파일이 없어도 무시
+              // Ignore when the file does not exist
             }
           }
         }

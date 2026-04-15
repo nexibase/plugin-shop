@@ -300,7 +300,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
     router.replace(`/admin/shop/products/${id}${params.toString() ? `?${params}` : ''}`)
   }
 
-  // 기본 정보 폼
+  // Basic info 폼
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -412,7 +412,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         setImages(p.images || [])
       }
     } catch (error) {
-      console.error('상품 조회 에러:', error)
+      console.error('failed to fetch product:', error)
     } finally {
       setLoading(false)
     }
@@ -426,7 +426,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         setCategories(data.categories)
       }
     } catch (error) {
-      console.error('카테고리 조회 에러:', error)
+      console.error('failed to fetch categories:', error)
     }
   }, [])
 
@@ -459,7 +459,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         alert(error.error || t('saveFailed'))
       }
     } catch (error) {
-      console.error('저장 에러:', error)
+      console.error('save error:', error)
       alert(t('saveError'))
     } finally {
       setSaving(false)
@@ -624,7 +624,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
       <Sidebar />
       <main className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-4">
               <Link href="/admin/shop/products">
@@ -651,7 +651,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
             </div>
           </div>
 
-          {/* 탭 */}
+          {/* Tabs */}
           <div className="flex gap-2 mb-6 flex-wrap">
             <Button
               variant={activeTab === 'basic' ? 'default' : 'outline'}

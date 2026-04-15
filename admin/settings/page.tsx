@@ -153,7 +153,7 @@ export default function ShopSettingsPage() {
       <Sidebar />
       <main className="flex-1 p-6">
         <div className="max-w-6xl mx-auto space-y-6">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -194,7 +194,7 @@ export default function ShopSettingsPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* 기본 정보 */}
+        {/* Basic info */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -237,7 +237,7 @@ export default function ShopSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* 결제 정보 */}
+        {/* Payment info */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

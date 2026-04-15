@@ -197,7 +197,7 @@ export default function ShopCategoriesPage() {
         setCategories(data.categories.map((c: Category) => ({ ...c, selected: false })))
       }
     } catch (error) {
-      console.error('카테고리 조회 에러:', error)
+      console.error('failed to fetch categories:', error)
     } finally {
       setLoading(false)
     }
@@ -225,7 +225,7 @@ export default function ShopCategoriesPage() {
         alert(error.error || t('saveFailed'))
       }
     } catch (error) {
-      console.error('저장 에러:', error)
+      console.error('save error:', error)
       alert(t('saveError'))
     }
   }
@@ -245,7 +245,7 @@ export default function ShopCategoriesPage() {
         alert(error.error || t('deleteFailed'))
       }
     } catch (error) {
-      console.error('삭제 에러:', error)
+      console.error('delete error:', error)
       alert(t('deleteError'))
     }
   }
@@ -282,7 +282,7 @@ export default function ShopCategoriesPage() {
       <Sidebar />
       <main className="flex-1 p-6">
         <div className="max-w-6xl mx-auto">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold">{t('productCategories')}</h1>
@@ -354,7 +354,7 @@ export default function ShopCategoriesPage() {
             )}
           </div>
 
-          {/* 테이블 */}
+          {/* Table */}
           <Card>
             <div className="overflow-x-auto">
               <table className="w-full">

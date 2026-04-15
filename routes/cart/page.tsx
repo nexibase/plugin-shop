@@ -141,7 +141,7 @@ export default function CartPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <ShoppingCart className="h-6 w-6" />
@@ -203,7 +203,7 @@ export default function CartPage() {
                             />
                           </div>
 
-                          {/* 이미지 */}
+                          {/* Image */}
                           <Link href={`/shop/products/${item.productSlug}`} className="flex-shrink-0">
                             <div className="w-20 h-20 bg-muted rounded-md overflow-hidden">
                               {(item.productImage || item.image) ? (
@@ -220,7 +220,7 @@ export default function CartPage() {
                             </div>
                           </Link>
 
-                          {/* 상품 정보 */}
+                          {/* Product info */}
                           <div className="flex-1 min-w-0">
                             <Link href={`/shop/products/${item.productSlug}`}>
                               <h3 className="font-medium hover:text-primary transition-colors line-clamp-1">
@@ -334,7 +334,7 @@ export default function CartPage() {
                   </CardContent>
                 </Card>
 
-                {/* 안내 */}
+                {/* Help message */}
                 <div className="mt-4 p-4 bg-muted rounded-lg text-sm text-muted-foreground">
                   <div className="flex gap-2">
                     <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />

@@ -15,7 +15,7 @@ export async function GET(
     const limit = parseInt(searchParams.get('limit') || '10')
     const skip = (page - 1) * limit
 
-    // 상품 찾기
+    // Find product
     const product = await prisma.product.findUnique({
       where: { slug },
       select: { id: true }
@@ -103,7 +103,7 @@ export async function POST(
       return NextResponse.json({ error: '질문 내용을 입력해주세요.' }, { status: 400 })
     }
 
-    // 상품 찾기
+    // Find product
     const product = await prisma.product.findUnique({
       where: { slug },
       select: { id: true }
@@ -169,7 +169,7 @@ export async function PUT(
       return NextResponse.json({ error: '질문 내용을 입력해주세요.' }, { status: 400 })
     }
 
-    // 상품 찾기
+    // Find product
     const product = await prisma.product.findUnique({
       where: { slug },
       select: { id: true }
@@ -249,7 +249,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Q&A ID가 필요합니다.' }, { status: 400 })
     }
 
-    // 상품 찾기
+    // Find product
     const product = await prisma.product.findUnique({
       where: { slug },
       select: { id: true }
@@ -278,7 +278,7 @@ export async function DELETE(
       return NextResponse.json({ error: '답변이 등록된 Q&A는 삭제할 수 없습니다.' }, { status: 400 })
     }
 
-    // 소프트 삭제
+    // Soft delete
     await prisma.productQna.update({
       where: { id: qnaId },
       data: { isActive: false }

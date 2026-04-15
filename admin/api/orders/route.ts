@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
       stats
     })
   } catch (error) {
-    console.error('주문 목록 조회 에러:', error)
+    console.error('failed to fetch orders:', error)
     return NextResponse.json(
       { error: '주문 목록을 불러오는데 실패했습니다.' },
       { status: 500 }

@@ -72,7 +72,7 @@ export default function ReviewSection({
   onFetchReviewableOrders,
 }: ReviewSectionProps) {
   const t = useTranslations('shop')
-  // 리뷰 작성 상태
+  // Write review 상태
   const [showReviewForm, setShowReviewForm] = useState(false)
   const [selectedOrderItem, setSelectedOrderItem] = useState<number | null>(null)
   const [reviewRating, setReviewRating] = useState(5)
@@ -160,7 +160,7 @@ export default function ReviewSection({
     setReviewImages(prev => prev.filter((_, i) => i !== index))
   }
 
-  // 리뷰 작성
+  // Write review
   const submitReview = async () => {
     if (!selectedOrderItem || !reviewContent.trim()) return
     setSubmittingReview(true)
@@ -627,7 +627,7 @@ export default function ReviewSection({
               </div>
             ))}
 
-            {/* 페이지네이션 */}
+            {/* Pagination */}
             {reviewTotal > 10 && (
               <div className="flex justify-center gap-2 mt-4">
                 <Button
@@ -678,7 +678,7 @@ export default function ReviewSection({
             {viewerIndex + 1} / {viewerImages.length}
           </div>
 
-          {/* 이전 버튼 */}
+          {/* Previous button */}
           {viewerImages.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); setViewerIndex(prev => (prev === 0 ? viewerImages.length - 1 : prev - 1)) }}
@@ -688,7 +688,7 @@ export default function ReviewSection({
             </button>
           )}
 
-          {/* 이미지 */}
+          {/* Image */}
           <img
             src={viewerImages[viewerIndex]}
             alt=""
@@ -696,7 +696,7 @@ export default function ReviewSection({
             onClick={(e) => e.stopPropagation()}
           />
 
-          {/* 다음 버튼 */}
+          {/* Next button */}
           {viewerImages.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); setViewerIndex(prev => (prev === viewerImages.length - 1 ? 0 : prev + 1)) }}

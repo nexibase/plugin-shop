@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 
-// 리뷰 작성 가능한 주문 목록 조회
+// Write review 가능한 주문 목록 조회
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -15,7 +15,7 @@ export async function GET(
 
     const { slug } = await params
 
-    // 상품 찾기
+    // Find product
     const product = await prisma.product.findUnique({
       where: { slug },
       select: { id: true }

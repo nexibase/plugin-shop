@@ -45,7 +45,7 @@ export async function GET(
   }
 }
 
-// 상품 수정
+// Edit product
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -120,7 +120,7 @@ export async function PUT(
   }
 }
 
-// 상품 삭제
+// Delete product
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }

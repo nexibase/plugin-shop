@@ -59,7 +59,7 @@ interface Category {
   slug: string
 }
 
-// 상품 생성 모달
+// Create product 모달
 function ProductModal({
   isOpen,
   onClose,
@@ -269,7 +269,7 @@ export default function ShopProductsPage() {
         setStats(data.stats)
       }
     } catch (error) {
-      console.error('상품 조회 에러:', error)
+      console.error('failed to fetch product:', error)
     } finally {
       setLoading(false)
     }
@@ -283,7 +283,7 @@ export default function ShopProductsPage() {
         setCategories(data.categories)
       }
     } catch (error) {
-      console.error('카테고리 조회 에러:', error)
+      console.error('failed to fetch categories:', error)
     }
   }, [])
 
@@ -317,7 +317,7 @@ export default function ShopProductsPage() {
         alert(error.error || t('saveFailed'))
       }
     } catch (error) {
-      console.error('저장 에러:', error)
+      console.error('save error:', error)
       alert(t('saveError'))
     }
   }
@@ -337,7 +337,7 @@ export default function ShopProductsPage() {
         alert(error.error || t('deleteFailed'))
       }
     } catch (error) {
-      console.error('삭제 에러:', error)
+      console.error('delete error:', error)
       alert(t('deleteError'))
     }
   }
@@ -362,7 +362,7 @@ export default function ShopProductsPage() {
       <Sidebar />
       <main className="flex-1 p-6">
         <div className="max-w-7xl mx-auto">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold">{t('products')}</h1>
@@ -411,7 +411,7 @@ export default function ShopProductsPage() {
             </Card>
           </div>
 
-          {/* 필터 */}
+          {/* Filters */}
           <div className="flex flex-wrap items-center gap-4 mb-4">
             <div className="relative flex-1 min-w-[200px] max-w-sm">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -459,7 +459,7 @@ export default function ShopProductsPage() {
             )}
           </div>
 
-          {/* 테이블 */}
+          {/* Table */}
           <Card>
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -590,7 +590,7 @@ export default function ShopProductsPage() {
               </table>
             </div>
 
-            {/* 페이지네이션 */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-2 p-4 border-t">
                 <Button

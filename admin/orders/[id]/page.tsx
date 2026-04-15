@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useParams, useRouter } from "next/navigation"
 import Link from "next/link"
 import { Sidebar } from "@/components/admin/Sidebar"
@@ -168,6 +168,7 @@ export default function AdminOrderDetailPage() {
   const to = useTranslations('shop.order')
   const tp = useTranslations('shop.policy')
   const tc = useTranslations('shop')
+  const locale = useLocale()
   const params = useParams()
   const router = useRouter()
   const orderId = params.id as string
@@ -442,7 +443,7 @@ export default function AdminOrderDetailPage() {
   const formatPrice = (price: number) => tp('won', { amount: price.toLocaleString() })
   const formatDate = (date: string | null) => {
     if (!date) return "-"
-    return new Date(date).toLocaleString()
+    return new Date(date).toLocaleString(locale)
   }
 
   // paymentInfo에서 취소/환불 정보 파싱
@@ -494,7 +495,7 @@ export default function AdminOrderDetailPage() {
       <Sidebar />
       <main className="flex-1 p-6">
         <div className="space-y-6">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button variant="ghost" onClick={() => router.push("/admin/shop/orders")}>
@@ -533,7 +534,7 @@ export default function AdminOrderDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 왼쪽 컬럼 */}
         <div className="lg:col-span-2 space-y-6">
-          {/* 주문 상품 */}
+          {/* Order items */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -614,7 +615,7 @@ export default function AdminOrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 배송지 정보 */}
+          {/* Shipping address */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -647,7 +648,7 @@ export default function AdminOrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 결제 정보 */}
+          {/* Payment info */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

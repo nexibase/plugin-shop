@@ -1,6 +1,6 @@
 export default {
-  name: '쇼핑몰',
-  description: '상품 판매, 주문, 결제 시스템',
+  name: 'Shop',
+  description: 'Product sales, orders, and payment system',
   version: '1.0.0',
   author: 'nexibase',
   authorDomain: 'https://nexibase.com',

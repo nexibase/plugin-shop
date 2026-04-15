@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 
-// 쇼핑몰 설정 가져오기
+// Load shop settings
 async function getShopSettings() {
   const settings = await prisma.shopSetting.findMany()
   const settingsMap: Record<string, string> = {}
@@ -12,7 +12,7 @@ async function getShopSettings() {
   return settingsMap
 }
 
-// 타임스탬프 생성 (YYYYMMDDhhmmss 형식)
+// Build a timestamp (YYYYMMDDhhmmss)
 function getTimestamp(): string {
   const now = new Date()
   const year = now.getFullYear()
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '주문번호가 필요합니다.' }, { status: 400 })
     }
 
-    // 주문 조회
+    // Fetch order
     const order = await prisma.order.findUnique({
       where: { orderNo }
     })
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // paymentInfo에서 tid 추출
+    // Extract tid from paymentInfo
     let tid: string | null = null
     if (order.paymentInfo) {
       try {
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // 쇼핑몰 설정 가져오기
+    // Load shop settings
     const settings = await getShopSettings()
     const testMode = settings.pg_test_mode !== 'false'
 
@@ -157,7 +157,7 @@ async function cancelInicisPayment({
   tid: string
   cancelReason: string
 }) {
-  // AbortController로 타임아웃 설정 (10초)
+  // 10-second timeout via AbortController
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)
 
@@ -169,18 +169,18 @@ async function cancelInicisPayment({
     const type = 'refund'
     const clientIp = '127.0.0.1'
 
-    // data 객체 생성
+    // Build the data object
     const data = {
       tid: tid,
       msg: cancelReason
     }
 
-    // 해시 데이터 생성 (공식 샘플: key + mid + type + timestamp + JSON.stringify(data))
+    // Build the hash data (official sample: key + mid + type + timestamp + JSON.stringify(data))
     const dataStr = JSON.stringify(data)
     const plainTxt = iniApiKey + mid + type + timestamp + dataStr
     const hashData = crypto.createHash('sha512').update(plainTxt).digest('hex')
 
-    // 요청 파라미터
+    // Request parameters
     const params = {
       mid: mid,
       type: type,
@@ -207,7 +207,7 @@ async function cancelInicisPayment({
     clearTimeout(timeoutId)
 
     const result = await response.json()
-    console.log('이니시스 취소 응답:', result)
+    console.log('inicis cancellation response:', result)
 
     // 이니시스 응답 코드 확인
     // resultCode가 '00'이면 성공
@@ -229,7 +229,7 @@ async function cancelInicisPayment({
 
     // 타임아웃 에러 처리
     if (error instanceof Error && error.name === 'AbortError') {
-      console.error('이니시스 취소 API 타임아웃')
+      console.error('inicis cancellation API timeout')
       return {
         success: false,
         message: '결제 취소 API 응답 시간 초과',
@@ -237,7 +237,7 @@ async function cancelInicisPayment({
       }
     }
 
-    console.error('이니시스 취소 API 호출 에러:', error)
+    console.error('inicis cancellation API call failed:', error)
     return {
       success: false,
       message: '결제 취소 API 호출 실패',

@@ -8,7 +8,7 @@ function sha256(str: string) {
   return crypto.createHash('sha256').update(str).digest('hex')
 }
 
-// 쇼핑몰 설정 가져오기
+// Load shop settings
 async function getShopSettings() {
   const settings = await prisma.shopSetting.findMany()
   const settingsMap: Record<string, string> = {}
@@ -92,7 +92,7 @@ function createRedirectHtml(redirectUrl: string) {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
 
-  // request에서 호스트 정보를 가져와 baseUrl 생성
+  // Build baseUrl from the request host
   const host = request.headers.get('host') || 'localhost:3003'
   const protocol = request.headers.get('x-forwarded-proto') || 'http'
   const baseUrl = process.env.NEXT_PUBLIC_URL || `${protocol}://${host}`
@@ -134,7 +134,7 @@ export async function GET(request: NextRequest) {
 
 // 결제 승인 결과 처리 (POST)
 export async function POST(request: NextRequest) {
-  // request에서 호스트 정보를 가져와 baseUrl 생성
+  // Build baseUrl from the request host
   const host = request.headers.get('host') || 'localhost:3003'
   const protocol = request.headers.get('x-forwarded-proto') || 'http'
   const baseUrl = process.env.NEXT_PUBLIC_URL || `${protocol}://${host}`
@@ -160,7 +160,7 @@ export async function POST(request: NextRequest) {
     if (resultCode !== '0000') {
       console.error('이니시스 인증 실패:', resultCode, resultMsg)
 
-      // PendingOrder 삭제
+      // Delete PendingOrder
       const oid = body.orderNumber || body.MOID
       if (oid) {
         await prisma.pendingOrder.deleteMany({
@@ -258,7 +258,7 @@ export async function POST(request: NextRequest) {
           body: netCancelData.toString()
         })
 
-        // PendingOrder 삭제
+        // Delete PendingOrder
         await prisma.pendingOrder.delete({ where: { orderNo } })
 
         return redirectTo(`/shop/order/complete?error=amount_mismatch&message=${encodeURIComponent('결제 금액이 일치하지 않습니다.')}`)
@@ -327,7 +327,7 @@ export async function POST(request: NextRequest) {
         })
       }
 
-      // PendingOrder 삭제
+      // Delete PendingOrder
       await prisma.pendingOrder.delete({ where: { orderNo } })
 
       // 주문자에게 주문 완료 알림 발송 (비동기 - 응답 지연 방지)
@@ -351,7 +351,7 @@ export async function POST(request: NextRequest) {
 
       const orderNo = body.orderNumber || body.MOID
       if (orderNo) {
-        // PendingOrder 삭제
+        // Delete PendingOrder
         await prisma.pendingOrder.deleteMany({
           where: { orderNo }
         })

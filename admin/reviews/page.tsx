@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { useTranslations } from 'next-intl'
+import { useTranslations, useLocale } from 'next-intl'
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Sidebar } from "@/components/admin/Sidebar"
@@ -45,6 +45,7 @@ interface Stats {
 
 export default function AdminReviewsPage() {
   const t = useTranslations('shop.admin')
+  const locale = useLocale()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -204,7 +205,7 @@ export default function AdminReviewsPage() {
 
       <main className="flex-1 p-6">
         <div className="max-w-6xl mx-auto">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="mb-6">
             <h1 className="text-2xl font-bold flex items-center gap-2">
               <Star className="h-6 w-6" />
@@ -215,7 +216,7 @@ export default function AdminReviewsPage() {
             </p>
           </div>
 
-          {/* 통계 카드 */}
+          {/* Stats cards */}
           {stats && (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <Card
@@ -271,7 +272,7 @@ export default function AdminReviewsPage() {
               ))}
             </div>
 
-            {/* 검색 */}
+            {/* Search */}
             <div className="flex gap-2 flex-1 max-w-md ml-auto">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -347,9 +348,9 @@ export default function AdminReviewsPage() {
                       </div>
                     </div>
 
-                    {/* 작성자 정보 */}
+                    {/* Author info */}
                     <div className="text-xs text-muted-foreground mb-2">
-                      {review.user.nickname} ({review.user.email}) · {new Date(review.createdAt).toLocaleString('ko-KR')}
+                      {review.user.nickname} ({review.user.email}) · {new Date(review.createdAt).toLocaleString(locale)}
                     </div>
 
                     {/* 리뷰 내용 */}
@@ -375,11 +376,11 @@ export default function AdminReviewsPage() {
                       </div>
                     )}
 
-                    {/* 답변 */}
+                    {/* Reply */}
                     {review.reply && (
                       <div className="p-3 bg-muted rounded-lg mb-3">
                         <div className="text-xs text-muted-foreground mb-1">
-                          {t('adminReply')} · {review.repliedAt && new Date(review.repliedAt).toLocaleString()}
+                          {t('adminReply')} · {review.repliedAt && new Date(review.repliedAt).toLocaleString(locale)}
                         </div>
                         <p className="text-sm whitespace-pre-wrap">{review.reply}</p>
                       </div>
@@ -400,7 +401,7 @@ export default function AdminReviewsPage() {
                 </Card>
               ))}
 
-              {/* 페이지네이션 */}
+              {/* Pagination */}
               {totalPages > 1 && (
                 <div className="flex items-center justify-center gap-2 mt-6">
                   <Button
@@ -500,7 +501,7 @@ export default function AdminReviewsPage() {
               <X className="h-6 w-6" />
             </button>
 
-            {/* 이전 버튼 */}
+            {/* Previous button */}
             {imageModal.length > 1 && (
               <button
                 onClick={(e) => {
@@ -519,7 +520,7 @@ export default function AdminReviewsPage() {
               className="max-w-full max-h-[80vh] object-contain"
             />
 
-            {/* 다음 버튼 */}
+            {/* Next button */}
             {imageModal.length > 1 && (
               <button
                 onClick={(e) => {

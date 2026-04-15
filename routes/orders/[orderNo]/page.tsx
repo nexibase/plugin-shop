@@ -276,7 +276,7 @@ export default function OrderDetailPage() {
   return (
     <>
       <div className="max-w-3xl mx-auto px-4 py-6">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="mb-6">
             <Button variant="ghost" size="sm" onClick={() => router.push("/shop/orders")}>
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -348,7 +348,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 주문 상품 */}
+          {/* Order items */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -395,7 +395,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 배송지 정보 */}
+          {/* Shipping address */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -428,7 +428,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 결제 정보 */}
+          {/* Payment info */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -568,7 +568,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 액션 버튼 */}
+          {/* Action buttons */}
           <div className="flex gap-3">
             {/* 계속 쇼핑하기 - 취소/환불 가능 상태에서 표시 */}
             {["pending", "paid", "preparing", "shipping", "delivered"].includes(order.status) && (

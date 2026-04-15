@@ -308,7 +308,7 @@ export default function QnaSection({
                         </span>
                       </div>
 
-                      {/* 답변 */}
+                      {/* Reply */}
                       {qna.answer && (
                         <div className="p-3 bg-muted rounded-lg">
                           <div className="flex items-center gap-2 mb-1">
@@ -332,7 +332,7 @@ export default function QnaSection({
             </div>
           ))}
 
-          {/* 페이지네이션 */}
+          {/* Pagination */}
           {qnaTotal > 10 && (
             <div className="flex justify-center gap-2 mt-4">
               <Button

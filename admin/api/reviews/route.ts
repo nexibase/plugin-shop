@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // 리뷰 조회
+    // Fetch review
     const [reviews, total, stats] = await Promise.all([
       prisma.productReview.findMany({
         where,

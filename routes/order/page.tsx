@@ -801,7 +801,7 @@ export default function OrderPage() {
   return (
     <>
       <div className="max-w-4xl mx-auto px-4 py-6">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="mb-6">
             <Button variant="ghost" size="sm" onClick={() => router.back()}>
               <ChevronLeft className="h-4 w-4 mr-1" />
@@ -813,7 +813,7 @@ export default function OrderPage() {
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2 space-y-6">
-                {/* 주문 상품 */}
+                {/* Order items */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">
@@ -898,7 +898,7 @@ export default function OrderPage() {
                   </CardContent>
                 </Card>
 
-                {/* 배송지 정보 */}
+                {/* Shipping address */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg flex items-center gap-2">

@@ -73,7 +73,7 @@ export async function POST(
         return NextResponse.json({ error: '가격은 필수입니다.' }, { status: 400 })
       }
 
-      // 중복 체크
+      // Duplicate check
       const existing = await prisma.productOption.findFirst({
         where: {
           productId,

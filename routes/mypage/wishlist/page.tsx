@@ -110,7 +110,7 @@ export default function WishlistPage() {
 					<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 						{wishlistItems.map((item) => (
 							<div key={item.id} className="group relative border rounded-lg overflow-hidden">
-								{/* 상품 이미지 */}
+								{/* Product images */}
 								<Link href={`/shop/products/${item.productSlug}`}>
 									<div className="aspect-square relative bg-muted">
 										<img
@@ -143,7 +143,7 @@ export default function WishlistPage() {
 									)}
 								</button>
 
-								{/* 상품 정보 */}
+								{/* Product info */}
 								<div className="p-3">
 									<Link href={`/shop/products/${item.productSlug}`}>
 										<h3 className="text-sm font-medium line-clamp-2 mb-2 group-hover:text-primary transition-colors">

@@ -117,7 +117,7 @@ export default function ShopDashboardPage() {
 
       <div className="flex-1 p-6">
         <div className="max-w-7xl mx-auto">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="mb-6">
             <h2 className="text-2xl font-bold flex items-center gap-2">
               <BarChart3 className="h-6 w-6" />

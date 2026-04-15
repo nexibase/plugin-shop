@@ -142,7 +142,7 @@ export default function AdminOrdersPage() {
         setStats(data.stats)
       }
     } catch (error) {
-      console.error('주문 목록 조회 에러:', error)
+      console.error('failed to fetch orders:', error)
     } finally {
       setLoading(false)
     }
@@ -166,7 +166,7 @@ export default function AdminOrdersPage() {
     }
   }
 
-  // 개별 선택
+  // Select one
   const handleSelectOrder = (orderId: number, checked: boolean) => {
     if (checked) {
       setSelectedOrders(prev => [...prev, orderId])
@@ -294,7 +294,7 @@ export default function AdminOrdersPage() {
       <Sidebar />
       <main className="flex-1 p-6">
         <div className="space-y-6">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">
@@ -362,7 +362,7 @@ export default function AdminOrdersPage() {
             </div>
           )}
 
-          {/* 검색 */}
+          {/* Search */}
           <Card>
             <CardContent className="pt-6">
               <form onSubmit={handleSearch} className="flex gap-2">
@@ -498,7 +498,7 @@ export default function AdminOrdersPage() {
             </CardContent>
           </Card>
 
-          {/* 페이지네이션 */}
+          {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
               <Button

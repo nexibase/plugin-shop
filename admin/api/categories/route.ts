@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminUser } from '@/lib/auth'
 
-// 카테고리 목록 조회
+// Fetch category list
 export async function GET() {
   try {
     const admin = await getAdminUser()

@@ -4,7 +4,7 @@ import { getSession } from '@/lib/auth'
 import crypto from 'crypto'
 import { createOrderCancelledNotification, createOrderCancelledNotificationForAdmins, createCancelRequestNotificationForAdmins } from '@/lib/notification'
 
-// 쇼핑몰 설정 가져오기
+// Load shop settings
 async function getShopSettings() {
   const settings = await prisma.shopSetting.findMany()
   const settingsMap: Record<string, string> = {}
@@ -19,7 +19,7 @@ function isBeforeShipping(status: string): boolean {
   return ['pending', 'paid', 'preparing'].includes(status)
 }
 
-// paymentInfo에서 tid 추출
+// Extract tid from paymentInfo
 function getPaymentTid(paymentInfo: string | null): string | null {
   if (!paymentInfo) return null
   try {
@@ -30,7 +30,7 @@ function getPaymentTid(paymentInfo: string | null): string | null {
   }
 }
 
-// 타임스탬프 생성 (YYYYMMDDhhmmss 형식)
+// Build a timestamp (YYYYMMDDhhmmss)
 function getTimestamp(): string {
   const now = new Date()
   const year = now.getFullYear()
@@ -52,7 +52,7 @@ async function cancelInicisPayment(tid: string, cancelReason: string, settings: 
     return { success: false, message: 'PG API Key가 설정되지 않았습니다.' }
   }
 
-  // AbortController로 타임아웃 설정 (10초)
+  // 10-second timeout via AbortController
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 10000)
 
@@ -62,18 +62,18 @@ async function cancelInicisPayment(tid: string, cancelReason: string, settings: 
     const type = 'refund'
     const clientIp = '127.0.0.1'
 
-    // data 객체 생성
+    // Build the data object
     const data = {
       tid: tid,
       msg: cancelReason
     }
 
-    // 해시 데이터 생성 (공식 샘플: key + mid + type + timestamp + JSON.stringify(data))
+    // Build the hash data (official sample: key + mid + type + timestamp + JSON.stringify(data))
     const dataStr = JSON.stringify(data)
     const plainTxt = iniApiKey + mid + type + timestamp + dataStr
     const hashData = crypto.createHash('sha512').update(plainTxt).digest('hex')
 
-    // 요청 파라미터
+    // Request parameters
     const params = {
       mid: mid,
       type: type,
@@ -97,7 +97,7 @@ async function cancelInicisPayment(tid: string, cancelReason: string, settings: 
     clearTimeout(timeoutId)
 
     const result = await response.json()
-    console.log('이니시스 취소 응답:', result)
+    console.log('inicis cancellation response:', result)
 
     if (result.resultCode === '00') {
       return { success: true, message: '결제 취소 성공', data: result }
@@ -108,11 +108,11 @@ async function cancelInicisPayment(tid: string, cancelReason: string, settings: 
     clearTimeout(timeoutId)
 
     if (error instanceof Error && error.name === 'AbortError') {
-      console.error('이니시스 취소 API 타임아웃')
+      console.error('inicis cancellation API timeout')
       return { success: false, message: '결제 취소 API 응답 시간 초과' }
     }
 
-    console.error('이니시스 취소 API 호출 에러:', error)
+    console.error('inicis cancellation API call failed:', error)
     return { success: false, message: '결제 취소 API 호출 실패' }
   }
 }
@@ -312,14 +312,14 @@ export async function PUT(
       const settings = await getShopSettings()
       let pgCancelResult = null
 
-      // 카드 결제인 경우 PG 승인 취소
+      // For card payments, cancel the PG approval
       const tid = getPaymentTid(order.paymentInfo)
       if (order.paymentMethod === 'card' && tid) {
         console.log('카드 결제 취소 시도, tid:', tid)
         pgCancelResult = await cancelInicisPayment(tid, cancelReason, settings)
-        console.log('PG 취소 결과:', pgCancelResult)
+        console.log('PG cancellation result:', pgCancelResult)
 
-        // 실제 운영 모드에서 PG 취소 실패 시 에러 반환
+        // In production, return an error when PG cancellation fails
         const testMode = settings.pg_test_mode !== 'false'
         if (!testMode && !pgCancelResult.success) {
           return NextResponse.json(
@@ -329,7 +329,7 @@ export async function PUT(
         }
       }
 
-      // paymentInfo에 취소 정보 추가
+      // Append cancellation info to paymentInfo
       let updatedPaymentInfo = order.paymentInfo
       if (pgCancelResult) {
         try {
@@ -353,9 +353,9 @@ export async function PUT(
         }
       }
 
-      // 재고 복구 + 주문 취소
+      // Restore stock and cancel the order
       await prisma.$transaction(async (tx) => {
-        // 재고 복구
+        // Restore stock
         for (const item of order.items) {
           if (item.optionId) {
             await tx.productOption.update({
@@ -365,7 +365,7 @@ export async function PUT(
               }
             })
           }
-          // 판매 수량 감소
+          // Decrement sold quantity
           if (item.productId) {
             await tx.product.update({
               where: { id: item.productId },
@@ -376,7 +376,7 @@ export async function PUT(
           }
         }
 
-        // 주문 상태 변경 (전액 환불)
+        // Update order status (full refund)
         await tx.order.update({
           where: { orderNo },
           data: {

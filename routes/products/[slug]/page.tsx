@@ -280,7 +280,7 @@ export default function ProductDetailPage() {
     }
   }
 
-  // 리뷰 작성 가능한 주문 확인
+  // Write review 가능한 주문 확인
   const fetchReviewableOrders = async () => {
     try {
       const res = await fetch(`/api/shop/products/${slug}/reviewable-orders`)
@@ -759,7 +759,7 @@ export default function ProductDetailPage() {
 
             {/* 오른쪽: 상품 정보 + 구매박스 */}
             <div className="space-y-6">
-              {/* 상품 정보 */}
+              {/* Product info */}
               <div>
               {/* 카테고리 */}
               {product.category && (
@@ -849,7 +849,7 @@ export default function ProductDetailPage() {
               <div>
                 <Card className="sticky top-4">
                 <CardContent className="p-4 space-y-4">
-                  {/* 가격 */}
+                  {/* Price */}
                   <div>
                     {product.originPrice && product.originPrice > currentPrice && (
                       <div className="text-sm text-muted-foreground line-through">
@@ -1238,7 +1238,7 @@ export default function ProductDetailPage() {
             className="absolute inset-0 bg-black/50"
             onClick={() => setShowCartModal(false)}
           />
-          {/* 모달 */}
+          {/* Modal */}
           <div className="relative bg-background rounded-lg shadow-lg max-w-sm w-full mx-4 p-6">
             <button
               onClick={() => setShowCartModal(false)}

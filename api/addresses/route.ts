@@ -41,7 +41,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 });
     }
 
-    // 중복 체크: 동일한 주소가 이미 있는지 확인
+    // Duplicate check: 동일한 주소가 이미 있는지 확인
     const existingAddress = await prisma.userAddress.findFirst({
       where: {
         userId: session.id,

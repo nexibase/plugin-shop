@@ -85,7 +85,7 @@ export default function OrdersPage() {
 				setOrdersTotalPages(data.pagination.totalPages)
 			}
 		} catch (error) {
-			console.error('주문 목록 조회 에러:', error)
+			console.error('failed to fetch orders:', error)
 		} finally {
 			setOrdersLoading(false)
 		}
@@ -110,7 +110,7 @@ export default function OrdersPage() {
 
 	return (
 		<MyPageLayout>
-			{/* 필터 */}
+			{/* Filters */}
 			<div className="flex justify-end mb-4">
 				<Select value={statusFilter || 'all'} onValueChange={(v) => setStatusFilter(v === 'all' ? '' : v)}>
 					<SelectTrigger className="w-[140px]">
@@ -160,7 +160,7 @@ export default function OrdersPage() {
 								</div>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								{/* 주문 상품 */}
+								{/* Order items */}
 								{order.items.slice(0, 2).map((item) => (
 									<div key={item.id} className="flex gap-4">
 										{item.productSlug ? (

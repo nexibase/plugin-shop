@@ -245,7 +245,7 @@ export default function AdminSalesPage() {
       <Sidebar />
       <main className="flex-1 p-6">
         <div className="space-y-6">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -314,7 +314,7 @@ export default function AdminSalesPage() {
             </CardContent>
           </Card>
 
-          {/* 탭 */}
+          {/* Tabs */}
           <div className="flex gap-2 border-b">
             <button
               onClick={() => handleTabChange('summary')}
@@ -524,7 +524,7 @@ export default function AdminSalesPage() {
               {/* 주문 내역 탭 */}
               {activeTab === 'orders' && ordersData && (
                 <div className="space-y-4">
-                  {/* 검색 */}
+                  {/* Search */}
                   <Card>
                     <CardContent className="pt-6">
                       <form onSubmit={handleSearch} className="flex gap-2">
@@ -632,7 +632,7 @@ export default function AdminSalesPage() {
                     </CardContent>
                   </Card>
 
-                  {/* 페이지네이션 */}
+                  {/* Pagination */}
                   {ordersData.pagination.totalPages > 1 && (
                     <div className="flex items-center justify-center gap-2">
                       <Button
@@ -809,7 +809,7 @@ export default function AdminSalesPage() {
                     </CardContent>
                   </Card>
 
-                  {/* 안내 */}
+                  {/* Help message */}
                   <Card className="bg-muted/50">
                     <CardContent className="pt-6">
                       <div className="text-sm text-muted-foreground space-y-1">

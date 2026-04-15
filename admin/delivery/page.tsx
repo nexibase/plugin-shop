@@ -257,7 +257,7 @@ export default function ShopDeliveryPage() {
         alert(error.error || t('saveFailed'))
       }
     } catch (error) {
-      console.error('저장 에러:', error)
+      console.error('save error:', error)
       alert(t('saveError'))
     }
   }
@@ -277,7 +277,7 @@ export default function ShopDeliveryPage() {
         alert(error.error || t('deleteFailed'))
       }
     } catch (error) {
-      console.error('삭제 에러:', error)
+      console.error('delete error:', error)
       alert(t('deleteError'))
     }
   }
@@ -310,7 +310,7 @@ export default function ShopDeliveryPage() {
       <Sidebar />
       <main className="flex-1 p-6">
         <div className="max-w-4xl mx-auto">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
               <h1 className="text-2xl font-bold">{t('deliveryPolicyTitle')}</h1>
@@ -329,7 +329,7 @@ export default function ShopDeliveryPage() {
             </div>
           </div>
 
-          {/* 안내 */}
+          {/* Help message */}
           <Card className="mb-6 bg-muted/50">
             <CardContent className="p-4">
               <h3 className="font-medium mb-2">{t('deliveryCalcTitle')}</h3>

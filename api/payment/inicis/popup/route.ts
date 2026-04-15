@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
 
-  // request에서 호스트 정보를 가져와 baseUrl 생성
+  // Build baseUrl from the request host
   const host = request.headers.get('host') || 'localhost:3000'
   const protocol = request.headers.get('x-forwarded-proto') || 'http'
   const baseUrl = process.env.NEXT_PUBLIC_URL || `${protocol}://${host}`

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { createNewOrderNotificationForAdmins, createOrderCompletedNotification } from '@/lib/notification'
 
-// 주문 생성
+// Create order
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
       paymentMethod,
     } = body
 
-    // 필수 필드 검증
+    // Validate required fields
     if (!items || items.length === 0) {
       return NextResponse.json(
         { error: '주문 상품이 없습니다.' },
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     // 트랜잭션으로 주문 생성 + 재고 차감
     const order = await prisma.$transaction(async (tx) => {
-      // 주문 생성
+      // Create order
       const newOrder = await tx.order.create({
         data: {
           orderNo,
@@ -267,7 +267,7 @@ export async function GET(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {
       userId: session.id,
-      deletedAt: null  // 소프트 삭제된 주문 제외
+      deletedAt: null  // Soft delete된 주문 제외
     }
 
     if (status) {
@@ -329,7 +329,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('주문 목록 조회 에러:', error)
+    console.error('failed to fetch orders:', error)
     return NextResponse.json(
       { error: '주문 목록을 불러오는데 실패했습니다.' },
       { status: 500 }
@@ -351,7 +351,7 @@ async function generateOrderNo(): Promise<string> {
     const rand = String(Math.floor(Math.random() * 100000)).padStart(5, '0')
     const orderNo = `${yy}${MM}${dd}${hh}-${ii}${rand}`
 
-    // 중복 체크
+    // Duplicate check
     const exists = await prisma.order.findUnique({ where: { orderNo } })
     if (!exists) {
       return orderNo

@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { getAuthUser } from '@/lib/auth'
 
-// 쇼핑몰 설정 가져오기
+// Load shop settings
 async function getShopSettings() {
   const settings = await prisma.shopSetting.findMany()
   const settingsMap: Record<string, string> = {}
@@ -27,7 +27,7 @@ async function generateOrderNo(): Promise<string> {
     const rand = String(Math.floor(Math.random() * 100000)).padStart(5, '0')
     const orderNo = `${yy}${MM}${dd}${hh}-${ii}${rand}`
 
-    // 중복 체크
+    // Duplicate check
     const exists = await prisma.order.findUnique({ where: { orderNo } })
     if (!exists) {
       return orderNo
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '주문 상품이 없습니다.' }, { status: 400 })
     }
 
-    // 쇼핑몰 설정 가져오기
+    // Load shop settings
     const settings = await getShopSettings()
     const testMode = settings.pg_test_mode !== 'false'
     // 테스트 모드면 무조건 테스트용 MID, SignKey 사용
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
 
     // 결제 요청에 필요한 데이터
     const paymentData = {
-      // 기본 정보
+      // Basic info
       version: '1.0',
       mid,
       oid: orderNo,

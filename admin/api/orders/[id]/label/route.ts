@@ -275,7 +275,7 @@ function formatPhone(phone: string): string {
   return phone
 }
 
-// 날짜 포맷
+// Date format
 function formatDate(date: Date): string {
   return new Date(date).toLocaleDateString('ko-KR', {
     year: 'numeric',
