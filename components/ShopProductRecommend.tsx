@@ -194,7 +194,7 @@ export function RecentlyViewedProducts({
         setProducts(data.products)
       }
     } catch (error) {
-      console.error('최근 본 상품 조회 에러:', error)
+      console.error('failed to fetch recently viewed products:', error)
     } finally {
       setLoading(false)
     }

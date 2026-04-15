@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const settings = await prisma.shopSetting.findMany()
 
-    // key-value 형태로 변환
+    // Convert to key-value form
     const settingsMap: Record<string, string> = {}
     settings.forEach(s => {
       settingsMap[s.key] = s.value

@@ -51,11 +51,11 @@ function OrderCompleteContent() {
       return
     }
 
-    // 장바구니 정리 후 주문 상세 페이지로 리다이렉트
+    // Clear cart then redirect to the order detail page
     clearCartAndRedirect()
   }, [orderNo, paymentError, errorMessage, router])
 
-  // 장바구니 정리 후 주문 상세 페이지로 리다이렉트
+  // Clear cart then redirect to the order detail page
   const clearCartAndRedirect = async () => {
     try {
       const res = await fetch(`/api/shop/orders/${orderNo}`)
@@ -66,7 +66,7 @@ function OrderCompleteContent() {
         }
       }
     } catch (err) {
-      console.error("장바구니 정리 에러:", err)
+      console.error("failed to clear cart:", err)
     }
     // 주문 상세 페이지로 리다이렉트
     router.replace(`/shop/orders/${orderNo}`)
@@ -90,7 +90,7 @@ function OrderCompleteContent() {
       localStorage.removeItem("orderItems")
       window.dispatchEvent(new Event("cartUpdated"))
     } catch (err) {
-      console.error("장바구니 정리 에러:", err)
+      console.error("failed to clear cart:", err)
     }
   }
 

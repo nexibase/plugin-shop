@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
       take: limit
     })
 
-    // 상품 포맷팅
+    // Format product
     const formattedProducts = products.map(product => {
       const images = product.images ? JSON.parse(product.images) : []
 
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       .map(id => productMap.get(id))
       .filter(Boolean)
 
-    // 상품 포맷팅
+    // Format product
     const formattedProducts = orderedProducts.map(product => {
       if (!product) return null
       const images = product.images ? JSON.parse(product.images) : []
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest) {
       products: formattedProducts
     })
   } catch (error) {
-    console.error('최근 본 상품 조회 에러:', error)
+    console.error('failed to fetch recently viewed products:', error)
     return NextResponse.json({ error: '최근 본 상품 조회 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

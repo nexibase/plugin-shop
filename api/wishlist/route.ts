@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('찜 목록 조회 에러:', error)
+    console.error('failed to fetch wishlist:', error)
     return NextResponse.json({ error: '찜 목록을 불러오는데 실패했습니다.' }, { status: 500 })
   }
 }
@@ -163,7 +163,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true, message: '찜 해제되었습니다.' })
   } catch (error) {
-    console.error('찜 해제 에러:', error)
+    console.error('failed to remove from wishlist:', error)
     return NextResponse.json({ error: '찜 해제에 실패했습니다.' }, { status: 500 })
   }
 }

@@ -15,7 +15,7 @@ export async function PUT(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const addressId = parseInt(id);
 
-    // 주소 소유권 확인
+    // Verify address ownership
     const existingAddress = await prisma.userAddress.findFirst({
       where: { id: addressId, userId: session.id },
     });
@@ -27,12 +27,12 @@ export async function PUT(request: Request, context: RouteContext) {
     const body = await request.json();
     const { name, recipientName, recipientPhone, zipCode, address, addressDetail, isDefault } = body;
 
-    // 유효성 검사
+    // Validation
     if (!name || !recipientName || !recipientPhone || !zipCode || !address) {
       return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 });
     }
 
-    // 기본 배송지로 설정하는 경우 기존 기본 배송지 해제
+    // When marking as default shipping address, unset the previous default
     if (isDefault && !existingAddress.isDefault) {
       await prisma.userAddress.updateMany({
         where: { userId: session.id, isDefault: true },
@@ -60,7 +60,7 @@ export async function PUT(request: Request, context: RouteContext) {
   }
 }
 
-// 주소 삭제
+// Delete address
 export async function DELETE(request: Request, context: RouteContext) {
   try {
     const session = await getSession();
@@ -71,7 +71,7 @@ export async function DELETE(request: Request, context: RouteContext) {
     const { id } = await context.params;
     const addressId = parseInt(id);
 
-    // 주소 소유권 확인
+    // Verify address ownership
     const existingAddress = await prisma.userAddress.findFirst({
       where: { id: addressId, userId: session.id },
     });
@@ -101,7 +101,7 @@ export async function DELETE(request: Request, context: RouteContext) {
 
     return NextResponse.json({ message: '주소가 삭제되었습니다.' });
   } catch (error) {
-    console.error('주소 삭제 에러:', error);
+    console.error('failed to delete address:', error);
     return NextResponse.json({ error: '주소 삭제 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }

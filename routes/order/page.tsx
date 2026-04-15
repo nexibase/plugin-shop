@@ -290,14 +290,14 @@ export default function OrderPage() {
         alert(data.error || t('address.saveFailed'))
       }
     } catch (error) {
-      console.error('주소 저장 에러:', error)
+      console.error('failed to save address:', error)
       alert(t('address.saveError'))
     } finally {
       setAddressSaving(false)
     }
   }
 
-  // 주소 삭제
+  // Delete address
   const deleteAddress = async (id: number) => {
     if (!confirm(t('address.deleteConfirm'))) return
 
@@ -316,7 +316,7 @@ export default function OrderPage() {
         alert(data.error || t('address.deleteFailed'))
       }
     } catch (error) {
-      console.error('주소 삭제 에러:', error)
+      console.error('failed to delete address:', error)
     } finally {
       setDeletingAddressId(null)
     }
@@ -445,7 +445,7 @@ export default function OrderPage() {
         setShopSettings(data.settings)
       }
     } catch (err) {
-      console.error("설정 로드 에러:", err)
+      console.error("failed to load settings:", err)
     }
   }
 
@@ -595,7 +595,7 @@ export default function OrderPage() {
     e.preventDefault()
     setError(null)
 
-    // 유효성 검사
+    // Validation
     if (!ordererName || !ordererPhone) {
       setError(t('checkout.enterBuyerInfo'))
       return
@@ -857,7 +857,7 @@ export default function OrderPage() {
                   </CardContent>
                 </Card>
 
-                {/* 주문자 정보 */}
+                {/* Customer info */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-lg">{t('checkout.buyer')}</CardTitle>

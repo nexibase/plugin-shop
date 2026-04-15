@@ -123,7 +123,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('상품 목록 조회 에러:', error)
+    console.error('failed to fetch products:', error)
     return NextResponse.json({ error: '상품 목록 조회 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const endDate = searchParams.get('endDate')
     const search = searchParams.get('search') || ''
 
-    // 기간 필터 계산
+    // Date range filter 계산
     const now = new Date()
     let dateFrom: Date
     let dateTo: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)

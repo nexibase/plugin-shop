@@ -380,7 +380,7 @@ export default function AdminOrdersPage() {
             </CardContent>
           </Card>
 
-          {/* 주문 목록 */}
+          {/* Order list */}
           <Card>
             <CardContent className="p-0">
               {loading ? (

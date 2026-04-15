@@ -165,7 +165,7 @@ export async function GET(
       bankInfo = bankSetting?.value || null
     }
 
-    // 카드결제 정보 파싱
+    // Parse card payment info
     let cardInfo = null
     if (order.paymentMethod === 'card' && order.paymentInfo) {
       try {
@@ -184,7 +184,7 @@ export async function GET(
       }
     }
 
-    // 이미지 처리
+    // Image processing
     const orderWithImages = {
       ...order,
       items: order.items.map(item => {
@@ -209,7 +209,7 @@ export async function GET(
 
     return NextResponse.json({ order: orderWithImages, bankInfo, cardInfo })
   } catch (error) {
-    console.error('주문 상세 조회 에러:', error)
+    console.error('failed to fetch order detail:', error)
     return NextResponse.json(
       { error: '주문을 불러오는데 실패했습니다.' },
       { status: 500 }
@@ -342,7 +342,7 @@ export async function PUT(
         })
       })
 
-      // 알림 생성
+      // Create notification
       if (order.userId) {
         await createOrderStatusNotification(order.userId, order.orderNo, order.status, 'cancelled')
       }
@@ -372,7 +372,7 @@ export async function PUT(
         }
       })
 
-      // 알림 생성 (취소 거절 -> 배송중)
+      // Create notification (취소 거절 -> 배송중)
       if (order.userId) {
         await createOrderStatusNotification(order.userId, order.orderNo, order.status, 'shipping')
       }
@@ -471,7 +471,7 @@ export async function PUT(
         })
       })
 
-      // 알림 생성
+      // Create notification
       if (order.userId) {
         await createOrderStatusNotification(order.userId, order.orderNo, order.status, 'refunded')
       }
@@ -621,7 +621,7 @@ export async function PUT(
       })
     }
 
-    // 무통장입금 입금확인
+    // Confirm bank transfer deposit
     if (action === 'confirm_payment') {
       if (order.paymentMethod !== 'bank') {
         return NextResponse.json(

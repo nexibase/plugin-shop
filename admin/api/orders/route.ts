@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 이미지 처리
+    // Image processing
     const ordersWithImages = orders.map(order => ({
       ...order,
       items: order.items.map(item => {

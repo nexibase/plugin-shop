@@ -46,7 +46,7 @@ export async function GET(
       )
     }
 
-    // 사이트 설정 가져오기
+    // Load site settings
     const settings = await prisma.setting.findMany({
       where: {
         key: {
@@ -264,7 +264,7 @@ export async function GET(
   }
 }
 
-// 전화번호 포맷
+// Format phone number
 function formatPhone(phone: string): string {
   const cleaned = phone.replace(/\D/g, '')
   if (cleaned.length === 11) {

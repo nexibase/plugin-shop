@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminUser } from '@/lib/auth'
 
-// 상품 상세 조회
+// Fetch product detail
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -40,7 +40,7 @@ export async function GET(
       }
     })
   } catch (error) {
-    console.error('상품 상세 조회 에러:', error)
+    console.error('failed to fetch product detail:', error)
     return NextResponse.json({ error: '상품 조회 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }
@@ -67,7 +67,7 @@ export async function PUT(
       isActive, isSoldOut, sortOrder
     } = body
 
-    // 슬러그 중복 체크 (자신 제외)
+    // Slug uniqueness check (excluding self)
     if (slug) {
       const existing = await prisma.product.findFirst({
         where: { slug, id: { not: productId } }
@@ -151,7 +151,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('상품 삭제 에러:', error)
+    console.error('failed to delete product:', error)
     return NextResponse.json({ error: '상품 삭제 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

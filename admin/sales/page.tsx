@@ -542,7 +542,7 @@ export default function AdminSalesPage() {
                     </CardContent>
                   </Card>
 
-                  {/* 주문 목록 */}
+                  {/* Order list */}
                   <Card>
                     <CardContent className="p-0">
                       {ordersData.orders.length === 0 ? (

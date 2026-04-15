@@ -181,7 +181,7 @@ function CategoryContent() {
             </p>
           </div>
 
-          {/* 필터 영역 */}
+          {/* Filter area */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             {/* Search */}
             <form onSubmit={handleSearch} className="flex-1 max-w-md">
@@ -204,7 +204,7 @@ function CategoryContent() {
             </form>
 
             <div className="flex gap-2">
-              {/* 카테고리 필터 */}
+              {/* Category filter */}
               <Select value={categorySlug} onValueChange={handleCategoryChange}>
                 <SelectTrigger className="w-[140px]">
                   <SelectValue placeholder={t('categoryPlaceholder')} />
@@ -219,7 +219,7 @@ function CategoryContent() {
                 </SelectContent>
               </Select>
 
-              {/* 정렬 */}
+              {/* Sort */}
               <Select value={sortBy} onValueChange={handleSortChange}>
                 <SelectTrigger className="w-[120px]">
                   <SelectValue />
@@ -235,7 +235,7 @@ function CategoryContent() {
             </div>
           </div>
 
-          {/* 카테고리 태그 */}
+          {/* Category tags */}
           {allCategories.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-6">
               <Badge
@@ -258,7 +258,7 @@ function CategoryContent() {
             </div>
           )}
 
-          {/* 결과 정보 */}
+          {/* Result info */}
           <div className="flex items-center justify-between mb-4">
             <p className="text-sm text-muted-foreground">
               {t('totalCount', { total })}
@@ -266,7 +266,7 @@ function CategoryContent() {
             </p>
           </div>
 
-          {/* 상품 그리드 */}
+          {/* Product grid */}
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

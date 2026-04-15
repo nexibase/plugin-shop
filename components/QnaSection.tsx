@@ -61,7 +61,7 @@ export default function QnaSection({
   // 삭제 상태
   const [deletingId, setDeletingId] = useState<number | null>(null)
 
-  // Q&A 작성
+  // Write Q&A
   const submitQna = async () => {
     if (!qnaContent.trim()) return
     setSubmittingQna(true)
@@ -208,7 +208,7 @@ export default function QnaSection({
         </Card>
       )}
 
-      {/* Q&A 목록 */}
+      {/* Q&A list */}
       {qnasLoading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -300,7 +300,7 @@ export default function QnaSection({
                     </div>
                   ) : (
                     <>
-                      {/* 질문 */}
+                      {/* Question */}
                       <div className="mb-3">
                         <span className="inline-block px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded mr-2 align-top">Q</span>
                         <span className={`text-sm whitespace-pre-wrap ${!qna.canView ? 'text-muted-foreground italic' : ''}`}>

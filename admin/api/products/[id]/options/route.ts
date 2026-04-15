@@ -190,7 +190,7 @@ export async function PUT(
 
     return NextResponse.json({ error: '잘못된 요청입니다.' }, { status: 400 })
   } catch (error) {
-    console.error('옵션 수정 에러:', error)
+    console.error('failed to update option:', error)
     return NextResponse.json({ error: '옵션 수정 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }
@@ -226,7 +226,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true, deletedCount: optionIds.length })
   } catch (error) {
-    console.error('옵션 삭제 에러:', error)
+    console.error('failed to delete option:', error)
     return NextResponse.json({ error: '옵션 삭제 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

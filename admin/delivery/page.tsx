@@ -229,7 +229,7 @@ export default function ShopDeliveryPage() {
         setDeliveryFees(data.deliveryFees)
       }
     } catch (error) {
-      console.error('배송비 정책 조회 에러:', error)
+      console.error('failed to fetch shipping policy:', error)
     } finally {
       setLoading(false)
     }
@@ -342,7 +342,7 @@ export default function ShopDeliveryPage() {
             </CardContent>
           </Card>
 
-          {/* 통계 */}
+          {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card>
               <CardHeader className="pb-2">

@@ -29,7 +29,7 @@ export async function GET() {
       }))
     })
   } catch (error) {
-    console.error('카테고리 목록 조회 에러:', error)
+    console.error('failed to fetch categories:', error)
     return NextResponse.json({ error: '카테고리 목록 조회 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

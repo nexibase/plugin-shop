@@ -3,7 +3,7 @@ import { prisma } from '@/lib/prisma'
 import crypto from 'crypto'
 import { createNewOrderNotificationForAdmins, createOrderCompletedNotification } from '@/lib/notification'
 
-// SHA256 해시 생성
+// Build SHA-256 hash
 function sha256(str: string) {
   return crypto.createHash('sha256').update(str).digest('hex')
 }
@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
     return createRedirectHtml(redirectUrl)
   }
 
-  // 기타 경우 (파라미터 없이 GET 접근) - 결제 처리중 표시
+  // Other 경우 (파라미터 없이 GET 접근) - 결제 처리중 표시
   // 이니시스가 POST로 인증 결과를 보내기 전에 GET으로 먼저 접근할 수 있음
   const html = `
 <!DOCTYPE html>
@@ -302,7 +302,7 @@ export async function POST(request: NextRequest) {
       // 재고 차감 및 판매 수량 증가
       for (const item of orderData.items) {
         if (item.optionId) {
-          // 옵션이 있는 경우: 옵션 재고 차감
+          // When options exist: decrement option stock
           await prisma.productOption.update({
             where: { id: item.optionId },
             data: {
@@ -310,7 +310,7 @@ export async function POST(request: NextRequest) {
             }
           })
         } else {
-          // 옵션이 없는 경우: 상품 재고 차감
+          // When options are absent: decrement product stock
           await prisma.product.update({
             where: { id: item.productId },
             data: {
@@ -318,7 +318,7 @@ export async function POST(request: NextRequest) {
             }
           })
         }
-        // 판매 수량 증가
+        // Increment sold quantity
         await prisma.product.update({
           where: { id: item.productId },
           data: {
@@ -330,18 +330,18 @@ export async function POST(request: NextRequest) {
       // Delete PendingOrder
       await prisma.pendingOrder.delete({ where: { orderNo } })
 
-      // 주문자에게 주문 완료 알림 발송 (비동기 - 응답 지연 방지)
+      // Notify the customer that the order completed (async - avoids response delay)
       const emailItems = orderData.items.map((item: { productName: string; optionText?: string; quantity: number; subtotal: number }) => ({
         name: item.productName + (item.optionText ? ` (${item.optionText})` : ''),
         quantity: item.quantity,
         price: item.subtotal
       }))
       createOrderCompletedNotification(pendingOrder.userId, orderNo, orderData.finalPrice, emailItems)
-        .catch(err => console.error('주문자 알림 발송 실패:', err))
+        .catch(err => console.error('failed to send customer notification:', err))
 
-      // 관리자/부관리자에게 새 주문 알림 발송 (비동기 - 응답 지연 방지)
+      // Notify admins/sub-admins about the new order (async - avoids response delay)
       createNewOrderNotificationForAdmins(0, orderNo, orderData.finalPrice, orderData.ordererName)
-        .catch(err => console.error('관리자 알림 발송 실패:', err))
+        .catch(err => console.error('failed to send admin notification:', err))
 
       // 주문 완료 페이지로 리다이렉트
       return redirectTo(`/shop/order/complete?orderNo=${orderNo}`)

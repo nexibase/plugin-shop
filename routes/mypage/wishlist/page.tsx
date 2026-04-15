@@ -53,7 +53,7 @@ export default function WishlistPage() {
 				setWishlistTotalPages(data.pagination.totalPages)
 			}
 		} catch (error) {
-			console.error('찜 목록 조회 에러:', error)
+			console.error('failed to fetch wishlist:', error)
 		} finally {
 			setWishlistLoading(false)
 		}
@@ -83,7 +83,7 @@ export default function WishlistPage() {
 				setWishlistItems(wishlistItems.filter(item => item.productId !== productId))
 			}
 		} catch (error) {
-			console.error('찜 해제 에러:', error)
+			console.error('failed to remove from wishlist:', error)
 		} finally {
 			setRemovingId(null)
 		}

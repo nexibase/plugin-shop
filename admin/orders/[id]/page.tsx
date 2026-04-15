@@ -89,7 +89,7 @@ interface Order {
   }
 }
 
-// 카드사 코드 -> i18n 키 매핑
+// Map card-issuer code → i18n key
 const CARD_NAMES: Record<string, string> = {
   "01": "cardIssuer.hanaKeb",
   "02": "cardIssuer.kbKookmin",
@@ -291,7 +291,7 @@ export default function AdminOrderDetailPage() {
     }
   }
 
-  // 무통장입금 입금확인
+  // Confirm bank transfer deposit
   const handleConfirmPayment = async () => {
     if (!order) return
 
@@ -581,7 +581,7 @@ export default function AdminOrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 주문자 정보 */}
+          {/* Customer info */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -1012,7 +1012,7 @@ export default function AdminOrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 주문 이력 */}
+          {/* Order history */}
           <Card>
             <CardHeader>
               <CardTitle>{t('orderHistoryCard')}</CardTitle>

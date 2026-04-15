@@ -38,13 +38,13 @@ interface ShopSettings {
   option1_name: string
   option2_name: string
   option3_name: string
-  // PG 설정
+  // PG settings
   pg_provider: string
   pg_mid: string
   pg_signkey: string
   pg_apikey: string  // 결제 취소용 API Key
   pg_test_mode: string
-  // 알림 설정
+  // Notification settings
   order_notification_target: string  // admin, manager, both, none
   email_notification_enabled: string  // true, false
 }
@@ -60,13 +60,13 @@ const DEFAULT_SETTINGS_BASE = {
   exchange_info: "",
   return_info: "",
   return_address: "",
-  // PG 설정
+  // PG settings
   pg_provider: "inicis",
   pg_mid: "",
   pg_signkey: "",
   pg_apikey: "",
   pg_test_mode: "true",
-  // 알림 설정
+  // Notification settings
   order_notification_target: "admin",  // 기본값: 관리자만
   email_notification_enabled: "false",  // 기본값: 비활성화
 }
@@ -100,7 +100,7 @@ export default function ShopSettingsPage() {
         setSettings({ ...DEFAULT_SETTINGS, ...data.settings })
       }
     } catch (err) {
-      console.error("설정 로드 에러:", err)
+      console.error("failed to load settings:", err)
     } finally {
       setLoading(false)
     }
@@ -179,7 +179,7 @@ export default function ShopSettingsPage() {
         </Button>
       </div>
 
-      {/* 메시지 */}
+      {/* Message */}
       {error && (
         <div className="flex items-center gap-2 p-4 bg-red-100 text-red-800 rounded-lg">
           <AlertCircle className="h-4 w-4" />
@@ -265,7 +265,7 @@ export default function ShopSettingsPage() {
           </CardContent>
         </Card>
 
-        {/* 배송 안내 */}
+        {/* Delivery notice */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">

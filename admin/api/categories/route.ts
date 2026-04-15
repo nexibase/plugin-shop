@@ -27,7 +27,7 @@ export async function GET() {
       }))
     })
   } catch (error) {
-    console.error('카테고리 목록 조회 에러:', error)
+    console.error('failed to fetch categories:', error)
     return NextResponse.json({ error: '카테고리 목록 조회 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '이름과 슬러그는 필수입니다.' }, { status: 400 })
     }
 
-    // 슬러그 중복 체크
+    // Slug uniqueness check
     const existing = await prisma.productCategory.findUnique({
       where: { slug }
     })
@@ -87,7 +87,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: '카테고리 ID가 필요합니다.' }, { status: 400 })
     }
 
-    // 슬러그 중복 체크 (자신 제외)
+    // Slug uniqueness check (excluding self)
     if (slug) {
       const existing = await prisma.productCategory.findFirst({
         where: { slug, id: { not: id } }

@@ -69,7 +69,7 @@ export default function AddressesPage() {
 				setAddresses(data.addresses)
 			}
 		} catch (error) {
-			console.error('주소록 조회 에러:', error)
+			console.error('failed to fetch addresses:', error)
 		} finally {
 			setAddressesLoading(false)
 		}
@@ -134,7 +134,7 @@ export default function AddressesPage() {
 				alert(data.error || t('address.saveFailed'))
 			}
 		} catch (error) {
-			console.error('주소 저장 에러:', error)
+			console.error('failed to save address:', error)
 			alert(t('address.saveError'))
 		} finally {
 			setAddressSaving(false)
@@ -154,7 +154,7 @@ export default function AddressesPage() {
 				alert(data.error || t('address.deleteFailed'))
 			}
 		} catch (error) {
-			console.error('주소 삭제 에러:', error)
+			console.error('failed to delete address:', error)
 		} finally {
 			setDeletingAddressId(null)
 		}

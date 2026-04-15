@@ -75,7 +75,7 @@ interface Order {
   }[]
 }
 
-// 카드사 코드 -> i18n 키 매핑
+// Map card-issuer code → i18n key
 const CARD_NAMES: Record<string, string> = {
   "01": "cardIssuer.hanaKeb",
   "02": "cardIssuer.kbKookmin",
@@ -301,7 +301,7 @@ export default function OrderDetailPage() {
                 </div>
               </div>
 
-              {/* 배송 정보 */}
+              {/* Shipping info */}
               {order.trackingNumber && (
                 <div className="mt-4 p-4 bg-muted rounded-lg">
                   <p className="text-sm">
@@ -525,7 +525,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* 주문 이력 */}
+          {/* Order history */}
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>{t('order.orderHistory')}</CardTitle>

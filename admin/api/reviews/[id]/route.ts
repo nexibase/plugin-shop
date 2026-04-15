@@ -61,7 +61,7 @@ export async function PUT(
   }
 }
 
-// 리뷰 삭제 (소프트 삭제) / 복구
+// Delete review (소프트 삭제) / 복구
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

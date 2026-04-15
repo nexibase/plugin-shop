@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // 배송비 계산
+    // Calculate shipping fee
     const deliveryFeeResult = await calculateDeliveryFee(zipCode, totalPrice)
     const deliveryFee = deliveryFeeResult.fee
     const finalPrice = totalPrice + deliveryFee
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
       // 재고 차감
       for (const item of orderItems) {
         if (item.optionId) {
-          // 옵션이 있는 경우: 옵션 재고 차감
+          // When options exist: decrement option stock
           await tx.productOption.update({
             where: { id: item.optionId },
             data: {
@@ -193,7 +193,7 @@ export async function POST(request: NextRequest) {
             }
           })
         } else {
-          // 옵션이 없는 경우: 상품 재고 차감
+          // When options are absent: decrement product stock
           await tx.product.update({
             where: { id: item.productId },
             data: {
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
             }
           })
         }
-        // 판매 수량 증가
+        // Increment sold quantity
         await tx.product.update({
           where: { id: item.productId },
           data: {
@@ -213,18 +213,18 @@ export async function POST(request: NextRequest) {
       return newOrder
     })
 
-    // 주문자에게 주문 완료 알림 발송 (비동기 - 응답 지연 방지)
+    // Notify the customer that the order completed (async - avoids response delay)
     const emailItems = orderItems.map(item => ({
       name: item.productName + (item.optionText ? ` (${item.optionText})` : ''),
       quantity: item.quantity,
       price: item.subtotal
     }))
     createOrderCompletedNotification(session.id, order.orderNo, order.finalPrice, emailItems)
-      .catch(err => console.error('주문자 알림 발송 실패:', err))
+      .catch(err => console.error('failed to send customer notification:', err))
 
-    // 관리자/부관리자에게 새 주문 알림 발송 (비동기 - 응답 지연 방지)
+    // Notify admins/sub-admins about the new order (async - avoids response delay)
     createNewOrderNotificationForAdmins(order.id, order.orderNo, order.finalPrice, ordererName)
-      .catch(err => console.error('관리자 알림 발송 실패:', err))
+      .catch(err => console.error('failed to send admin notification:', err))
 
     return NextResponse.json({
       success: true,
@@ -296,7 +296,7 @@ export async function GET(request: NextRequest) {
       prisma.order.count({ where })
     ])
 
-    // 이미지 및 slug 처리
+    // Images 및 slug 처리
     const ordersWithImages = orders.map(order => ({
       ...order,
       items: order.items.map(item => {
@@ -337,7 +337,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// 주문번호 생성 (YYMMDDHH-iiXXXXX = 16자리, ii=분, 중복 체크)
+// Build an order number (YYMMDDHH-iiXXXXX = 16 chars, ii=minute, with uniqueness check)
 async function generateOrderNo(): Promise<string> {
   const now = new Date()
   const yy = String(now.getFullYear()).slice(-2)
@@ -346,7 +346,7 @@ async function generateOrderNo(): Promise<string> {
   const hh = String(now.getHours()).padStart(2, '0')
   const ii = String(now.getMinutes()).padStart(2, '0')
 
-  // 최대 10번 시도
+  // Try up to 10 times
   for (let i = 0; i < 10; i++) {
     const rand = String(Math.floor(Math.random() * 100000)).padStart(5, '0')
     const orderNo = `${yy}${MM}${dd}${hh}-${ii}${rand}`
@@ -358,13 +358,13 @@ async function generateOrderNo(): Promise<string> {
     }
   }
 
-  // 10번 실패 시 초+랜덤
+  // Fall back to seconds + random after 10 failures
   const ss = String(now.getSeconds()).padStart(2, '0')
   const rand = String(Math.floor(Math.random() * 1000)).padStart(3, '0')
   return `${yy}${MM}${dd}${hh}-${ii}${ss}${rand}`
 }
 
-// 배송비 계산
+// Calculate shipping fee
 async function calculateDeliveryFee(zipCode: string, totalPrice: number): Promise<{ fee: number; policyName: string }> {
   const policies = await prisma.deliveryFee.findMany({
     where: { isActive: true },

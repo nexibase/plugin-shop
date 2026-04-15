@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const settings = await prisma.shopSetting.findMany()
 
-    // key-value 형태로 변환
+    // Convert to key-value form
     const settingsMap: Record<string, string> = {}
     settings.forEach(s => {
       settingsMap[s.key] = s.value
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ settings: settingsMap })
   } catch (error) {
-    console.error('설정 조회 에러:', error)
+    console.error('failed to fetch settings:', error)
     return NextResponse.json(
       { error: '설정을 불러오는데 실패했습니다.' },
       { status: 500 }
@@ -57,7 +57,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('설정 저장 에러:', error)
+    console.error('failed to save settings:', error)
     return NextResponse.json(
       { error: '설정 저장에 실패했습니다.' },
       { status: 500 }

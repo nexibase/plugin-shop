@@ -61,16 +61,16 @@ export default function AdminReviewsPage() {
   const showDeleted = searchParams.get('deleted') === 'true'
   const [searchInput, setSearchInput] = useState(search)
 
-  // 답변 모달
+  // Reply modal
   const [replyModal, setReplyModal] = useState<Review | null>(null)
   const [replyText, setReplyText] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  // 이미지 모달
+  // Images 모달
   const [imageModal, setImageModal] = useState<string[] | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-  // 이미지 모달 키보드 이벤트
+  // Images 모달 키보드 이벤트
   useEffect(() => {
     if (!imageModal) return
 
@@ -107,7 +107,7 @@ export default function AdminReviewsPage() {
         setTotal(data.pagination.total)
       }
     } catch (error) {
-      console.error('리뷰 로드 실패:', error)
+      console.error('failed to load reviews:', error)
     } finally {
       setLoading(false)
     }
@@ -288,7 +288,7 @@ export default function AdminReviewsPage() {
             </div>
           </div>
 
-          {/* 리뷰 목록 */}
+          {/* Review list */}
           {loading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -298,7 +298,7 @@ export default function AdminReviewsPage() {
               {reviews.map(review => (
                 <Card key={review.id} className={!review.isActive ? 'opacity-60 border-red-300' : ''}>
                   <CardContent className="p-4">
-                    {/* 상단 정보 */}
+                    {/* Top info */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link
@@ -358,7 +358,7 @@ export default function AdminReviewsPage() {
                       <p className="text-sm whitespace-pre-wrap">{review.content}</p>
                     </div>
 
-                    {/* 리뷰 이미지 */}
+                    {/* Review images */}
                     {review.images.length > 0 && (
                       <div className="flex gap-2 mb-3">
                         {review.images.map((img, idx) => (
@@ -386,7 +386,7 @@ export default function AdminReviewsPage() {
                       </div>
                     )}
 
-                    {/* 답변 버튼 */}
+                    {/* Reply button */}
                     {review.isActive && (
                       <Button
                         variant={review.reply ? "outline" : "default"}
@@ -434,7 +434,7 @@ export default function AdminReviewsPage() {
         </div>
       </main>
 
-      {/* 답변 모달 */}
+      {/* Reply modal */}
       {replyModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
@@ -460,7 +460,7 @@ export default function AdminReviewsPage() {
               <p className="text-sm whitespace-pre-wrap">{replyModal.content}</p>
             </div>
 
-            {/* 답변 입력 */}
+            {/* Reply input */}
             <Textarea
               value={replyText}
               onChange={(e) => setReplyText(e.target.value)}

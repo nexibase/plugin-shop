@@ -294,7 +294,7 @@ export default function ShopCategoriesPage() {
             </Button>
           </div>
 
-          {/* 통계 */}
+          {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <Card>
               <CardHeader className="pb-2">

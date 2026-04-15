@@ -329,7 +329,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
     sku: ''
   })
 
-  // 이미지 상태
+  // Images 상태
   const [images, setImages] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
 
@@ -345,7 +345,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
     })
   )
 
-  // 이미지 드래그 종료 핸들러
+  // Images 드래그 종료 핸들러
   const handleImageDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     if (over && active.id !== over.id) {
@@ -518,7 +518,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         alert(error.error || t('editFailed'))
       }
     } catch (error) {
-      console.error('옵션 수정 에러:', error)
+      console.error('failed to update option:', error)
     }
   }
 
@@ -538,11 +538,11 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         alert(error.error || t('deleteFailed'))
       }
     } catch (error) {
-      console.error('옵션 삭제 에러:', error)
+      console.error('failed to delete option:', error)
     }
   }
 
-  // 이미지 업로드
+  // Images 업로드
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
     if (!files || files.length === 0) return
@@ -570,7 +570,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
           alert(error.error || t('imageUploadFailed'))
         }
       } catch (error) {
-        console.error('이미지 업로드 에러:', error)
+        console.error('image upload error:', error)
       }
     }
 
@@ -578,7 +578,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
     setUploading(false)
   }
 
-  // 이미지 삭제
+  // Images 삭제
   const handleRemoveImage = async (index: number) => {
     const imageUrl = images[index]
 
@@ -590,7 +590,7 @@ export default function ProductEditPage({ params }: { params: Promise<{ id: stri
         body: JSON.stringify({ imageUrl })
       })
     } catch (error) {
-      console.error('이미지 삭제 에러:', error)
+      console.error('failed to delete image:', error)
     }
 
     // 상태에서 제거

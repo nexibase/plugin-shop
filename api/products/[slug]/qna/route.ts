@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json({ error: '상품을 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // Q&A 조회
+    // Fetch Q&A
     const [qnas, total] = await Promise.all([
       prisma.productQna.findMany({
         where: {
@@ -84,7 +84,7 @@ export async function GET(
   }
 }
 
-// Q&A 작성
+// Write Q&A
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -179,7 +179,7 @@ export async function PUT(
       return NextResponse.json({ error: '상품을 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // Q&A 찾기
+    // Find Q&A
     const qna = await prisma.productQna.findUnique({
       where: { id: qnaId }
     })
@@ -188,7 +188,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Q&A를 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // 본인 확인
+    // Identity check
     if (qna.userId !== session.id) {
       return NextResponse.json({ error: '본인의 Q&A만 수정할 수 있습니다.' }, { status: 403 })
     }
@@ -259,7 +259,7 @@ export async function DELETE(
       return NextResponse.json({ error: '상품을 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // Q&A 찾기
+    // Find Q&A
     const qna = await prisma.productQna.findUnique({
       where: { id: qnaId }
     })
@@ -268,7 +268,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Q&A를 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // 본인 확인
+    // Identity check
     if (qna.userId !== session.id) {
       return NextResponse.json({ error: '본인의 Q&A만 삭제할 수 있습니다.' }, { status: 403 })
     }
@@ -286,7 +286,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Q&A 삭제 에러:', error)
+    console.error('failed to delete Q&A:', error)
     return NextResponse.json({ error: 'Q&A 삭제에 실패했습니다.' }, { status: 500 })
   }
 }

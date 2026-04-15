@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       prisma.product.count({ where })
     ])
 
-    // 통계
+    // Stats
     const stats = await prisma.product.aggregate({
       _count: true,
       where: { isActive: true }
@@ -88,7 +88,7 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('상품 목록 조회 에러:', error)
+    console.error('failed to fetch products:', error)
     return NextResponse.json({ error: '상품 목록 조회 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '이름, 슬러그, 가격은 필수입니다.' }, { status: 400 })
     }
 
-    // 슬러그 중복 체크
+    // Slug uniqueness check
     const existing = await prisma.product.findUnique({ where: { slug } })
     if (existing) {
       return NextResponse.json({ error: '이미 존재하는 슬러그입니다.' }, { status: 400 })
@@ -193,7 +193,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true, deletedCount: ids.length })
   } catch (error) {
-    console.error('상품 삭제 에러:', error)
+    console.error('failed to delete product:', error)
     return NextResponse.json({ error: '상품 삭제 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

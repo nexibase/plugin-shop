@@ -204,11 +204,11 @@ export default function ProductDetailPage() {
         setIsAdmin(data.user?.role === 'admin')
       }
     } catch {
-      // 무시
+      // Ignore
     }
   }
 
-  // 찜 여부 확인
+  // Check wishlist membership
   const checkWishlist = async (productId: number) => {
     try {
       const res = await fetch(`/api/shop/wishlist/check?productId=${productId}`)
@@ -217,7 +217,7 @@ export default function ProductDetailPage() {
         setIsWished(data.isWished)
       }
     } catch {
-      // 무시
+      // Ignore
     }
   }
 
@@ -274,7 +274,7 @@ export default function ProductDetailPage() {
         setReviewPage(page)
       }
     } catch (err) {
-      console.error('리뷰 로드 실패:', err)
+      console.error('failed to load reviews:', err)
     } finally {
       setReviewsLoading(false)
     }
@@ -305,7 +305,7 @@ export default function ProductDetailPage() {
         setQnaPage(page)
       }
     } catch (err) {
-      console.error('Q&A 로드 실패:', err)
+      console.error('failed to load Q&A:', err)
     } finally {
       setQnasLoading(false)
     }
@@ -330,7 +330,7 @@ export default function ProductDetailPage() {
       setReviewTotal(data.product.reviewCount || 0)
       setAvgRating(data.product.avgRating || 0)
       setQnaTotal(data.product.qnaCount || 0)
-      // 찜 여부 확인
+      // Check wishlist membership
       checkWishlist(data.product.id)
       // 최근 본 상품에 저장
       saveViewedProduct(data.product.id)
@@ -398,7 +398,7 @@ export default function ProductDetailPage() {
     return null
   }, [product, selectedOption1, selectedOption2])
 
-  // 선택된 옵션 찾기
+  // Find the selected option
   const selectedOption = useMemo(() => {
     if (!product) return null
 
@@ -433,7 +433,7 @@ export default function ProductDetailPage() {
   // 재고
   const currentStock = useMemo(() => {
     if (selectedOption) return selectedOption.stock
-    // 옵션이 없는 상품의 경우 product.stock 사용
+    // Product without options의 경우 product.stock 사용
     if (product && !product.hasOptions) return product.stock
     return null
   }, [selectedOption, product])
@@ -475,7 +475,7 @@ export default function ProductDetailPage() {
     if (hasOption2 && !selectedOption2) return
     if (hasOption3 && !selectedOption3) return
 
-    // 선택된 옵션 찾기
+    // Find the selected option
     const option = product.options.find(opt =>
       opt.option1 === (selectedOption1 || null) &&
       opt.option2 === (selectedOption2 || null) &&
@@ -489,7 +489,7 @@ export default function ProductDetailPage() {
     if (exists) {
       setCartMessage(t('product.alreadyAdded'))
       setTimeout(() => setCartMessage(null), 2000)
-      // 옵션 선택 초기화
+      // Reset option selection
       setSelectedOption1("")
       setSelectedOption2("")
       setSelectedOption3("")
@@ -522,7 +522,7 @@ export default function ProductDetailPage() {
       stock: option.stock
     }])
 
-    // 옵션 선택 초기화
+    // Reset option selection
     setSelectedOption1("")
     setSelectedOption2("")
     setSelectedOption3("")
@@ -575,7 +575,7 @@ export default function ProductDetailPage() {
   const addToCart = () => {
     if (!product) return
 
-    // 옵션이 있는 상품
+    // Product with options
     if (product.hasOptions) {
       if (selectedItems.length === 0) {
         setCartMessage(t('product.pleaseSelectOption'))
@@ -619,7 +619,7 @@ export default function ProductDetailPage() {
       setShowCartModal(true)
       setSelectedItems([]) // 장바구니 추가 후 선택 초기화
     } else {
-      // 옵션이 없는 상품
+      // Product without options
       if (isOutOfStock) {
         setCartMessage(t('product.soldOutProduct'))
         setTimeout(() => setCartMessage(null), 2000)
@@ -662,7 +662,7 @@ export default function ProductDetailPage() {
   const buyNow = () => {
     if (!product) return
 
-    // 옵션이 있는 상품
+    // Product with options
     if (product.hasOptions) {
       if (selectedItems.length === 0) {
         setCartMessage(t('product.pleaseSelectOption'))
@@ -685,7 +685,7 @@ export default function ProductDetailPage() {
       localStorage.setItem("orderItems", JSON.stringify(orderItems))
       router.push("/shop/order")
     } else {
-      // 옵션이 없는 상품
+      // Product without options
       if (isOutOfStock) {
         setCartMessage(t('product.soldOutProduct'))
         setTimeout(() => setCartMessage(null), 2000)
@@ -863,7 +863,7 @@ export default function ProductDetailPage() {
                     </div>
                   </div>
 
-                  {/* 배송 정보 */}
+                  {/* Shipping info */}
                   <div className="text-sm text-muted-foreground pb-3 border-b">
                     {t('product.freeShipping')}
                   </div>
@@ -1100,7 +1100,7 @@ export default function ProductDetailPage() {
                     </span>
                   </div>
 
-                  {/* 메시지 */}
+                  {/* Message */}
                   {cartMessage && (
                     <div className="flex items-center gap-2 p-2 rounded text-xs bg-red-100 text-red-800">
                       <AlertCircle className="h-3 w-3" />

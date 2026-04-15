@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search') || ''
     const skip = (page - 1) * limit
 
-    // 필터 조건
+    // Filter conditions
     const where: Record<string, unknown> = {
       isActive: true
     }
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    // Q&A 조회
+    // Fetch Q&A
     const [qnas, total, stats] = await Promise.all([
       prisma.productQna.findMany({
         where,
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         take: limit
       }),
       prisma.productQna.count({ where }),
-      // 통계
+      // Stats
       Promise.all([
         prisma.productQna.count({ where: { isActive: true } }),
         prisma.productQna.count({ where: { isActive: true, answer: null } }),

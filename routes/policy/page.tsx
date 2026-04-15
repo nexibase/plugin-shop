@@ -44,7 +44,7 @@ export default function ShopPolicyPage() {
         setSettings(data.settings)
       }
     } catch (err) {
-      console.error("설정 로드 에러:", err)
+      console.error("failed to load settings:", err)
     } finally {
       setLoading(false)
     }
@@ -70,7 +70,7 @@ export default function ShopPolicyPage() {
           </p>
 
           <div className="space-y-6">
-            {/* 배송 안내 */}
+            {/* Delivery notice */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">

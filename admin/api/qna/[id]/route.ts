@@ -85,7 +85,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Q&A 삭제 에러:', error)
+    console.error('failed to delete Q&A:', error)
     return NextResponse.json({ error: 'Q&A 삭제에 실패했습니다.' }, { status: 500 })
   }
 }

@@ -180,7 +180,7 @@ export async function POST(
   }
 }
 
-// 리뷰 수정
+// Edit review
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -209,7 +209,7 @@ export async function PUT(
       return NextResponse.json({ error: '상품을 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // 리뷰 찾기
+    // Find review
     const existingReview = await prisma.productReview.findUnique({
       where: { id: reviewId },
       include: {
@@ -223,12 +223,12 @@ export async function PUT(
       return NextResponse.json({ error: '리뷰를 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // 본인 리뷰인지 확인
+    // Verify the review belongs to the user
     if (existingReview.userId !== session.id) {
       return NextResponse.json({ error: '본인의 리뷰만 수정할 수 있습니다.' }, { status: 403 })
     }
 
-    // 해당 상품의 리뷰인지 확인
+    // Verify the review belongs to the given product
     if (existingReview.productId !== product.id) {
       return NextResponse.json({ error: '해당 상품의 리뷰가 아닙니다.' }, { status: 400 })
     }
@@ -255,11 +255,11 @@ export async function PUT(
           }
         }
       } catch {
-        // JSON 파싱 에러 무시
+        // Ignore JSON parse errors
       }
     }
 
-    // 리뷰 수정
+    // Edit review
     const review = await prisma.productReview.update({
       where: { id: reviewId },
       data: {
@@ -290,7 +290,7 @@ export async function PUT(
   }
 }
 
-// 리뷰 삭제
+// Delete review
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -319,7 +319,7 @@ export async function DELETE(
       return NextResponse.json({ error: '상품을 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // 리뷰 찾기
+    // Find review
     const existingReview = await prisma.productReview.findUnique({
       where: { id: reviewId }
     })
@@ -328,12 +328,12 @@ export async function DELETE(
       return NextResponse.json({ error: '리뷰를 찾을 수 없습니다.' }, { status: 404 })
     }
 
-    // 본인 리뷰인지 확인
+    // Verify the review belongs to the user
     if (existingReview.userId !== session.id) {
       return NextResponse.json({ error: '본인의 리뷰만 삭제할 수 있습니다.' }, { status: 403 })
     }
 
-    // 해당 상품의 리뷰인지 확인
+    // Verify the review belongs to the given product
     if (existingReview.productId !== product.id) {
       return NextResponse.json({ error: '해당 상품의 리뷰가 아닙니다.' }, { status: 400 })
     }
@@ -364,11 +364,11 @@ export async function DELETE(
           }
         }
       } catch {
-        // JSON 파싱 에러 무시
+        // Ignore JSON parse errors
       }
     }
 
-    // 리뷰 삭제 (소프트 삭제)
+    // Delete review (소프트 삭제)
     await prisma.productReview.update({
       where: { id: reviewId },
       data: { isActive: false }

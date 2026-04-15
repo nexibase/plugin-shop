@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const showDeleted = searchParams.get('deleted') === 'true'
     const skip = (page - 1) * limit
 
-    // 필터 조건
+    // Filter conditions
     const where: Record<string, unknown> = {}
 
     if (!showDeleted) {
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
         take: limit
       }),
       prisma.productReview.count({ where }),
-      // 통계
+      // Stats
       Promise.all([
         prisma.productReview.count({ where: { isActive: true } }),
         prisma.productReview.count({ where: { isActive: true, reply: null } }),

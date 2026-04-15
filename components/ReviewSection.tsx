@@ -91,7 +91,7 @@ export default function ReviewSection({
   const [submittingReview, setSubmittingReview] = useState(false)
   const [editingReview, setEditingReview] = useState<Review | null>(null)
 
-  // 이미지 뷰어 상태
+  // Images 뷰어 상태
   const [viewerImages, setViewerImages] = useState<string[]>([])
   const [viewerIndex, setViewerIndex] = useState(0)
   const [showImageViewer, setShowImageViewer] = useState(false)
@@ -194,7 +194,7 @@ export default function ReviewSection({
     }
   }
 
-  // 리뷰 수정 시작
+  // Edit review 시작
   const startEditReview = (review: Review) => {
     setEditingReview(review)
     setReviewRating(review.rating)
@@ -212,7 +212,7 @@ export default function ReviewSection({
     setShowReviewForm(false)
   }
 
-  // 리뷰 수정 취소
+  // Edit review 취소
   const cancelEditReview = () => {
     setEditingReview(null)
     setReviewRating(5)
@@ -220,7 +220,7 @@ export default function ReviewSection({
     setReviewImages([])
   }
 
-  // 리뷰 수정 제출
+  // Edit review 제출
   const submitEditReview = async () => {
     if (!editingReview || !reviewContent.trim()) return
     setSubmittingReview(true)
@@ -252,7 +252,7 @@ export default function ReviewSection({
     }
   }
 
-  // 리뷰 삭제
+  // Delete review
   const deleteReview = async (reviewId: number) => {
     if (!confirm(t('review.confirmDelete'))) return
 
@@ -272,7 +272,7 @@ export default function ReviewSection({
     }
   }
 
-  // 이미지 뷰어 열기
+  // Images 뷰어 열기
   const openImageViewer = (images: string[], startIndex: number) => {
     setViewerImages(images)
     setViewerIndex(startIndex)
@@ -384,7 +384,7 @@ export default function ReviewSection({
                 />
               </div>
 
-              {/* 이미지 업로드 */}
+              {/* Image upload */}
               <div>
                 <Label>{t('review.imageUpload')}</Label>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -480,7 +480,7 @@ export default function ReviewSection({
                 />
               </div>
 
-              {/* 이미지 업로드 */}
+              {/* Image upload */}
               <div>
                 <Label>{t('review.imageUpload')}</Label>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -535,7 +535,7 @@ export default function ReviewSection({
           </Card>
         )}
 
-        {/* 리뷰 목록 */}
+        {/* Review list */}
         {reviewsLoading ? (
           <div className="flex justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -589,7 +589,7 @@ export default function ReviewSection({
                     </div>
                     <p className="text-sm whitespace-pre-wrap">{review.content}</p>
 
-                    {/* 리뷰 이미지 */}
+                    {/* Review images */}
                     {review.images && (() => {
                       try {
                         const images = JSON.parse(review.images)
@@ -706,7 +706,7 @@ export default function ReviewSection({
             </button>
           )}
 
-          {/* 썸네일 */}
+          {/* Thumbnail */}
           {viewerImages.length > 1 && (
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
               {viewerImages.map((img, idx) => (

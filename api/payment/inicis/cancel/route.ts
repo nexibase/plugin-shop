@@ -190,7 +190,7 @@ async function cancelInicisPayment({
       hashData: hashData
     }
 
-    console.log('이니시스 취소 요청:', { mid, tid, type, timestamp })
+    console.log('inicis cancellation request:', { mid, tid, type, timestamp })
     console.log('PLAINTXT:', plainTxt)
     console.log('HASHDATA:', hashData)
     console.log('REQUEST:', JSON.stringify(params))

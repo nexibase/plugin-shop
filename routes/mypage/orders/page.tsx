@@ -127,7 +127,7 @@ export default function OrdersPage() {
 				</Select>
 			</div>
 
-			{/* 주문 목록 */}
+			{/* Order list */}
 			{ordersLoading ? (
 				<div className="flex items-center justify-center py-20">
 					<Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />

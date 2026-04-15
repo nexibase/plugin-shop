@@ -22,7 +22,7 @@ export async function GET() {
       }))
     })
   } catch (error) {
-    console.error('배송비 정책 조회 에러:', error)
+    console.error('failed to fetch shipping policy:', error)
     return NextResponse.json({ error: '배송비 정책 조회 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '이름과 배송비는 필수입니다.' }, { status: 400 })
     }
 
-    // 기본 배송비로 설정할 경우 다른 기본 해제
+    // When marking as default, unset the previous default
     if (isDefault) {
       await prisma.deliveryFee.updateMany({
         where: { isDefault: true },
@@ -90,7 +90,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: '배송비 정책 ID가 필요합니다.' }, { status: 400 })
     }
 
-    // 기본 배송비로 설정할 경우 다른 기본 해제
+    // When marking as default, unset the previous default
     if (isDefault) {
       await prisma.deliveryFee.updateMany({
         where: { isDefault: true, id: { not: id } },

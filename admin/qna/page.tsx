@@ -56,7 +56,7 @@ export default function AdminQnaPage() {
   const search = searchParams.get('search') || ''
   const [searchInput, setSearchInput] = useState(search)
 
-  // 답변 모달
+  // Reply modal
   const [answerModal, setAnswerModal] = useState<Qna | null>(null)
   const [answerText, setAnswerText] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -79,7 +79,7 @@ export default function AdminQnaPage() {
         setTotal(data.pagination.total)
       }
     } catch (error) {
-      console.error('Q&A 로드 실패:', error)
+      console.error('failed to load Q&A:', error)
     } finally {
       setLoading(false)
     }
@@ -209,7 +209,7 @@ export default function AdminQnaPage() {
             <Button onClick={handleSearch}>{t('search')}</Button>
           </div>
 
-          {/* Q&A 목록 */}
+          {/* Q&A list */}
           {loading ? (
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -219,7 +219,7 @@ export default function AdminQnaPage() {
               {qnas.map(qna => (
                 <Card key={qna.id} className={!qna.answer ? 'border-orange-300' : ''}>
                   <CardContent className="p-4">
-                    {/* 상단 정보 */}
+                    {/* Top info */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-2 flex-wrap">
                         <Link
@@ -261,7 +261,7 @@ export default function AdminQnaPage() {
                       {qna.user.nickname} ({qna.user.email}) · {new Date(qna.createdAt).toLocaleString('ko-KR')}
                     </div>
 
-                    {/* 질문 */}
+                    {/* Question */}
                     <div className="mb-3">
                       <span className="inline-block px-2 py-0.5 bg-primary text-primary-foreground text-xs font-medium rounded mr-2 align-top">Q</span>
                       <span className="text-sm whitespace-pre-wrap">{qna.question}</span>
@@ -278,7 +278,7 @@ export default function AdminQnaPage() {
                       </div>
                     ) : null}
 
-                    {/* 답변 버튼 */}
+                    {/* Reply button */}
                     <Button
                       variant={qna.answer ? "outline" : "default"}
                       size="sm"
@@ -324,7 +324,7 @@ export default function AdminQnaPage() {
         </div>
       </main>
 
-      {/* 답변 모달 */}
+      {/* Reply modal */}
       {answerModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div
@@ -352,7 +352,7 @@ export default function AdminQnaPage() {
               </div>
             </div>
 
-            {/* 답변 입력 */}
+            {/* Reply input */}
             <Textarea
               value={answerText}
               onChange={(e) => setAnswerText(e.target.value)}

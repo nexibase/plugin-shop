@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-// 상품 상세 조회
+// Fetch product detail
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -129,7 +129,7 @@ export async function GET(
 
     return response
   } catch (error) {
-    console.error('상품 상세 조회 에러:', error)
+    console.error('failed to fetch product detail:', error)
     return NextResponse.json({ error: '상품 조회 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

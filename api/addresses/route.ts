@@ -20,7 +20,7 @@ export async function GET() {
 
     return NextResponse.json({ addresses });
   } catch (error) {
-    console.error('주소록 조회 에러:', error);
+    console.error('failed to fetch addresses:', error);
     return NextResponse.json({ error: '주소록 조회 중 오류가 발생했습니다.' }, { status: 500 });
   }
 }
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, recipientName, recipientPhone, zipCode, address, addressDetail, isDefault, skipDuplicate } = body;
 
-    // 유효성 검사 (자동 저장 시에는 name이 자동 생성됨)
+    // Validation (자동 저장 시에는 name이 자동 생성됨)
     if (!recipientName || !recipientPhone || !zipCode || !address) {
       return NextResponse.json({ error: '필수 항목을 모두 입력해주세요.' }, { status: 400 });
     }
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     // 배송지명 자동 생성 (name이 없는 경우)
     const addressName = name || `배송지 ${existingCount + 1}`;
 
-    // 기본 배송지로 설정하는 경우 기존 기본 배송지 해제
+    // When marking as default shipping address, unset the previous default
     const shouldBeDefault = isDefault || existingCount === 0;
     if (shouldBeDefault) {
       await prisma.userAddress.updateMany({

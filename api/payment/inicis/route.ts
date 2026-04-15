@@ -13,7 +13,7 @@ async function getShopSettings() {
   return settingsMap
 }
 
-// 주문번호 생성 (YYMMDDHH-iiXXXXX = 16자리, ii=분, 중복 체크)
+// Build an order number (YYMMDDHH-iiXXXXX = 16 chars, ii=minute, with uniqueness check)
 async function generateOrderNo(): Promise<string> {
   const now = new Date()
   const yy = String(now.getFullYear()).slice(-2)
@@ -22,7 +22,7 @@ async function generateOrderNo(): Promise<string> {
   const hh = String(now.getHours()).padStart(2, '0')
   const ii = String(now.getMinutes()).padStart(2, '0')
 
-  // 최대 10번 시도
+  // Try up to 10 times
   for (let i = 0; i < 10; i++) {
     const rand = String(Math.floor(Math.random() * 100000)).padStart(5, '0')
     const orderNo = `${yy}${MM}${dd}${hh}-${ii}${rand}`
@@ -34,13 +34,13 @@ async function generateOrderNo(): Promise<string> {
     }
   }
 
-  // 10번 실패 시 초+랜덤
+  // Fall back to seconds + random after 10 failures
   const ss = String(now.getSeconds()).padStart(2, '0')
   const rand = String(Math.floor(Math.random() * 1000)).padStart(3, '0')
   return `${yy}${MM}${dd}${hh}-${ii}${ss}${rand}`
 }
 
-// SHA256 해시 생성
+// Build SHA-256 hash
 function sha256(str: string) {
   return crypto.createHash('sha256').update(str).digest('hex')
 }
