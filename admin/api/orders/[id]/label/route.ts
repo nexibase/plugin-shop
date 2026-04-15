@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 
-// 배송 라벨 HTML 생성
+// Build the shipping label HTML
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -67,14 +67,14 @@ export async function GET(
     const senderAddress = settingsMap.senderAddress || ''
     const senderAddressDetail = settingsMap.senderAddressDetail || ''
 
-    // 상품 요약
+    // Product summary
     const itemSummary = order.items.length === 1
       ? order.items[0].productName
       : `${order.items[0].productName} 외 ${order.items.length - 1}건`
 
     const totalQuantity = order.items.reduce((sum, item) => sum + item.quantity, 0)
 
-    // HTML 생성 (A6 사이즈 기준, 105mm x 148mm)
+    // Build HTML (A6 size, 105mm x 148mm)
     const html = `
 <!DOCTYPE html>
 <html lang="ko">
@@ -243,7 +243,7 @@ export async function GET(
   </div>
 
   <script>
-    // 자동 인쇄 대화상자 열기 (선택사항)
+    // Open the print dialog automatically (optional)
     // window.onload = () => window.print();
   </script>
 </body>
@@ -256,7 +256,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('배송 라벨 생성 에러:', error)
+    console.error('failed to create shipping label:', error)
     return NextResponse.json(
       { error: '배송 라벨 생성 중 오류가 발생했습니다.' },
       { status: 500 }

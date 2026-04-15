@@ -14,7 +14,7 @@ async function getShopSettings() {
   return settingsMap
 }
 
-// 배송 전 상태인지 확인 (취소 시 전액 환불 대상)
+// Check whether the order is still pre-shipping (취소 시 전액 환불 대상)
 function isBeforeShipping(status: string): boolean {
   return ['pending', 'paid', 'preparing'].includes(status)
 }
@@ -171,7 +171,7 @@ export async function GET(
       )
     }
 
-    // 무통장입금인 경우 계좌정보 조회 (항상 표시)
+    // For bank-transfer orders, fetch the account info (항상 표시)
     let bankInfo = null
     if (order.paymentMethod === 'bank') {
       const bankSetting = await prisma.shopSetting.findUnique({

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getAdminUser } from '@/lib/auth'
 
-// 배송비 정책 목록 조회
+// Fetch shipping fee policies
 export async function GET() {
   try {
     const admin = await getAdminUser()
@@ -27,7 +27,7 @@ export async function GET() {
   }
 }
 
-// 배송비 정책 생성
+// Create shipping fee policy
 export async function POST(request: NextRequest) {
   try {
     const admin = await getAdminUser()
@@ -70,12 +70,12 @@ export async function POST(request: NextRequest) {
       }
     }, { status: 201 })
   } catch (error) {
-    console.error('배송비 정책 생성 에러:', error)
+    console.error('failed to create shipping policy:', error)
     return NextResponse.json({ error: '배송비 정책 생성 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }
 
-// 배송비 정책 수정
+// Update shipping fee policy
 export async function PUT(request: NextRequest) {
   try {
     const admin = await getAdminUser()
@@ -121,12 +121,12 @@ export async function PUT(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('배송비 정책 수정 에러:', error)
+    console.error('failed to update shipping policy:', error)
     return NextResponse.json({ error: '배송비 정책 수정 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }
 
-// 배송비 정책 삭제
+// Delete shipping fee policy
 export async function DELETE(request: NextRequest) {
   try {
     const admin = await getAdminUser()
@@ -141,7 +141,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: '삭제할 배송비 정책 ID가 필요합니다.' }, { status: 400 })
     }
 
-    // 기본 배송비는 삭제 불가
+    // The default shipping fee cannot be deleted
     const defaultFee = await prisma.deliveryFee.findFirst({
       where: { id: { in: ids }, isDefault: true }
     })
@@ -158,7 +158,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true, deletedCount: ids.length })
   } catch (error) {
-    console.error('배송비 정책 삭제 에러:', error)
+    console.error('failed to delete shipping policy:', error)
     return NextResponse.json({ error: '배송비 정책 삭제 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

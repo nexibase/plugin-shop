@@ -32,7 +32,7 @@ export async function GET() {
   }
 }
 
-// 카테고리 생성
+// Create category
 export async function POST(request: NextRequest) {
   try {
     const admin = await getAdminUser()
@@ -67,12 +67,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, category }, { status: 201 })
   } catch (error) {
-    console.error('카테고리 생성 에러:', error)
+    console.error('failed to create category:', error)
     return NextResponse.json({ error: '카테고리 생성 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }
 
-// 카테고리 수정
+// Edit category
 export async function PUT(request: NextRequest) {
   try {
     const admin = await getAdminUser()
@@ -110,12 +110,12 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ success: true, category })
   } catch (error) {
-    console.error('카테고리 수정 에러:', error)
+    console.error('failed to update category:', error)
     return NextResponse.json({ error: '카테고리 수정 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }
 
-// 카테고리 삭제
+// Delete category
 export async function DELETE(request: NextRequest) {
   try {
     const admin = await getAdminUser()
@@ -130,7 +130,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: '삭제할 카테고리 ID가 필요합니다.' }, { status: 400 })
     }
 
-    // 카테고리에 속한 상품이 있는지 확인
+    // Check for products in this category
     const categoriesWithProducts = await prisma.productCategory.findMany({
       where: { id: { in: ids } },
       include: { _count: { select: { products: true } } }
@@ -149,7 +149,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true, deletedCount: ids.length })
   } catch (error) {
-    console.error('카테고리 삭제 에러:', error)
+    console.error('failed to delete category:', error)
     return NextResponse.json({ error: '카테고리 삭제 중 오류가 발생했습니다.' }, { status: 500 })
   }
 }

@@ -14,7 +14,7 @@ async function getShopSettings() {
   return settingsMap
 }
 
-// 배송 전 상태인지 확인
+// Check whether the order is still pre-shipping
 function isBeforeShipping(status: string): boolean {
   return ['pending', 'paid', 'preparing'].includes(status)
 }
@@ -42,7 +42,7 @@ function getTimestamp(): string {
   return `${year}${month}${day}${hours}${minutes}${seconds}`
 }
 
-// 이니시스 결제 취소 (v2 API 직접 호출)
+// Inicis payment cancellation (direct v2 API call)
 async function cancelInicisPayment(tid: string, cancelReason: string, settings: Record<string, string>) {
   const testMode = settings.pg_test_mode !== 'false'
   const mid = testMode ? 'INIpayTest' : (settings.pg_mid || 'INIpayTest')
@@ -83,7 +83,7 @@ async function cancelInicisPayment(tid: string, cancelReason: string, settings: 
       hashData: hashData
     }
 
-    console.log('이니시스 취소 요청 (관리자):', { mid, tid, type, timestamp, testMode })
+    console.log('inicis cancellation request (admin):', { mid, tid, type, timestamp, testMode })
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -117,7 +117,7 @@ async function cancelInicisPayment(tid: string, cancelReason: string, settings: 
   }
 }
 
-// 주문 상세 조회 (ID 또는 주문번호로 조회 가능)
+// Fetch order detail (lookup by ID or order number)
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -130,7 +130,7 @@ export async function GET(
 
     const { id } = await params
 
-    // 순수 숫자이고 8자리 이하면 ID, 그 외에는 주문번호로 판단
+    // Treat short numeric values (≤8 digits) as IDs; everything else is an order number
     const isId = /^\d+$/.test(id) && id.length <= 8
 
     const order = await prisma.order.findUnique({
@@ -156,7 +156,7 @@ export async function GET(
       )
     }
 
-    // 무통장입금인 경우 계좌정보 조회
+    // For bank-transfer orders, fetch the account info
     let bankInfo = null
     if (order.paymentMethod === 'bank' && order.status === 'pending') {
       const bankSetting = await prisma.shopSetting.findUnique({
@@ -217,7 +217,7 @@ export async function GET(
   }
 }
 
-// 주문 상태 변경 (ID 또는 주문번호로 조회 가능)
+// Update order status (lookup by ID or order number)
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -252,7 +252,7 @@ export async function PUT(
       )
     }
 
-    // 취소 요청 승인
+    // Approve cancellation request
     if (action === 'cancel_approve') {
       if (order.status !== 'cancel_requested') {
         return NextResponse.json(
@@ -267,7 +267,7 @@ export async function PUT(
       // For card payments, cancel the PG approval
       const tid = getPaymentTid(order.paymentInfo)
       if (order.paymentMethod === 'card' && tid) {
-        console.log('카드 결제 취소 시도 (관리자 승인), tid:', tid)
+        console.log('card payment cancellation attempt (admin approval), tid:', tid)
         pgCancelResult = await cancelInicisPayment(tid, order.cancelReason || '주문 취소', settings)
         console.log('PG cancellation result:', pgCancelResult)
 
@@ -294,7 +294,7 @@ export async function PUT(
           }
           updatedPaymentInfo = JSON.stringify(paymentData)
         } catch {
-          // 파싱 실패 시 새로운 객체 생성
+          // When parsing fails, start with a new object
           updatedPaymentInfo = JSON.stringify({
             cancelInfo: {
               cancelledAt: new Date().toISOString(),
@@ -354,7 +354,7 @@ export async function PUT(
       })
     }
 
-    // 취소 요청 거절 (배송중으로 변경)
+    // Reject cancellation request (move to shipping)
     if (action === 'cancel_reject') {
       if (order.status !== 'cancel_requested') {
         return NextResponse.json(
@@ -383,7 +383,7 @@ export async function PUT(
       })
     }
 
-    // 환불 요청 승인
+    // Approve refund request
     if (action === 'refund_approve') {
       if (order.status !== 'refund_requested') {
         return NextResponse.json(
@@ -395,12 +395,12 @@ export async function PUT(
       const settings = await getShopSettings()
       let pgCancelResult = null
 
-      // 카드 결제인 경우 PG 환불 처리
+      // For card payments, run the PG refund flow
       const tid = getPaymentTid(order.paymentInfo)
       if (order.paymentMethod === 'card' && tid) {
-        console.log('카드 환불 처리 시도 (관리자 승인), tid:', tid)
+        console.log('card refund attempt (admin approval), tid:', tid)
         pgCancelResult = await cancelInicisPayment(tid, order.cancelReason || '환불 처리', settings)
-        console.log('PG 환불 결과:', pgCancelResult)
+        console.log('PG refund result:', pgCancelResult)
 
         // In production, return an error when PG cancellation fails
         const testMode = settings.pg_test_mode !== 'false'
@@ -412,7 +412,7 @@ export async function PUT(
         }
       }
 
-      // paymentInfo에 환불 정보 추가
+      // Append refund info to paymentInfo
       let updatedPaymentInfo = order.paymentInfo
       if (pgCancelResult) {
         try {
@@ -438,7 +438,7 @@ export async function PUT(
         }
       }
 
-      // Restore stock + 환불 처리
+      // Restore stock and process the refund
       await prisma.$transaction(async (tx) => {
         // Restore stock
         for (const item of order.items) {
@@ -460,7 +460,7 @@ export async function PUT(
           }
         }
 
-        // 주문 상태 변경 (환불 완료)
+        // Update order status (refund complete)
         await tx.order.update({
           where: { id: order.id },
           data: {
@@ -484,7 +484,7 @@ export async function PUT(
       })
     }
 
-    // 환불 요청 거절
+    // Reject refund request
     if (action === 'refund_reject') {
       if (order.status !== 'refund_requested') {
         return NextResponse.json(
@@ -508,7 +508,7 @@ export async function PUT(
       })
     }
 
-    // 관리자 주문 취소 (피치 못할 사정으로 인한 취소)
+    // Admin-initiated order cancellation (unavoidable circumstances)
     if (action === 'admin_cancel') {
       const cancelReason = body.cancelReason
 
@@ -519,7 +519,7 @@ export async function PUT(
         )
       }
 
-      // 이미 취소/환불된 주문은 취소 불가
+      // Already-cancelled or refunded orders cannot be cancelled again
       if (['cancelled', 'refunded'].includes(order.status)) {
         return NextResponse.json(
           { error: '이미 취소 또는 환불된 주문입니다.' },
@@ -533,7 +533,7 @@ export async function PUT(
       // For card payments, cancel the PG approval
       const tid = getPaymentTid(order.paymentInfo)
       if (order.paymentMethod === 'card' && tid) {
-        console.log('관리자 주문 취소 - 카드 결제 취소 시도, tid:', tid)
+        console.log('admin order cancellation — card cancellation attempt, tid:', tid)
         pgCancelResult = await cancelInicisPayment(tid, cancelReason, settings)
         console.log('PG cancellation result:', pgCancelResult)
 
@@ -608,10 +608,10 @@ export async function PUT(
         })
       })
 
-      // 고객에게 관리자 취소 알림 발송 (취소 사유 포함)
+      // Notify the customer of the admin cancellation (includes the reason)
       if (order.userId) {
         createOrderCancelledByAdminNotification(order.userId, order.orderNo, order.totalPrice, cancelReason)
-          .catch(err => console.error('고객 취소 알림 발송 실패:', err))
+          .catch(err => console.error('failed to send customer cancellation notification:', err))
       }
 
       return NextResponse.json({
@@ -645,7 +645,7 @@ export async function PUT(
         }
       })
 
-      // 고객에게 결제 완료 알림 발송
+      // Notify the customer that payment completed
       if (order.userId) {
         await createOrderStatusNotification(order.userId, order.orderNo, 'pending', 'paid')
       }
@@ -659,11 +659,11 @@ export async function PUT(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const updateData: any = {}
 
-    // 상태 변경
+    // Change status
     if (status && status !== order.status) {
       updateData.status = status
 
-      // 상태별 추가 처리
+      // Per-status follow-up work
       switch (status) {
         case 'paid':
           updateData.paidAt = new Date()
@@ -679,12 +679,12 @@ export async function PUT(
         case 'cancelled':
           updateData.cancelledAt = new Date()
 
-          // 배송 전 취소: 전액 환불
+          // Pre-shipping cancellation: full refund
           if (isBeforeShipping(order.status)) {
             updateData.refundAmount = order.totalPrice
             updateData.refundedAt = new Date()
 
-            // 카드 결제인 경우 자동 취소
+            // Auto-cancel when paid by card
             const tid = getPaymentTid(order.paymentInfo)
             if (order.paymentMethod === 'card' && tid) {
               const settings = await getShopSettings()
@@ -693,10 +693,10 @@ export async function PUT(
                 body.cancelReason || '관리자에 의한 취소',
                 settings
               )
-              console.log('관리자 카드 취소 결과:', cancelResult)
+              console.log('admin card cancellation result:', cancelResult)
             }
           } else {
-            // 배송 후 취소: 반품 배송비 차감
+            // Post-shipping cancellation: deduct return shipping fee
             const settings = await getShopSettings()
             const returnShippingFee = parseInt(settings.return_shipping_fee || '5000')
             const calculatedRefund = Math.max(0, order.totalPrice - returnShippingFee)
@@ -709,17 +709,17 @@ export async function PUT(
         case 'refunded':
           updateData.refundedAt = new Date()
 
-          // 환불 금액 계산
+          // Compute refund amount
           if (refundAmount) {
             updateData.refundAmount = refundAmount
           } else if (!order.refundAmount) {
-            // 환불 금액이 없으면 반품 배송비 차감 후 계산
+            // When no refund amount is provided, deduct the return shipping fee
             const settings = await getShopSettings()
             const returnShippingFee = parseInt(settings.return_shipping_fee || '5000')
             updateData.refundAmount = Math.max(0, order.totalPrice - returnShippingFee)
           }
 
-          // 카드 결제인 경우 환불 처리
+          // For card payments, process the refund
           const refundTid = getPaymentTid(order.paymentInfo)
           if (order.paymentMethod === 'card' && refundTid) {
             const settings = await getShopSettings()
@@ -728,10 +728,10 @@ export async function PUT(
               body.cancelReason || '관리자에 의한 환불',
               settings
             )
-            console.log('관리자 카드 환불 결과:', cancelResult)
+            console.log('admin card refund result:', cancelResult)
           }
 
-          // Restore stock (아직 복구 안된 경우)
+          // Restore stock (only if not already restored)
           if (!['cancelled', 'refunded'].includes(order.status)) {
             await restoreStock(order.items)
           }
@@ -739,11 +739,11 @@ export async function PUT(
       }
     }
 
-    // 배송 정보 업데이트
+    // Update shipping info
     if (trackingCompany !== undefined) updateData.trackingCompany = trackingCompany
     if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber
 
-    // 관리자 메모
+    // Admin memo
     if (adminMemo !== undefined) updateData.adminMemo = adminMemo
 
     const updatedOrder = await prisma.order.update({
@@ -751,7 +751,7 @@ export async function PUT(
       data: updateData
     })
 
-    // 상태 변경 시 알림 생성
+    // Create a notification on status change
     if (status && status !== order.status && order.userId) {
       await createOrderStatusNotification(order.userId, order.orderNo, order.status, status)
     }
@@ -761,7 +761,7 @@ export async function PUT(
       order: updatedOrder
     })
   } catch (error) {
-    console.error('주문 상태 변경 에러:', error)
+    console.error('failed to update order status:', error)
     return NextResponse.json(
       { error: '주문 상태 변경 중 오류가 발생했습니다.' },
       { status: 500 }
@@ -769,7 +769,7 @@ export async function PUT(
   }
 }
 
-// Restore stock 함수
+// Restore stock helper
 async function restoreStock(items: { productId: number; optionId: number | null; quantity: number }[]) {
   for (const item of items) {
     if (item.optionId) {
@@ -791,7 +791,7 @@ async function restoreStock(items: { productId: number; optionId: number | null;
   }
 }
 
-// 주문 삭제 (소프트 삭제) - ID 또는 주문번호로 조회 가능
+// Delete order (soft delete) — lookup by ID or order number
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -817,7 +817,7 @@ export async function DELETE(
       )
     }
 
-    // 이미 삭제된 주문인지 확인
+    // Check whether the order is already deleted
     if (order.deletedAt) {
       return NextResponse.json(
         { error: '이미 삭제된 주문입니다.' },
