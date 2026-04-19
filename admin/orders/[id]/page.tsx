@@ -533,7 +533,7 @@ export default function AdminOrderDetailPage() {
                 })
                 if (!res.ok) { alert(tAdmin('messages.send.failure')); return }
                 const data = await res.json()
-                window.open(`/mypage/messages/${data.conversationId}`, '_blank')
+                window.open(`/mypage/messages/${data.conversationUuid}`, '_blank')
               }}
             >
               <Send className="h-4 w-4 mr-1" />
