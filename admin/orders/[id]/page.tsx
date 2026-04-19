@@ -41,7 +41,6 @@ import {
   Send,
 } from "lucide-react"
 import { DELIVERY_COMPANIES as DELIVERY_LIST, getTrackingUrlByName } from "@/plugins/shop/lib/delivery"
-import { SendMessageDialog } from "@/components/messaging/SendMessageDialog"
 
 interface Order {
   id: number
@@ -201,9 +200,6 @@ export default function AdminOrderDetailPage() {
   // 삭제 다이얼로그 상태
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
-
-  // Send notification dialog state
-  const [sendDialogOpen, setSendDialogOpen] = useState(false)
 
   // 취소/환불 요청 처리 상태
   const [processingAction, setProcessingAction] = useState<string | null>(null)
@@ -526,7 +522,20 @@ export default function AdminOrderDetailPage() {
             {t('printLabel')}
           </Button>
           {order.user?.id && (
-            <Button variant="outline" size="sm" onClick={() => setSendDialogOpen(true)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={async () => {
+                const res = await fetch('/api/messages/conversation', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ toUserId: order.user.id }),
+                })
+                if (!res.ok) { alert(tAdmin('messages.send.failure')); return }
+                const data = await res.json()
+                window.open(`/mypage/messages/${data.conversationId}`, '_blank')
+              }}
+            >
               <Send className="h-4 w-4 mr-1" />
               {tAdmin('messages.send.title')}
             </Button>
@@ -1164,18 +1173,6 @@ export default function AdminOrderDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {order?.user?.id && (
-        <SendMessageDialog
-          open={sendDialogOpen}
-          onOpenChange={setSendDialogOpen}
-          userId={order.user.id}
-          userLabel={`${order.user.nickname ?? ''} (${order.user.email ?? ''})`}
-          prefillContent={`주문 ${order.orderNo} 관련 안내드립니다.\n\n`}
-          redirectAfter="none"
-          showEmailOption
-        />
-      )}
         </div>
       </main>
     </div>
