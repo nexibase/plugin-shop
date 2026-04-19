@@ -38,8 +38,10 @@ import {
   Trash2,
   Printer,
   ExternalLink,
+  Send,
 } from "lucide-react"
 import { DELIVERY_COMPANIES as DELIVERY_LIST, getTrackingUrlByName } from "@/plugins/shop/lib/delivery"
+import { SendNotificationDialog } from "@/components/admin/SendNotificationDialog"
 
 interface Order {
   id: number
@@ -168,6 +170,7 @@ export default function AdminOrderDetailPage() {
   const to = useTranslations('shop.order')
   const tp = useTranslations('shop.policy')
   const tc = useTranslations('shop')
+  const tAdmin = useTranslations('admin')
   const locale = useLocale()
   const params = useParams()
   const router = useRouter()
@@ -198,6 +201,9 @@ export default function AdminOrderDetailPage() {
   // 삭제 다이얼로그 상태
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  // Send notification dialog state
+  const [sendDialogOpen, setSendDialogOpen] = useState(false)
 
   // 취소/환불 요청 처리 상태
   const [processingAction, setProcessingAction] = useState<string | null>(null)
@@ -519,6 +525,12 @@ export default function AdminOrderDetailPage() {
             <Printer className="h-4 w-4 mr-1" />
             {t('printLabel')}
           </Button>
+          {order.user?.id && (
+            <Button variant="outline" size="sm" onClick={() => setSendDialogOpen(true)}>
+              <Send className="h-4 w-4 mr-1" />
+              {tAdmin('sendNotification')}
+            </Button>
+          )}
           <Button
             variant="outline"
             size="sm"
@@ -1152,6 +1164,17 @@ export default function AdminOrderDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {order?.user?.id && (
+        <SendNotificationDialog
+          open={sendDialogOpen}
+          onOpenChange={setSendDialogOpen}
+          userId={order.user.id}
+          userLabel={`${order.user.nickname ?? ''} (${order.user.email ?? ''})`}
+          prefillLink={`/shop/orders/${order.orderNo}`}
+          prefillTitle={`주문 ${order.orderNo} 관련 안내`}
+        />
+      )}
         </div>
       </main>
     </div>
