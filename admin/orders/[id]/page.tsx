@@ -41,7 +41,7 @@ import {
   Send,
 } from "lucide-react"
 import { DELIVERY_COMPANIES as DELIVERY_LIST, getTrackingUrlByName } from "@/plugins/shop/lib/delivery"
-import { SendNotificationDialog } from "@/components/admin/SendNotificationDialog"
+import { SendMessageDialog } from "@/components/messaging/SendMessageDialog"
 
 interface Order {
   id: number
@@ -1166,13 +1166,14 @@ export default function AdminOrderDetailPage() {
       </Dialog>
 
       {order?.user?.id && (
-        <SendNotificationDialog
+        <SendMessageDialog
           open={sendDialogOpen}
           onOpenChange={setSendDialogOpen}
           userId={order.user.id}
           userLabel={`${order.user.nickname ?? ''} (${order.user.email ?? ''})`}
-          prefillLink={`/shop/orders/${order.orderNo}`}
-          prefillTitle={`주문 ${order.orderNo} 관련 안내`}
+          prefillContent={`주문 ${order.orderNo} 관련 안내드립니다.\n\n`}
+          redirectAfter="none"
+          showEmailOption
         />
       )}
         </div>
