@@ -528,7 +528,7 @@ export default function AdminOrderDetailPage() {
           {order.user?.id && (
             <Button variant="outline" size="sm" onClick={() => setSendDialogOpen(true)}>
               <Send className="h-4 w-4 mr-1" />
-              {tAdmin('sendNotification')}
+              {tAdmin('messages.send.title')}
             </Button>
           )}
           <Button
