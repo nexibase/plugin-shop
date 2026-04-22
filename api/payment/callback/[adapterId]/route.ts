@@ -15,9 +15,18 @@ export async function POST(req: Request, { params }: { params: Promise<{ adapter
 
   // Parse the PG callback payload and extract the order number via adapter methods
   // (IMPORTANT 4: adapter-level parseCallbackRequest / extractOrderNo).
+  // For two-step PGs like Inicis, the order number is only available in the
+  // auth result (result.rawResponse), not the initial callback body (raw).
+  // We prefer rawResponse when extraction yields a value there; otherwise fall
+  // back to raw (single-step PGs like bank_deposit).
   const raw = await adapter.parseCallbackRequest(req)
   const result = await adapter.handleCallback(raw)
-  const orderNo = adapter.extractOrderNo(raw)
+  const orderNo = adapter.extractOrderNo(result.rawResponse) || adapter.extractOrderNo(raw)
+
+  if (!orderNo) {
+    console.error('callback: could not extract order number', { adapterId, raw, rawResponse: result.rawResponse })
+    return NextResponse.json({ error: 'order number missing' }, { status: 400 })
+  }
 
   // CRITICAL 2: move findUnique + assertOrderTransition INSIDE the transaction
   // so that reads and writes are atomic — prevents TOCTOU race conditions.

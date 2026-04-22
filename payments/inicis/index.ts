@@ -122,12 +122,14 @@ export class InicisAdapter implements PaymentAdapter {
       testMode: String(testMode),
     }
 
-    // Inicis INIStdPay form is submitted from the browser; there is no single
-    // server-side POST target — the client JS handles form submission.
-    // We return the script URL as formAction so the client knows which SDK to load.
+    // Inicis uses window.INIStdPay.pay(formId) rather than a plain form POST.
+    // formAction is set to '' (empty) so any fallback submit doesn't navigate to the SDK URL.
+    // The client must load INIStdPay.js (already loaded via <Script> in checkout page) and
+    // call INIStdPay.pay() instead of submitting the form. The payUrl is available in
+    // formFields['payUrl'] for clients that need to load the SDK dynamically.
     return {
       kind: 'form',
-      formAction: payUrl,
+      formAction: '',
       formFields,
     }
   }
@@ -257,8 +259,8 @@ export class InicisAdapter implements PaymentAdapter {
   }
 
   extractOrderNo(parsed: unknown): string {
-    const p = parsed as any
-    return p.MOID ?? p.oid
+    const p = (parsed ?? {}) as Record<string, string>
+    return p.MOID ?? p.oid ?? ''
   }
 }
 

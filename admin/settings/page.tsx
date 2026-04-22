@@ -44,6 +44,9 @@ interface ShopSettings {
   pg_signkey: string
   pg_apikey: string  // 결제 취소용 API Key
   pg_test_mode: string
+  // Payment gateway activation (Phase 1 fulfillment)
+  enabled_payment_gateways: string  // JSON array string, e.g. '["inicis","bank_deposit"]'
+  default_card_gateway: string  // adapter id, e.g. 'inicis'
   // Notification settings
   order_notification_target: string  // admin, manager, both, none
   email_notification_enabled: string  // true, false
@@ -66,10 +69,18 @@ const DEFAULT_SETTINGS_BASE = {
   pg_signkey: "",
   pg_apikey: "",
   pg_test_mode: "true",
+  // Payment gateway activation
+  enabled_payment_gateways: '["inicis","bank_deposit"]',
+  default_card_gateway: "inicis",
   // Notification settings
   order_notification_target: "admin",  // 기본값: 관리자만
   email_notification_enabled: "false",  // 기본값: 비활성화
 }
+
+const AVAILABLE_ADAPTERS = [
+  { id: "inicis", displayName: "이니시스 (카드/계좌이체/가상계좌/휴대폰)", cardCapable: true },
+  { id: "bank_deposit", displayName: "무통장입금", cardCapable: false },
+]
 
 export default function ShopSettingsPage() {
   const t = useTranslations('shop.admin')
@@ -518,6 +529,79 @@ export default function ShopSettingsPage() {
                 <li>{t('testModeItem4')}</li>
               </ul>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* 활성 결제수단 (Phase 1 fulfillment) */}
+        <Card className="lg:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5" />
+              활성 결제수단
+            </CardTitle>
+            <CardDescription>
+              체크아웃에서 고객에게 노출할 결제수단을 선택하세요. 카드 PG가 여러 개인 경우 기본값도 선택합니다.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {(() => {
+              let enabled: string[]
+              try {
+                enabled = JSON.parse(settings.enabled_payment_gateways || '["inicis","bank_deposit"]')
+              } catch {
+                enabled = ['inicis', 'bank_deposit']
+              }
+              const toggle = (id: string) => {
+                const next = enabled.includes(id) ? enabled.filter(x => x !== id) : [...enabled, id]
+                handleChange('enabled_payment_gateways', JSON.stringify(next))
+                // If disabling the current default card gateway, clear it
+                if (!next.includes(settings.default_card_gateway)) {
+                  const fallback = AVAILABLE_ADAPTERS.find(a => a.cardCapable && next.includes(a.id))
+                  handleChange('default_card_gateway', fallback?.id ?? '')
+                }
+              }
+              const cardCapableEnabled = AVAILABLE_ADAPTERS.filter(a => a.cardCapable && enabled.includes(a.id))
+              return (
+                <>
+                  <div className="space-y-2">
+                    {AVAILABLE_ADAPTERS.map(a => (
+                      <label key={a.id} className="flex items-center gap-3 cursor-pointer p-3 border rounded-lg hover:bg-muted/50">
+                        <input
+                          type="checkbox"
+                          checked={enabled.includes(a.id)}
+                          onChange={() => toggle(a.id)}
+                          className="rounded"
+                        />
+                        <div className="flex-1">
+                          <span className="font-medium">{a.displayName}</span>
+                          <span className="ml-2 text-xs text-muted-foreground">{a.id}</span>
+                        </div>
+                        {a.cardCapable && <span className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-600">카드 PG</span>}
+                      </label>
+                    ))}
+                  </div>
+
+                  {cardCapableEnabled.length > 1 && (
+                    <div className="pt-2 border-t">
+                      <Label className="mb-2 block">기본 카드 PG</Label>
+                      <div className="space-y-2">
+                        {cardCapableEnabled.map(a => (
+                          <label key={a.id} className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="default_card_gateway"
+                              checked={settings.default_card_gateway === a.id}
+                              onChange={() => handleChange('default_card_gateway', a.id)}
+                            />
+                            <span>{a.displayName}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )
+            })()}
           </CardContent>
         </Card>
 

@@ -19,12 +19,16 @@ export function StatusTransitionBar({ orderId, status, onChanged }: Props) {
 
   const transition = async (to: OrderStatus) => {
     const map: Partial<Record<OrderStatus, string>> = {
+      preparing: `/api/admin/shop/orders/${orderId}/prepare`,
       shipping: `/api/admin/shop/orders/${orderId}/ship`,
       delivered: `/api/admin/shop/orders/${orderId}/deliver`,
       cancelled: `/api/admin/shop/orders/${orderId}/cancel`,
     }
     const endpoint = map[to]
-    if (!endpoint) return
+    if (!endpoint) {
+      alert(`${to} 전이는 아직 지원되지 않습니다`)
+      return
+    }
     if (to === 'shipping') {
       const company = window.prompt('택배사 (예: CJ대한통운)')
       if (!company) return

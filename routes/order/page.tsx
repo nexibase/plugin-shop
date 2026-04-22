@@ -470,22 +470,40 @@ export default function OrderPage() {
   const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
   // 숨김 폼을 생성해 PG 결제를 트리거하는 헬퍼
-  function submitHiddenForm(action: string, fields: Record<string, string>) {
+  async function submitHiddenForm(action: string, fields: Record<string, string>) {
     const form = document.createElement('form')
     form.method = 'post'
     form.action = action
     form.id = 'pgPayForm'
+    form.acceptCharset = 'UTF-8'
     for (const [name, value] of Object.entries(fields)) {
       const input = document.createElement('input')
       input.type = 'hidden'; input.name = name; input.value = value
       form.appendChild(input)
     }
     document.body.appendChild(form)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const win = window as any
-    if (win.INIStdPay && fields.mid) {
+
+    // Inicis: wait for INIStdPay.js to be ready before calling .pay().
+    // The <Script strategy="afterInteractive"> in this page loads it asynchronously.
+    if (fields.mid && fields.payUrl) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const win = window as any
+      // Poll up to 10s for INIStdPay global; raises setSubmitting on failure.
+      const deadline = Date.now() + 10000
+      while (!win.INIStdPay && Date.now() < deadline) {
+        await new Promise(r => setTimeout(r, 100))
+      }
+      if (!win.INIStdPay) {
+        setError(t('checkout.paymentModuleError'))
+        setSubmitting(false)
+        return
+      }
       win.INIStdPay.pay('pgPayForm')
-    } else {
+      return
+    }
+
+    // Non-Inicis PG: plain form POST to provided action URL
+    if (action) {
       form.submit()
     }
   }
@@ -575,7 +593,7 @@ export default function OrderPage() {
         router.push(`/shop/order/complete?orderNo=${orderNo}&pending=1`)
       } else if (prepare.kind === 'form') {
         // PG 폼 결제 (이니시스 등) — 장바구니는 결제 완료 콜백에서 정리
-        submitHiddenForm(prepare.formAction!, prepare.formFields!)
+        await submitHiddenForm(prepare.formAction ?? '', prepare.formFields!)
       } else if (prepare.kind === 'redirect') {
         window.location.href = prepare.redirectUrl!
       }
@@ -1116,10 +1134,10 @@ export default function OrderPage() {
           </form>
         </div>
 
-      {/* 이니시스 스크립트 - beforeInteractive로 먼저 로드 */}
+      {/* 이니시스 스크립트 - afterInteractive (App Router에서 beforeInteractive는 layout 전용) */}
       <Script
         src="https://stgstdpay.inicis.com/stdjs/INIStdPay.js"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
 
       {/* 배송지 선택 모달 */}
