@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { useTranslations } from "next-intl"
+import { useTranslations, useLocale } from "next-intl"
 import Script from "next/script"
 
 import { Button } from "@/components/ui/button"
@@ -96,6 +96,8 @@ interface UserAddress {
 
 export default function OrderPage() {
   const t = useTranslations('shop')
+  const locale = useLocale()
+  const isKorean = locale === 'ko'
   const router = useRouter()
   const [orderItems, setOrderItems] = useState<OrderItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -340,7 +342,7 @@ export default function OrderPage() {
       }).open()
     } else {
       const script = document.createElement("script")
-      script.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+      script.src = "//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
       script.onload = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const win2 = window as any
@@ -368,12 +370,12 @@ export default function OrderPage() {
     }
   }, [sameAsOrderer, ordererName, ordererPhone])
 
-  // 우편번호 변경 시 배송비 계산
+  // 우편번호 변경 시 배송비 계산 (한국 주소에 한함)
   useEffect(() => {
-    if (zipCode.length === 5) {
+    if (isKorean && zipCode.length === 5) {
       calculateDeliveryFee(zipCode)
     }
-  }, [zipCode, orderItems])
+  }, [zipCode, orderItems, isKorean])
 
   // 이니시스 iframe 스타일 강제 수정 (흰색 배경 문제 해결)
   useEffect(() => {
@@ -612,8 +614,21 @@ export default function OrderPage() {
     await saveOrdererInfo()
 
     try {
-      // 자동 저장: 새 주소이고 저장 안함 체크가 안된 경우 자동 저장 (중복 체크 포함)
-      if (!skipSaveAddress && !selectedAddressId) {
+      // 자동 저장 조건:
+      //  - 기존 저장 주소에서 한 필드라도 수정됐다면 무조건 저장 (skipSaveAddress 무시 — 이 플래그는 저장주소 로드 시 자동 설정되어 재저장을 막는 용도일 뿐)
+      //  - 완전히 새 주소 입력이면 "저장 안함" 체크박스를 존중
+      const selectedSaved = selectedAddressId
+        ? savedAddresses.find(a => a.id === selectedAddressId)
+        : null
+      const formDiffersFromSelected = !!selectedSaved && (
+        selectedSaved.recipientName !== recipientName ||
+        selectedSaved.recipientPhone !== recipientPhone ||
+        selectedSaved.zipCode !== zipCode ||
+        selectedSaved.address !== address ||
+        (selectedSaved.addressDetail || "") !== (addressDetail || "")
+      )
+      const shouldSaveAddress = formDiffersFromSelected || (!skipSaveAddress && !selectedAddressId)
+      if (shouldSaveAddress) {
         try {
           await fetch("/api/shop/addresses", {
             method: "POST",
@@ -773,7 +788,7 @@ export default function OrderPage() {
     } else {
       // 다음 주소 API 스크립트 로드
       const script = document.createElement("script")
-      script.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+      script.src = "//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
       script.onload = () => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const win2 = window as any
@@ -1001,11 +1016,13 @@ export default function OrderPage() {
                           placeholder={t('checkout.zipcode')}
                           className="w-32"
                           required
-                          readOnly
+                          readOnly={isKorean}
                         />
-                        <Button type="button" variant="outline" onClick={searchAddress}>
-                          {t('checkout.addressSearch')}
-                        </Button>
+                        {isKorean && (
+                          <Button type="button" variant="outline" onClick={searchAddress}>
+                            {t('checkout.addressSearch')}
+                          </Button>
+                        )}
                       </div>
                     </div>
 
@@ -1014,7 +1031,7 @@ export default function OrderPage() {
                       onChange={(e) => setAddress(e.target.value)}
                       placeholder={t('checkout.addressMain')}
                       required
-                      readOnly
+                      readOnly={isKorean}
                     />
 
                     <Input
@@ -1274,10 +1291,10 @@ export default function OrderPage() {
           </form>
         </div>
 
-      {/* 이니시스 스크립트 - beforeInteractive로 먼저 로드 */}
+      {/* 이니시스 스크립트 - afterInteractive (결제 버튼 클릭 시점엔 이미 로드 완료) */}
       <Script
         src="https://stgstdpay.inicis.com/stdjs/INIStdPay.js"
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
 
       {/* 이니시스 결제 폼 (숨김) */}
@@ -1407,19 +1424,23 @@ export default function OrderPage() {
               <div className="flex gap-2">
                 <Input
                   value={addressForm.zipCode}
+                  onChange={(e) => setAddressForm({ ...addressForm, zipCode: e.target.value })}
                   placeholder={t('address.zipcode')}
                   className="w-28"
-                  readOnly
+                  readOnly={isKorean}
                 />
-                <Button type="button" variant="outline" onClick={searchAddressForForm}>
-                  {t('address.addressSearch')}
-                </Button>
+                {isKorean && (
+                  <Button type="button" variant="outline" onClick={searchAddressForForm}>
+                    {t('address.addressSearch')}
+                  </Button>
+                )}
               </div>
             </div>
             <Input
               value={addressForm.address}
+              onChange={(e) => setAddressForm({ ...addressForm, address: e.target.value })}
               placeholder={t('address.addressMain')}
-              readOnly
+              readOnly={isKorean}
             />
             <Input
               value={addressForm.addressDetail}
