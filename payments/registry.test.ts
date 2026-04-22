@@ -11,6 +11,8 @@ test('register and get by id', () => {
     prepare: async () => ({ kind: 'redirect', redirectUrl: '/x' }),
     handleCallback: async () => ({ success: true, pgTransactionId: 'x', paidAmount: 0, method: 'card', rawResponse: null }),
     refund: async () => ({ success: true, refundedAmount: 0 }),
+    parseCallbackRequest: async () => ({}),
+    extractOrderNo: () => 'stub-order',
   }
   register(stub)
   assert.equal(get('stub'), stub)

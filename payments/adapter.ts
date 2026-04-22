@@ -55,4 +55,10 @@ export interface PaymentAdapter {
   prepare(order: AdapterOrderSnapshot, opts: PrepareOpts): Promise<PrepareResult>
   handleCallback(rawRequest: unknown): Promise<CallbackResult>
   refund(params: RefundParams): Promise<RefundResult>
+
+  /** Parse an incoming PG callback request into the format handleCallback expects. */
+  parseCallbackRequest(req: Request): Promise<unknown>
+
+  /** Extract the merchant order number from the parsed callback payload. */
+  extractOrderNo(parsed: unknown): string
 }

@@ -26,4 +26,12 @@ export class BankDepositAdapter implements PaymentAdapter {
     // System only records that refund was issued; no PG API exists.
     return { success: true, refundedAmount: params.amount, pgRefundId: `manual-refund-${Date.now()}` }
   }
+
+  async parseCallbackRequest(req: Request): Promise<unknown> {
+    return await req.json()
+  }
+
+  extractOrderNo(parsed: unknown): string {
+    return (parsed as any).orderNo
+  }
 }

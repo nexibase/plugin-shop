@@ -250,6 +250,16 @@ export class InicisAdapter implements PaymentAdapter {
   async refund(params: RefundParams): Promise<RefundResult> {
     return refundInicis(params)
   }
+
+  async parseCallbackRequest(req: Request): Promise<unknown> {
+    const form = await req.formData()
+    return Object.fromEntries(form.entries())
+  }
+
+  extractOrderNo(parsed: unknown): string {
+    const p = parsed as any
+    return p.MOID ?? p.oid
+  }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
