@@ -4,6 +4,7 @@ import { bootstrapPaymentAdapters } from '@/plugins/shop/payments/bootstrap'
 import { get } from '@/plugins/shop/payments/registry'
 import { logActivity } from '@/plugins/shop/fulfillment/activities'
 import { assertOrderTransition, type OrderStatus } from '@/plugins/shop/fulfillment/state-machine'
+import { createOrderCompletedNotification, createNewOrderNotificationForAdmins } from '@/lib/notification'
 
 bootstrapPaymentAdapters()
 
@@ -84,6 +85,27 @@ export async function POST(req: Request, { params }: { params: Promise<{ adapter
 
   if (outcome.type === 'not_found') return NextResponse.json({ error: 'order not found' }, { status: 404 })
   if (outcome.type === 'failure') return NextResponse.redirect(new URL(`/shop/order/failed?orderNo=${outcome.orderNo}`, req.url))
+
+  // Fire customer + admin notifications on successful payment only (not already_finalized).
+  if (outcome.type === 'success') {
+    const paidOrder = await prisma.order.findUnique({
+      where: { orderNo: outcome.orderNo },
+      include: { items: true },
+    })
+    if (paidOrder) {
+      const emailItems = paidOrder.items.map(item => ({
+        name: item.productName + (item.optionText ? ` (${item.optionText})` : ''),
+        quantity: item.quantity,
+        price: item.subtotal,
+      }))
+      // Fire-and-forget — matches legacy behavior in api/orders/route.ts
+      createOrderCompletedNotification(paidOrder.userId, paidOrder.orderNo, paidOrder.finalPrice, emailItems)
+        .catch(err => console.error('failed to send customer notification:', err))
+      createNewOrderNotificationForAdmins(paidOrder.id, paidOrder.orderNo, paidOrder.finalPrice, paidOrder.ordererName)
+        .catch(err => console.error('failed to send admin notification:', err))
+    }
+  }
+
   // Both 'already_finalized' and 'success' redirect to the complete page.
   return NextResponse.redirect(new URL(`/shop/order/complete?orderNo=${outcome.orderNo}`, req.url))
 }
