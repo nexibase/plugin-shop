@@ -41,6 +41,7 @@ import {
   Send,
 } from "lucide-react"
 import { DELIVERY_COMPANIES as DELIVERY_LIST, getTrackingUrlByName } from "@/plugins/shop/lib/delivery"
+import { ActivityTimeline } from '../components/ActivityTimeline'
 
 interface Order {
   id: number
@@ -1088,6 +1089,13 @@ export default function AdminOrderDetailPage() {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* 활동 이력 */}
+          <Card>
+            <CardContent className="pt-6">
+              <ActivityTimeline orderId={order.id} />
             </CardContent>
           </Card>
         </div>
