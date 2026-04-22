@@ -41,6 +41,9 @@ import {
   Send,
 } from "lucide-react"
 import { DELIVERY_COMPANIES as DELIVERY_LIST, getTrackingUrlByName } from "@/plugins/shop/lib/delivery"
+import { ActivityTimeline } from '../components/ActivityTimeline'
+import { StatusTransitionBar } from '../components/StatusTransitionBar'
+import type { OrderStatus } from '@/plugins/shop/fulfillment/state-machine'
 
 interface Order {
   id: number
@@ -819,6 +822,11 @@ export default function AdminOrderDetailPage() {
               <CardTitle>{t('orderStatusManage')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              <StatusTransitionBar
+                orderId={order.id}
+                status={order.status as OrderStatus}
+                onChanged={fetchOrder}
+              />
               <div>
                 <Label>{t('orderStatusLabel')}</Label>
                 <Select value={status} onValueChange={setStatus}>
@@ -1088,6 +1096,13 @@ export default function AdminOrderDetailPage() {
                   </Button>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* 활동 이력 */}
+          <Card>
+            <CardContent className="pt-6">
+              <ActivityTimeline orderId={order.id} />
             </CardContent>
           </Card>
         </div>

@@ -43,6 +43,15 @@ interface Order {
 	}[]
 }
 
+// Steps for the mini progress stepper (normal fulfillment flow)
+const MINI_STEPS = [
+	{ key: 'paid',      label: '결제완료' },
+	{ key: 'preparing', label: '배송준비' },
+	{ key: 'shipping',  label: '배송중' },
+	{ key: 'delivered', label: '배송완료' },
+	{ key: 'confirmed', label: '구매확정' },
+]
+
 const STATUS_META: Record<string, { labelKey: string; color: string }> = {
 	pending: { labelKey: "order.statusPending", color: "bg-yellow-500" },
 	paid: { labelKey: "order.statusPaid", color: "bg-blue-500" },
@@ -218,13 +227,38 @@ export default function OrdersPage() {
 									</p>
 								)}
 
+								{/* Mini progress stepper (normal fulfillment statuses only) */}
+								{MINI_STEPS.findIndex(s => s.key === order.status) >= 0 && (
+									<div className="pt-2">
+										<ol className="flex items-center">
+											{MINI_STEPS.map((s, i) => {
+												const stepIndex = MINI_STEPS.findIndex(st => st.key === order.status)
+												const active = i <= stepIndex
+												return (
+													<li key={s.key} className="flex-1 flex items-center min-w-0">
+														<div
+															className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold flex-shrink-0 ${active ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}
+															title={s.label}
+														>
+															{i + 1}
+														</div>
+														{i < MINI_STEPS.length - 1 && (
+															<div className={`h-0.5 flex-1 mx-1 ${i < stepIndex ? 'bg-primary' : 'bg-muted'}`} />
+														)}
+													</li>
+												)
+											})}
+										</ol>
+									</div>
+								)}
+
 								{/* 결제 정보 및 버튼 */}
 								<div className="flex items-center justify-between pt-4 border-t">
 									<div>
 										<p className="text-sm text-muted-foreground">{t('order.paymentAmount')}</p>
 										<p className="font-bold text-lg">{formatPrice(order.finalPrice)}</p>
 									</div>
-									<Link href={`/shop/orders/${order.orderNo}`}>
+									<Link href={`/shop/mypage/orders/${order.orderNo}`}>
 										<Button variant="outline">
 											<Eye className="h-4 w-4 mr-2" />
 											{t('order.viewDetailShort')}

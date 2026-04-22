@@ -192,7 +192,14 @@
       "exchangeReturnInfo": "Exchange / return info",
       "exchange": "Exchange",
       "return": "Return",
-      "returnAddress": "Return / exchange address"
+      "returnAddress": "Return / exchange address",
+      "methods": {
+        "card": "Credit card",
+        "account_transfer": "Real-time bank transfer",
+        "virtual_account": "Virtual account",
+        "mobile": "Mobile payment",
+        "bank_deposit": "Bank deposit (manual)"
+      }
     },
     "order": {
       "title": "Orders",

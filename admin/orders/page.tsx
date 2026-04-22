@@ -29,7 +29,9 @@ import {
   Trash2,
   RotateCcw,
   Printer,
+  Truck,
 } from "lucide-react"
+import { BulkShipDialog } from "./components/BulkShipDialog"
 
 interface Order {
   id: number
@@ -42,6 +44,8 @@ interface Order {
   finalPrice: number
   status: string
   paymentMethod: string
+  paymentGateway: string | null
+  orderType: string
   createdAt: string
   items: {
     id: number
@@ -55,6 +59,12 @@ interface Order {
     email: string
   }
 }
+
+const PG_OPTIONS = [
+  { value: '', label: '전체' },
+  { value: 'inicis', label: '이니시스' },
+  { value: 'bank_deposit', label: '무통장입금' },
+]
 
 interface Stats {
   all: number
@@ -119,8 +129,10 @@ export default function AdminOrdersPage() {
   const status = searchParams.get('status') || ''
   const search = searchParams.get('search') || ''
   const showDeleted = searchParams.get('deleted') === 'true'
+  const paymentGateway = searchParams.get('paymentGateway') || ''
   const [searchInput, setSearchInput] = useState(search)
   const [selectedOrders, setSelectedOrders] = useState<number[]>([])
+  const [bulkShipOpen, setBulkShipOpen] = useState(false)
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
@@ -131,6 +143,7 @@ export default function AdminOrdersPage() {
         ...(status && { status }),
         ...(search && { search }),
         ...(showDeleted && { deleted: 'true' }),
+        ...(paymentGateway && { paymentGateway }),
       })
 
       const res = await fetch(`/api/admin/shop/orders?${params}`)
@@ -146,7 +159,7 @@ export default function AdminOrdersPage() {
     } finally {
       setLoading(false)
     }
-  }, [page, status, search, showDeleted])
+  }, [page, status, search, showDeleted, paymentGateway])
 
   useEffect(() => {
     fetchOrders()
@@ -155,7 +168,7 @@ export default function AdminOrdersPage() {
   useEffect(() => {
     setPage(1)
     setSelectedOrders([])
-  }, [status, search, showDeleted])
+  }, [status, search, showDeleted, paymentGateway])
 
   // 전체 선택/해제
   const handleSelectAll = (checked: boolean) => {
@@ -245,6 +258,17 @@ export default function AdminOrdersPage() {
     router.push(`/admin/shop/orders?${params}`)
   }
 
+  const handlePgChange = (pg: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (pg) {
+      params.set('paymentGateway', pg)
+    } else {
+      params.delete('paymentGateway')
+    }
+    params.delete('page')
+    router.push(`/admin/shop/orders?${params}`)
+  }
+
   const handleRestore = async (orderId: number) => {
     if (!confirm(t('restoreConfirm'))) return
 
@@ -311,10 +335,16 @@ export default function AdminOrdersPage() {
             </div>
             <div className="flex items-center gap-2">
               {selectedOrders.length > 0 && (
-                <Button variant="outline" onClick={handlePrintLabels}>
-                  <Printer className="h-4 w-4 mr-2" />
-                  {t('printLabelWithCount', { count: selectedOrders.length })}
-                </Button>
+                <>
+                  <Button variant="outline" onClick={() => setBulkShipOpen(true)}>
+                    <Truck className="h-4 w-4 mr-2" />
+                    일괄 송장입력 ({selectedOrders.length}건)
+                  </Button>
+                  <Button variant="outline" onClick={handlePrintLabels}>
+                    <Printer className="h-4 w-4 mr-2" />
+                    {t('printLabelWithCount', { count: selectedOrders.length })}
+                  </Button>
+                </>
               )}
               <Button variant="outline" onClick={fetchOrders}>
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -365,18 +395,29 @@ export default function AdminOrdersPage() {
           {/* Search */}
           <Card>
             <CardContent className="pt-6">
-              <form onSubmit={handleSearch} className="flex gap-2">
-                <div className="relative flex-1 max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder={t('orderSearchPlaceholder')}
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-                <Button type="submit">{t('search')}</Button>
-              </form>
+              <div className="flex flex-wrap gap-2">
+                <form onSubmit={handleSearch} className="flex gap-2 flex-1">
+                  <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder={t('orderSearchPlaceholder')}
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Button type="submit">{t('search')}</Button>
+                </form>
+                <select
+                  value={paymentGateway}
+                  onChange={(e) => handlePgChange(e.target.value)}
+                  className="border rounded-md px-3 py-2 text-sm bg-background"
+                >
+                  {PG_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
             </CardContent>
           </Card>
 
@@ -423,7 +464,12 @@ export default function AdminOrdersPage() {
                         </TableCell>
                         <TableCell>
                           <div className="font-mono text-sm leading-tight">
-                            <div>{order.orderNo.split('-')[0]}</div>
+                            <div className="flex items-center gap-1">
+                              {order.orderNo.split('-')[0]}
+                              {order.orderType === 'exchange' && (
+                                <span className="ml-2 text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-600">교환발송</span>
+                              )}
+                            </div>
                             <div className="text-muted-foreground">-{order.orderNo.split('-')[1]}</div>
                           </div>
                         </TableCell>
@@ -524,6 +570,13 @@ export default function AdminOrdersPage() {
           )}
         </div>
       </main>
+
+      <BulkShipDialog
+        open={bulkShipOpen}
+        onClose={() => setBulkShipOpen(false)}
+        selectedOrderIds={selectedOrders}
+        onDone={() => { setSelectedOrders([]); fetchOrders() }}
+      />
     </div>
   )
 }
