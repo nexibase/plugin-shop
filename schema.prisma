@@ -109,16 +109,43 @@ model Order {
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
   deletedAt       DateTime?
+  originalOrderId Int?
+  orderType       String          @default("normal") @db.VarChar(30)
+  paymentGateway  String?         @db.VarChar(20)
+  pgTransactionId String?         @db.VarChar(200)
   items           OrderItem[]
   user            User            @relation(fields: [userId], references: [id])
   reviews         ProductReview[]
+  originalOrder   Order?          @relation("OrderExchangeChain", fields: [originalOrderId], references: [id])
+  replacements    Order[]         @relation("OrderExchangeChain")
+  activities      OrderActivity[]
 
   @@index([userId])
   @@index([status])
   @@index([orderNo])
   @@index([createdAt])
   @@index([deletedAt])
+  @@index([originalOrderId])
+  @@index([paymentGateway])
   @@map("orders")
+}
+
+/// Append-only audit log of order lifecycle events. Never UPDATE rows.
+model OrderActivity {
+  id         Int      @id @default(autoincrement())
+  orderId    Int
+  actorType  String   @db.VarChar(20)
+  actorId    Int?
+  action     String   @db.VarChar(60)
+  fromStatus String?  @db.VarChar(20)
+  toStatus   String?  @db.VarChar(20)
+  payload    Json?
+  memo       String?  @db.Text
+  createdAt  DateTime @default(now())
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@map("order_activities")
 }
 
 model OrderItem {
