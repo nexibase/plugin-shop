@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
 import Script from "next/script"
@@ -21,7 +21,6 @@ import {
   ChevronLeft,
   Package,
   CreditCard,
-  Building2,
   Truck,
   AlertCircle,
   Check,
@@ -35,29 +34,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-
-// 이니시스 결제 데이터 타입 (데모와 동일하게)
-interface InicisPaymentData {
-  version: string
-  mid: string
-  oid: string
-  goodname: string
-  price: number
-  currency: string
-  buyername: string
-  buyertel: string
-  buyeremail: string
-  timestamp: string
-  signature: string
-  mKey: string
-  returnUrl: string
-  closeUrl: string
-  popupUrl: string
-  gopaymethod: string
-  acceptmethod: string
-  payUrl: string
-  testMode: boolean
-}
 
 interface OrderItem {
   productId: number
@@ -105,10 +81,6 @@ export default function OrderPage() {
   // 쇼핑몰 설정
   const [shopSettings, setShopSettings] = useState<ShopSettings | null>(null)
 
-  // 이니시스 결제 관련
-  const paymentFormRef = useRef<HTMLFormElement>(null)
-
-
   // 배송비
   const [deliveryFee, setDeliveryFee] = useState(0)
   const [deliveryInfo, setDeliveryInfo] = useState("")
@@ -129,8 +101,11 @@ export default function OrderPage() {
   const [deliveryMemoOption, setDeliveryMemoOption] = useState("none") // 선택 옵션
   const [deliveryMemoCustom, setDeliveryMemoCustom] = useState("") // 직접 입력 텍스트
 
-  // 결제 방법 (기본값: 카드결제)
-  const [paymentMethod, setPaymentMethod] = useState<"bank" | "card">("card")
+  // 결제 방법
+  const [paymentMethod, setPaymentMethod] = useState<string>('')
+  const [availableMethods, setAvailableMethods] = useState<
+    { method: string; adapterId: string; displayName: string }[]
+  >([])
 
   // 주소록 관련 상태
   const [savedAddresses, setSavedAddresses] = useState<UserAddress[]>([])
@@ -156,6 +131,13 @@ export default function OrderPage() {
     loadShopSettings()
     loadUserInfo()
     loadSavedAddresses()
+    fetch('/api/shop/payment/methods')
+      .then(r => r.json())
+      .then(d => {
+        setAvailableMethods(d.methods)
+        if (d.methods.length > 0) setPaymentMethod(d.methods[0].method)
+      })
+      .catch(err => console.error('결제 수단 로드 에러:', err))
   }, [])
 
   // 로그인한 사용자 정보 불러오기
@@ -487,107 +469,24 @@ export default function OrderPage() {
 
   const formatPrice = (price: number) => t('policy.won', { amount: price.toLocaleString() })
 
-  // 이니시스 스크립트 동적 로드
-  const loadInicisScript = (): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const win = window as any
-
-      // 이미 로드됨
-      if (win.INIStdPay) {
-        resolve()
-        return
-      }
-
-      // 이미 스크립트 태그가 있는지 확인
-      const existingScript = document.querySelector('script[src*="INIStdPay.js"]')
-      if (existingScript) {
-        // 로드 대기
-        const checkLoaded = setInterval(() => {
-          if (win.INIStdPay) {
-            clearInterval(checkLoaded)
-            resolve()
-          }
-        }, 100)
-        setTimeout(() => {
-          clearInterval(checkLoaded)
-          reject(new Error("Script load timeout"))
-        }, 10000)
-        return
-      }
-
-      // 스크립트 동적 생성
-      const script = document.createElement("script")
-      script.src = "https://stgstdpay.inicis.com/stdjs/INIStdPay.js"
-      script.type = "text/javascript"
-      script.setAttribute("charset", "UTF-8")
-      script.onload = () => {
-        console.log("Inicis script loaded")
-        resolve()
-      }
-      script.onerror = () => {
-        reject(new Error("Inicis script load failed"))
-      }
-      document.head.appendChild(script)
-    })
-  }
-
-  // 이니시스 결제 시작 함수
-  const startInicisPayment = async (payment: InicisPaymentData) => {
-    try {
-      // 스크립트 로드 확인/대기
-      await loadInicisScript()
-
-      // 폼에 데이터 설정
-      const form = paymentFormRef.current
-      if (!form) {
-        setError(t('checkout.paymentFormNotFound'))
-        setSubmitting(false)
-        return
-      }
-
-      // 기존 폼 필드 제거
-      form.innerHTML = ""
-
-      // 폼 필드 추가
-      const fields: Record<string, string> = {
-        version: payment.version,
-        mid: payment.mid,
-        oid: payment.oid,
-        goodname: payment.goodname,
-        price: payment.price.toString(),
-        currency: payment.currency,
-        buyername: payment.buyername,
-        buyertel: payment.buyertel,
-        buyeremail: payment.buyeremail,
-        timestamp: payment.timestamp,
-        signature: payment.signature,
-        mKey: payment.mKey,
-        returnUrl: payment.returnUrl,
-        closeUrl: payment.closeUrl,
-        popupUrl: payment.popupUrl,
-        payViewType: "overlay",
-        gopaymethod: payment.gopaymethod,
-        acceptmethod: payment.acceptmethod,
-      }
-
-      Object.entries(fields).forEach(([name, value]) => {
-        const input = document.createElement("input")
-        input.type = "hidden"
-        input.name = name
-        input.value = value
-        form.appendChild(input)
-      })
-
-      // 이니시스 결제 호출
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const win = window as any
-      console.log("INIStdPay.pay 호출", win.INIStdPay)
-      win.INIStdPay.pay("inicisPayForm")
-    } catch (err) {
-      console.error("결제 시작 에러:", err)
-      setError(t('checkout.paymentModuleError'))
-      setSubmitting(false)
+  // 숨김 폼을 생성해 PG 결제를 트리거하는 헬퍼
+  function submitHiddenForm(action: string, fields: Record<string, string>) {
+    const form = document.createElement('form')
+    form.method = 'post'
+    form.action = action
+    form.id = 'pgPayForm'
+    for (const [name, value] of Object.entries(fields)) {
+      const input = document.createElement('input')
+      input.type = 'hidden'; input.name = name; input.value = value
+      form.appendChild(input)
+    }
+    document.body.appendChild(form)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const win = window as any
+    if (win.INIStdPay && fields.mid) {
+      win.INIStdPay.pay('pgPayForm')
+    } else {
+      form.submit()
     }
   }
 
@@ -633,98 +532,53 @@ export default function OrderPage() {
         }
       }
 
-      // 카드결제인 경우 이니시스 결제 진행
-      if (paymentMethod === "card") {
-        // 현재 접속 URL을 자동으로 감지 (포트 변경에도 대응)
-        const currentBaseUrl = window.location.origin
-
-        const res = await fetch("/api/shop/payment/inicis", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            items: orderItems.map(item => ({
-              productId: item.productId,
-              optionId: item.optionId,
-              quantity: item.quantity,
-            })),
-            ordererName,
-            ordererPhone,
-            ordererEmail: ordererEmail || null,
+      const res = await fetch('/api/shop/payment/init', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: orderItems.map(i => ({ productId: i.productId, optionId: i.optionId, quantity: i.quantity })),
+          buyer: { name: ordererName, phone: ordererPhone, email: ordererEmail || undefined },
+          shipping: {
             recipientName,
             recipientPhone,
             zipCode,
             address,
-            addressDetail: addressDetail || null,
+            addressDetail: addressDetail || undefined,
             deliveryMemo: getDeliveryMemo(),
-            deliveryFee,  // 화면에 표시된 배송비 전달
-            baseUrl: currentBaseUrl,  // 현재 접속 URL 전달
-          }),
-        })
-
-        console.log('결제 요청 - 상품금액:', getTotalPrice(), '배송비:', deliveryFee, '총액:', getFinalPrice())
-
-        const data = await res.json()
-
-        if (!res.ok) {
-          setError(data.error || t('checkout.paymentPrepareError'))
-          setSubmitting(false)
-          return
-        }
-
-        // 카드결제는 장바구니를 미리 삭제하지 않음 (결제 완료 페이지에서 삭제)
-        // 결제 취소 시에도 장바구니가 유지됨
-
-        // 이니시스 결제 시작 (스크립트 로드 포함)
-        await startInicisPayment(data.payment)
-        return
-      }
-
-      // 무통장입금인 경우 기존 로직
-      const res = await fetch("/api/shop/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: orderItems.map(item => ({
-            productId: item.productId,
-            productName: item.productName,
-            optionId: item.optionId,
-            quantity: item.quantity,
-          })),
-          ordererName,
-          ordererPhone,
-          ordererEmail: ordererEmail || null,
-          recipientName,
-          recipientPhone,
-          zipCode,
-          address,
-          addressDetail: addressDetail || null,
-          deliveryMemo: getDeliveryMemo(),
-          paymentMethod,
+          },
+          method: paymentMethod,
         }),
       })
 
-      const data = await res.json()
+      const initData = await res.json()
 
       if (!res.ok) {
-        setError(data.error || t('checkout.orderProcessError'))
+        setError(initData.error || t('checkout.paymentPrepareError'))
         setSubmitting(false)
         return
       }
 
-      // 주문 성공 - 장바구니에서 주문 상품 제거
-      const cart: OrderItem[] = JSON.parse(localStorage.getItem("cart") || "[]")
-      const orderedKeys = new Set(
-        orderItems.map(item => `${item.productId}-${item.optionId || "none"}`)
-      )
-      const newCart = cart.filter(
-        item => !orderedKeys.has(`${item.productId}-${item.optionId || "none"}`)
-      )
-      localStorage.setItem("cart", JSON.stringify(newCart))
-      localStorage.removeItem("orderItems")
-      window.dispatchEvent(new Event("cartUpdated"))
+      const { orderNo, prepare } = initData
 
-      // 주문 완료 페이지로 이동
-      router.push(`/shop/order/complete?orderNo=${data.order.orderNo}`)
+      if (prepare.kind === 'manual') {
+        // 무통장입금 — 장바구니 정리 후 완료 페이지(pending)로 이동
+        const cart: OrderItem[] = JSON.parse(localStorage.getItem("cart") || "[]")
+        const orderedKeys = new Set(
+          orderItems.map(item => `${item.productId}-${item.optionId || "none"}`)
+        )
+        const newCart = cart.filter(
+          item => !orderedKeys.has(`${item.productId}-${item.optionId || "none"}`)
+        )
+        localStorage.setItem("cart", JSON.stringify(newCart))
+        localStorage.removeItem("orderItems")
+        window.dispatchEvent(new Event("cartUpdated"))
+        router.push(`/shop/order/complete?orderNo=${orderNo}&pending=1`)
+      } else if (prepare.kind === 'form') {
+        // PG 폼 결제 (이니시스 등) — 장바구니는 결제 완료 콜백에서 정리
+        submitHiddenForm(prepare.formAction!, prepare.formFields!)
+      } else if (prepare.kind === 'redirect') {
+        window.location.href = prepare.redirectUrl!
+      }
     } catch (err) {
       setError(t('checkout.orderProcessError'))
       setSubmitting(false)
@@ -1089,38 +943,26 @@ export default function OrderPage() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod("bank")}
-                        className={`p-4 border rounded-lg text-left transition-colors ${paymentMethod === "bank"
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
+                    <div className="space-y-2">
+                      {availableMethods.map(m => (
+                        <button
+                          key={`${m.adapterId}:${m.method}`}
+                          type="button"
+                          onClick={() => setPaymentMethod(m.method)}
+                          className={`w-full p-4 border rounded-lg text-left transition-colors ${
+                            paymentMethod === m.method
+                              ? 'border-primary bg-primary/5'
+                              : 'border-border hover:border-primary/50'
                           }`}
-                      >
-                        <Building2 className="h-6 w-6 mb-2" />
-                        <p className="font-medium">{t('checkout.bankTransfer')}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {t('checkout.bankTransferDesc')}
-                        </p>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setPaymentMethod("card")}
-                        className={`p-4 border rounded-lg text-left transition-colors ${paymentMethod === "card"
-                          ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
-                          }`}
-                      >
-                        <CreditCard className="h-6 w-6 mb-2" />
-                        <p className="font-medium">{t('checkout.cardPayment')}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {t('checkout.cardPaymentDesc')}
-                        </p>
-                      </button>
+                        >
+                          <p className="font-medium">
+                            {t(`checkout.methods.${m.method}`, { default: m.displayName } as Parameters<typeof t>[1])}
+                          </p>
+                        </button>
+                      ))}
                     </div>
 
-                    {paymentMethod === "bank" && shopSettings?.bank_info && (
+                    {paymentMethod === 'bank_deposit' && shopSettings?.bank_info && (
                       <div className="p-4 bg-muted rounded-lg">
                         <p className="font-medium mb-2">{t('checkout.bankTransferInfo')}</p>
                         <p className="text-sm whitespace-pre-wrap">
@@ -1129,7 +971,7 @@ export default function OrderPage() {
                       </div>
                     )}
 
-                    {paymentMethod === "card" && (
+                    {paymentMethod && paymentMethod !== 'bank_deposit' && (
                       <div className="p-4 bg-muted rounded-lg">
                         <p className="text-sm text-muted-foreground">
                           {t('checkout.cardRedirectInfo')}
@@ -1278,15 +1120,6 @@ export default function OrderPage() {
       <Script
         src="https://stgstdpay.inicis.com/stdjs/INIStdPay.js"
         strategy="beforeInteractive"
-      />
-
-      {/* 이니시스 결제 폼 (숨김) */}
-      <form
-        id="inicisPayForm"
-        ref={paymentFormRef}
-        method="post"
-        acceptCharset="UTF-8"
-        style={{ display: "none" }}
       />
 
       {/* 배송지 선택 모달 */}

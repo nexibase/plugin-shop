@@ -192,7 +192,14 @@
       "exchangeReturnInfo": "교환/반품 안내",
       "exchange": "교환",
       "return": "반품",
-      "returnAddress": "반품/교환 주소"
+      "returnAddress": "반품/교환 주소",
+      "methods": {
+        "card": "신용카드",
+        "account_transfer": "실시간 계좌이체",
+        "virtual_account": "가상계좌",
+        "mobile": "휴대폰 결제",
+        "bank_deposit": "무통장입금"
+      }
     },
     "order": {
       "title": "주문 내역",
