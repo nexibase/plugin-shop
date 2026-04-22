@@ -88,7 +88,7 @@ function ProductModal({
     if (isOpen) {
       setFormData({
         name: '',
-        slug: '',
+        slug: crypto.randomUUID(),
         categoryId: '',
         description: '',
         price: '',
@@ -110,13 +110,6 @@ function ProductModal({
     setSaving(false)
   }
 
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9가-힣]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-  }
-
   if (!isOpen) return null
 
   return (
@@ -135,13 +128,7 @@ function ProductModal({
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  name: e.target.value,
-                  slug: generateSlug(e.target.value)
-                })
-              }}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder={t('productName')}
               required
             />
