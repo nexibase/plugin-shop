@@ -18,6 +18,8 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate') || ''
     const endDate = searchParams.get('endDate') || ''
     const deleted = searchParams.get('deleted') === 'true'  // 삭제된 주문만 보기
+    const paymentGateway = searchParams.get('paymentGateway') || ''
+    const orderType = searchParams.get('orderType') || ''
 
     const skip = (page - 1) * limit
 
@@ -45,6 +47,16 @@ export async function GET(request: NextRequest) {
         { recipientName: { contains: search } },
         { recipientPhone: { contains: search } },
       ]
+    }
+
+    // PG 필터
+    if (paymentGateway) {
+      where.paymentGateway = paymentGateway
+    }
+
+    // 주문 유형 필터
+    if (orderType) {
+      where.orderType = orderType
     }
 
     // 날짜 필터
