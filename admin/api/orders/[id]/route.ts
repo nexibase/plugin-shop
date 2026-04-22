@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { createOrderStatusNotification, createOrderCancelledByAdminNotification } from '@/lib/notification'
+import { logActivity } from '@/plugins/shop/fulfillment/activities'
 import crypto from 'crypto'
 
 // Load shop settings
@@ -754,6 +755,34 @@ export async function PUT(
     // Create a notification on status change
     if (status && status !== order.status && order.userId) {
       await createOrderStatusNotification(order.userId, order.orderNo, order.status, status)
+    }
+
+    // Audit log: memo changed
+    if (adminMemo !== undefined && adminMemo !== order.adminMemo) {
+      await logActivity(prisma, {
+        orderId: order.id,
+        actorType: 'admin',
+        actorId: session.id,
+        action: 'memo_updated',
+        memo: adminMemo ?? null,
+      })
+    }
+
+    // Audit log: tracking info changed (when not going through /ship endpoint)
+    const trackingChanged =
+      (trackingCompany !== undefined && trackingCompany !== order.trackingCompany) ||
+      (trackingNumber !== undefined && trackingNumber !== order.trackingNumber)
+    if (trackingChanged) {
+      await logActivity(prisma, {
+        orderId: order.id,
+        actorType: 'admin',
+        actorId: session.id,
+        action: 'tracking_updated',
+        payload: {
+          trackingCompany: trackingCompany ?? order.trackingCompany,
+          trackingNumber: trackingNumber ?? order.trackingNumber,
+        },
+      })
     }
 
     return NextResponse.json({
