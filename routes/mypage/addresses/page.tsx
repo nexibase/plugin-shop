@@ -195,7 +195,7 @@ export default function AddressesPage() {
 			}).open()
 		} else {
 			const script = document.createElement("script")
-			script.src = "//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
+			script.src = "//t1.kakaocdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"
 			script.onload = () => {
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
 				const win2 = window as any

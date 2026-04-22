@@ -88,7 +88,7 @@ function ProductModal({
     if (isOpen) {
       setFormData({
         name: '',
-        slug: '',
+        slug: crypto.randomUUID(),
         categoryId: '',
         description: '',
         price: '',
@@ -110,13 +110,6 @@ function ProductModal({
     setSaving(false)
   }
 
-  const generateSlug = (name: string) => {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9가-힣]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-  }
-
   if (!isOpen) return null
 
   return (
@@ -135,13 +128,7 @@ function ProductModal({
             <Input
               id="name"
               value={formData.name}
-              onChange={(e) => {
-                setFormData({
-                  ...formData,
-                  name: e.target.value,
-                  slug: generateSlug(e.target.value)
-                })
-              }}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder={t('productName')}
               required
             />
@@ -507,20 +494,32 @@ export default function ShopProductsPage() {
                           />
                         </td>
                         <td className="p-3">
-                          {product.images && product.images.length > 0 ? (
-                            <img
-                              src={product.images[0]}
-                              alt={product.name}
-                              className="w-12 h-12 object-cover rounded"
-                            />
-                          ) : (
-                            <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
-                              <ImageIcon className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                          )}
+                          <Link
+                            href={`/shop/products/${product.slug}`}
+                            target="_blank"
+                            className="inline-block hover:opacity-80 transition-opacity"
+                          >
+                            {product.images && product.images.length > 0 ? (
+                              <img
+                                src={product.images[0]}
+                                alt={product.name}
+                                className="w-12 h-12 object-cover rounded"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                                <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                              </div>
+                            )}
+                          </Link>
                         </td>
                         <td className="p-3">
-                          <div className="font-medium">{product.name}</div>
+                          <Link
+                            href={`/shop/products/${product.slug}`}
+                            target="_blank"
+                            className="font-medium hover:text-primary hover:underline"
+                          >
+                            {product.name}
+                          </Link>
                           {product.description && (
                             <div className="text-xs text-muted-foreground truncate max-w-[200px]">
                               {product.description}
