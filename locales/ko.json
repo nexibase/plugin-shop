@@ -964,6 +964,7 @@
     },
     "nav": {
       "orders": "주문내역",
+      "returns": "교환/반품",
       "wishlist": "찜 목록",
       "addresses": "배송지"
     },

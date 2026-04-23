@@ -964,6 +964,7 @@
     },
     "nav": {
       "orders": "Order history",
+      "returns": "Returns",
       "wishlist": "Wishlist",
       "addresses": "Addresses"
     },

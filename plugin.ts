@@ -9,6 +9,7 @@ export default {
   defaultEnabled: false,
   myPageMenus: [
     { label: 'nav.orders', icon: 'ClipboardList', subPath: '/mypage/orders' },
+    { label: 'nav.returns', icon: 'RotateCcw', subPath: '/mypage/returns' },
     { label: 'nav.wishlist', icon: 'Heart', subPath: '/mypage/wishlist' },
     { label: 'nav.addresses', icon: 'MapPin', subPath: '/mypage/addresses' },
   ],
