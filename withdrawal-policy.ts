@@ -1,0 +1,12 @@
+export default [
+  { model: 'Order',         policy: 'retain',
+    reason: '전자상거래법 — 계약/결제/재화공급 기록 5년 보관 의무' },
+  { model: 'OrderItem',     policy: 'retain-via-parent', parent: 'Order' },
+  { model: 'OrderActivity', policy: 'retain-via-parent', parent: 'Order' },
+  { model: 'ProductReview', policy: 'retain',
+    reason: '공개 리뷰; 집계 보존; User 조인으로 작성자 익명화' },
+  { model: 'ProductQna',    policy: 'retain',
+    reason: '상품 정보 + 관리자 답변; User 조인으로 작성자 익명화' },
+  { model: 'Wishlist',      policy: 'delete' },
+  { model: 'PendingOrder',  policy: 'delete' },
+]
