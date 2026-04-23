@@ -4,9 +4,9 @@ export default [
   { model: 'OrderItem',     policy: 'retain-via-parent', parent: 'Order' },
   { model: 'OrderActivity', policy: 'retain-via-parent', parent: 'Order' },
   { model: 'ProductReview', policy: 'retain',
-    reason: 'Public review; aggregates preserved; anonymized via User join' },
+    reason: '공개 리뷰; 집계 보존; User 조인으로 작성자 익명화' },
   { model: 'ProductQna',    policy: 'retain',
-    reason: 'Product info with admin replies; anonymized via User join' },
+    reason: '상품 정보 + 관리자 답변; User 조인으로 작성자 익명화' },
   { model: 'Wishlist',      policy: 'delete' },
   { model: 'PendingOrder',  policy: 'delete' },
 ]
