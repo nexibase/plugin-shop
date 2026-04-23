@@ -142,6 +142,13 @@ export default function OrderDetailPage() {
   const [error, setError] = useState<string | null>(null)
 
   // 취소/환불 다이얼로그
+  const [shopInfo, setShopInfo] = useState<{
+    shop_tel?: string
+    shop_email?: string
+    return_info?: string
+    exchange_info?: string
+    return_address?: string
+  }>({})
   const [dialogOpen, setDialogOpen] = useState(false)
   const [dialogAction, setDialogAction] = useState<"cancel" | "refund" | "confirm">("cancel")
   const [selectedReason, setSelectedReason] = useState("")
@@ -168,6 +175,14 @@ export default function OrderDetailPage() {
   useEffect(() => {
     fetchOrder()
   }, [orderNo])
+
+  // Load shop settings (phone, email, return policy) once — used for the 교환/반품 문의 info block
+  useEffect(() => {
+    fetch('/api/shop/settings')
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d?.settings) setShopInfo(d.settings) })
+      .catch(() => {})
+  }, [])
 
   const fetchOrder = async () => {
     setLoading(true)
@@ -524,6 +539,38 @@ export default function OrderDetailPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* 교환/반품 문의 안내 */}
+          {["delivered", "confirmed"].includes(order.status) && (
+            <Card className="mb-6 border-amber-200 bg-amber-50/40">
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <RotateCcw className="h-4 w-4" />
+                  교환/반품 문의
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="text-sm space-y-2">
+                <p className="text-muted-foreground">
+                  교환 또는 반품은 <strong>고객센터로 연락</strong> 후 처리됩니다. 상품 수령 후 아래 안내를 참고해 문의해 주세요.
+                </p>
+                {shopInfo?.shop_tel && (
+                  <p><strong>전화:</strong> {shopInfo.shop_tel}</p>
+                )}
+                {shopInfo?.shop_email && (
+                  <p><strong>이메일:</strong> {shopInfo.shop_email}</p>
+                )}
+                {shopInfo?.return_address && (
+                  <p><strong>반품 주소:</strong> {shopInfo.return_address}</p>
+                )}
+                {(shopInfo?.return_info || shopInfo?.exchange_info) && (
+                  <div className="pt-2 mt-2 border-t border-amber-200 text-xs text-muted-foreground whitespace-pre-line">
+                    {shopInfo.return_info && <div>{shopInfo.return_info}</div>}
+                    {shopInfo.exchange_info && <div>{shopInfo.exchange_info}</div>}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Order history */}
           <Card className="mb-6">
