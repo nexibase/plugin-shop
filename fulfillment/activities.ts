@@ -12,6 +12,7 @@ export type ActivityAction =
   | 'cancel_requested'
   | 'cancelled'
   | 'refund_issued'
+  | 'return_requested'
 
 export interface LogActivityInput {
   orderId: number
