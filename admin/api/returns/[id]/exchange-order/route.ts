@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { assertReturnTransition, type ReturnStatus } from '@/plugins/shop/fulfillment/return-state-machine'
 import { logActivity } from '@/plugins/shop/fulfillment/activities'
+import { sendNotification } from '@/plugins/shop/notifications/send'
 
 function generateOrderNo(): string {
   // Format: YYMMDDHH-7digit. Collision-free enough for this use case.
@@ -95,5 +96,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   })
 
   if (outcome.type === 'race') return NextResponse.json({ error: 'status changed' }, { status: 409 })
+  sendNotification({ event: 'exchange_sent', userId: request.userId, data: { returnRequestId: request.id, replacementOrderNo: outcome.replacementOrderNo } })
+    .catch(console.error)
   return NextResponse.json({ ok: true, replacementOrderId: outcome.replacementId, replacementOrderNo: outcome.replacementOrderNo })
 }

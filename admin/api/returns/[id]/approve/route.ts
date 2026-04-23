@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { assertReturnTransition, type ReturnStatus } from '@/plugins/shop/fulfillment/return-state-machine'
 import { logActivity } from '@/plugins/shop/fulfillment/activities'
+import { sendNotification } from '@/plugins/shop/notifications/send'
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession()
@@ -24,10 +25,12 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       action: 'return_approved',
       payload: { scope: 'return', returnRequestId: request.id, customerBearsShipping: !!customerBearsShipping },
     })
-    return { type: 'ok' as const }
+    return { type: 'ok' as const, userId: request.userId, returnRequestId: request.id }
   })
 
   if (outcome.type === 'not_found') return NextResponse.json({ error: 'not found' }, { status: 404 })
   if (outcome.type === 'race') return NextResponse.json({ error: 'status changed' }, { status: 409 })
+  sendNotification({ event: 'return_approved', userId: outcome.userId, data: { returnRequestId: outcome.returnRequestId, customerBearsShipping } })
+    .catch(console.error)
   return NextResponse.json({ ok: true })
 }

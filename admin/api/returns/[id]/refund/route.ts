@@ -7,6 +7,7 @@ import { assertReturnTransition, type ReturnStatus } from '@/plugins/shop/fulfil
 import { calculateRefund } from '@/plugins/shop/fulfillment/refund-calc'
 import { logActivity } from '@/plugins/shop/fulfillment/activities'
 import { getShopSetting } from '@/plugins/shop/lib/shop-settings'
+import { sendNotification } from '@/plugins/shop/notifications/send'
 
 bootstrapPaymentAdapters()
 
@@ -69,5 +70,7 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   })
 
   if (outcome.type === 'race') return NextResponse.json({ error: 'status changed' }, { status: 409 })
+  sendNotification({ event: 'return_refunded', userId: request.userId, data: { returnRequestId: request.id, amount: calc.refundAmount } })
+    .catch(console.error)
   return NextResponse.json({ ok: true, refund: { amount: calc.refundAmount, pgRefundId: refundResult.pgRefundId } })
 }

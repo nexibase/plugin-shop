@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import { logActivity } from '@/plugins/shop/fulfillment/activities'
 import { getShopSetting } from '@/plugins/shop/lib/shop-settings'
+import { sendNotification } from '@/plugins/shop/notifications/send'
 
 export async function GET() {
   const session = await getSession()
@@ -111,5 +112,7 @@ export async function POST(req: Request) {
     return created
   })
 
+  sendNotification({ event: 'return_requested', adminBroadcast: true, data: { returnRequestId: request.id, orderNo: order.orderNo, type: body.type } })
+    .catch(console.error)
   return NextResponse.json({ request }, { status: 201 })
 }
