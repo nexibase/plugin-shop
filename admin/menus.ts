@@ -4,6 +4,7 @@ export default [
     { label: 'adminMenu.products', icon: 'Package', path: '/admin/shop/products' },
     { label: 'adminMenu.categories', icon: 'ShoppingBag', path: '/admin/shop/categories' },
     { label: 'adminMenu.orders', icon: 'ClipboardList', path: '/admin/shop/orders' },
+    { label: 'adminMenu.returns', icon: 'RotateCcw', path: '/admin/shop/returns' },
     { label: 'adminMenu.sales', icon: 'TrendingUp', path: '/admin/shop/sales' },
     { label: 'adminMenu.reviews', icon: 'Star', path: '/admin/shop/reviews' },
     { label: 'adminMenu.qna', icon: 'MessageSquare', path: '/admin/shop/qna' },

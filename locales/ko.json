@@ -946,7 +946,8 @@
       "reviews": "리뷰관리",
       "qna": "Q&A관리",
       "delivery": "배송비정책",
-      "settings": "쇼핑몰설정"
+      "settings": "쇼핑몰설정",
+      "returns": "교환/반품"
     },
     "optionDefault": {
       "color": "색상",
@@ -964,6 +965,7 @@
     },
     "nav": {
       "orders": "주문내역",
+      "returns": "교환/반품",
       "wishlist": "찜 목록",
       "addresses": "배송지"
     },

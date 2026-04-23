@@ -113,12 +113,14 @@ model Order {
   orderType       String          @default("normal") @db.VarChar(30)
   paymentGateway  String?         @db.VarChar(20)
   pgTransactionId String?         @db.VarChar(200)
-  items           OrderItem[]
-  user            User            @relation(fields: [userId], references: [id])
-  reviews         ProductReview[]
-  originalOrder   Order?          @relation("OrderExchangeChain", fields: [originalOrderId], references: [id])
-  replacements    Order[]         @relation("OrderExchangeChain")
-  activities      OrderActivity[]
+  items                       OrderItem[]
+  user                        User            @relation(fields: [userId], references: [id])
+  reviews                     ProductReview[]
+  originalOrder               Order?          @relation("OrderExchangeChain", fields: [originalOrderId], references: [id])
+  replacements                Order[]         @relation("OrderExchangeChain")
+  activities                  OrderActivity[]
+  returnRequestsAsOrder       ReturnRequest[] @relation("ReturnRequestOrder")
+  returnRequestsAsReplacement ReturnRequest[] @relation("ReturnRequestReplacement")
 
   @@index([userId])
   @@index([status])
@@ -160,6 +162,7 @@ model OrderItem {
   subtotal    Int
   order       Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   product     Product? @relation(fields: [productId], references: [id])
+  returnItems ReturnItem[]
 
   @@index([orderId])
   @@index([productId])
@@ -245,4 +248,50 @@ model Wishlist {
   @@index([userId])
   @@index([productId])
   @@map("wishlists")
+}
+
+/// Customer-initiated return or exchange request.
+/// Item-level granularity (see ReturnItem).
+model ReturnRequest {
+  id                     Int       @id @default(autoincrement())
+  orderId                Int
+  userId                 Int
+  type                   String    @db.VarChar(20)   // 'return' | 'exchange'
+  reason                 String    @db.VarChar(40)   // 'defective','damaged_shipping','wrong_item','change_of_mind','other'
+  reasonDetail           String?   @db.Text
+  photos                 Json?                       // array of image URLs
+  status                 String    @default("requested") @db.VarChar(20)
+  rejectReason           String?   @db.Text
+  returnTrackingCompany  String?   @db.VarChar(50)
+  returnTrackingNumber   String?   @db.VarChar(50)
+  customerBearsShipping  Boolean   @default(false)
+  refundAmount           Int?
+  refundedAt             DateTime?
+  replacementOrderId     Int?
+  adminMemo              String?   @db.Text
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  order                  Order     @relation("ReturnRequestOrder", fields: [orderId], references: [id])
+  replacementOrder       Order?    @relation("ReturnRequestReplacement", fields: [replacementOrderId], references: [id])
+  items                  ReturnItem[]
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+  @@map("return_requests")
+}
+
+model ReturnItem {
+  id               Int           @id @default(autoincrement())
+  returnRequestId  Int
+  orderItemId      Int
+  quantity         Int
+  unitPrice        Int
+
+  returnRequest    ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+  orderItem        OrderItem     @relation(fields: [orderItemId], references: [id])
+
+  @@unique([returnRequestId, orderItemId])
+  @@map("return_items")
 }

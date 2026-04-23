@@ -946,7 +946,8 @@
       "reviews": "Reviews",
       "qna": "Q&A",
       "delivery": "Delivery policy",
-      "settings": "Shop settings"
+      "settings": "Shop settings",
+      "returns": "Returns"
     },
     "optionDefault": {
       "color": "Color",
@@ -964,6 +965,7 @@
     },
     "nav": {
       "orders": "Order history",
+      "returns": "Returns",
       "wishlist": "Wishlist",
       "addresses": "Addresses"
     },
