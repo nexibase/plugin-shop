@@ -43,6 +43,7 @@ import {
 import { DELIVERY_COMPANIES as DELIVERY_LIST, getTrackingUrlByName } from "@/plugins/shop/lib/delivery"
 import { ActivityTimeline } from '../components/ActivityTimeline'
 import { StatusTransitionBar } from '../components/StatusTransitionBar'
+import { RefundDialog } from '../components/RefundDialog'
 import type { OrderStatus } from '@/plugins/shop/fulfillment/state-machine'
 
 interface Order {
@@ -73,6 +74,8 @@ interface Order {
   refundAmount: number | null
   refundedAt: string | null
   adminMemo: string | null
+  paymentGateway: string | null
+  pgTransactionId: string | null
   createdAt: string
   updatedAt: string
   items: {
@@ -210,6 +213,9 @@ export default function AdminOrderDetailPage() {
   // 관리자 주문 취소 다이얼로그
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
   const [cancelReason, setCancelReason] = useState("")
+
+  // 환불 처리 다이얼로그
+  const [refundDialogOpen, setRefundDialogOpen] = useState(false)
 
   useEffect(() => {
     fetchOrder()
@@ -1099,6 +1105,32 @@ export default function AdminOrderDetailPage() {
             </CardContent>
           </Card>
 
+          {/* 환불 처리 (부분/전액) */}
+          {order.paidAt && (order.refundAmount ?? 0) < order.finalPrice && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">환불 처리</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="text-sm">
+                  결제액 <strong>{order.finalPrice.toLocaleString()}원</strong>
+                  {order.refundAmount ? (
+                    <span className="text-muted-foreground">
+                      {' · '}이미 환불 {order.refundAmount.toLocaleString()}원
+                      {' · '}남은 환불 가능액 <strong>{(order.finalPrice - order.refundAmount).toLocaleString()}원</strong>
+                    </span>
+                  ) : null}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  취소·반품 요청 시 환불 금액을 입력해 처리합니다. 재고 복구는 필요 시 상품 관리에서 수동 조정해 주세요.
+                </p>
+                <Button variant="outline" onClick={() => setRefundDialogOpen(true)}>
+                  환불 처리
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* 활동 이력 */}
           <Card>
             <CardContent className="pt-6">
@@ -1107,6 +1139,20 @@ export default function AdminOrderDetailPage() {
           </Card>
         </div>
       </div>
+
+      {/* 환불 다이얼로그 */}
+      {order && (
+        <RefundDialog
+          open={refundDialogOpen}
+          onClose={() => setRefundDialogOpen(false)}
+          orderId={order.id}
+          orderNo={order.orderNo}
+          finalPrice={order.finalPrice}
+          alreadyRefunded={order.refundAmount ?? 0}
+          paymentGateway={order.paymentGateway ?? null}
+          onRefunded={fetchOrder}
+        />
+      )}
 
       {/* 삭제 확인 다이얼로그 */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
