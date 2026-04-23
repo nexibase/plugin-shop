@@ -44,6 +44,7 @@ import { DELIVERY_COMPANIES as DELIVERY_LIST, getTrackingUrlByName } from "@/plu
 import { ActivityTimeline } from '../components/ActivityTimeline'
 import { StatusTransitionBar } from '../components/StatusTransitionBar'
 import { RefundDialog } from '../components/RefundDialog'
+import { ExchangeDialog } from '../components/ExchangeDialog'
 import type { OrderStatus } from '@/plugins/shop/fulfillment/state-machine'
 
 interface Order {
@@ -76,6 +77,8 @@ interface Order {
   adminMemo: string | null
   paymentGateway: string | null
   pgTransactionId: string | null
+  orderType: string | null
+  originalOrderId: number | null
   createdAt: string
   updatedAt: string
   items: {
@@ -216,6 +219,9 @@ export default function AdminOrderDetailPage() {
 
   // 환불 처리 다이얼로그
   const [refundDialogOpen, setRefundDialogOpen] = useState(false)
+
+  // 교환 발송 다이얼로그
+  const [exchangeDialogOpen, setExchangeDialogOpen] = useState(false)
 
   useEffect(() => {
     fetchOrder()
@@ -1124,8 +1130,27 @@ export default function AdminOrderDetailPage() {
                 <p className="text-xs text-muted-foreground">
                   취소·반품 요청 시 환불 금액을 입력해 처리합니다. 재고 복구는 필요 시 상품 관리에서 수동 조정해 주세요.
                 </p>
-                <Button variant="outline" onClick={() => setRefundDialogOpen(true)}>
-                  환불 처리
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setRefundDialogOpen(true)}>
+                    환불 처리
+                  </Button>
+                  <Button variant="outline" onClick={() => setExchangeDialogOpen(true)}>
+                    교환 발송
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 이미 전액 환불된 경우에도 교환 발송은 가능하게 별도 카드 */}
+          {order.paidAt && (order.refundAmount ?? 0) >= order.finalPrice && order.orderType !== 'exchange' && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">교환 발송</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Button variant="outline" onClick={() => setExchangeDialogOpen(true)}>
+                  교환 발송 주문 생성
                 </Button>
               </CardContent>
             </Card>
@@ -1151,6 +1176,23 @@ export default function AdminOrderDetailPage() {
           alreadyRefunded={order.refundAmount ?? 0}
           paymentGateway={order.paymentGateway ?? null}
           onRefunded={fetchOrder}
+        />
+      )}
+
+      {/* 교환 발송 다이얼로그 */}
+      {order && (
+        <ExchangeDialog
+          open={exchangeDialogOpen}
+          onClose={() => setExchangeDialogOpen(false)}
+          orderId={order.id}
+          orderNo={order.orderNo}
+          items={order.items.map(it => ({
+            id: it.id,
+            productName: it.productName,
+            optionText: it.optionText,
+            quantity: it.quantity,
+          }))}
+          onExchanged={fetchOrder}
         />
       )}
 

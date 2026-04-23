@@ -25,6 +25,7 @@ const ACTION_LABEL: Record<string, string> = {
   cancel_requested: '취소 요청',
   cancelled: '주문 취소',
   refund_issued: '환불 처리',
+  exchange_sent: '교환 발송',
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -73,6 +74,12 @@ function summarizePayload(action: string, payload: any): string | null {
       }
       if (payload.isFullRefund) parts.push('전액 환불')
       if (payload.reason) parts.push(`사유: ${payload.reason}`)
+      return parts.length > 0 ? parts.join(' · ') : null
+    }
+    case 'exchange_sent': {
+      const parts: string[] = []
+      if (payload.totalQty != null) parts.push(`${payload.totalQty}개`)
+      if (payload.replacementOrderNo) parts.push(`주문번호 ${payload.replacementOrderNo}`)
       return parts.length > 0 ? parts.join(' · ') : null
     }
     default:
