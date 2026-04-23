@@ -946,7 +946,8 @@
       "reviews": "Reviews",
       "qna": "Q&A",
       "delivery": "Delivery policy",
-      "settings": "Shop settings"
+      "settings": "Shop settings",
+      "returns": "Returns"
     },
     "optionDefault": {
       "color": "Color",
