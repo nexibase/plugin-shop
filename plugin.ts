@@ -1,7 +1,7 @@
 export default {
   name: 'Shop',
   description: 'Product sales, orders, and payment system',
-  version: '1.1.1',
+  version: '1.2.0',
   author: 'nexibase',
   authorDomain: 'https://nexibase.com',
   repository: '',
