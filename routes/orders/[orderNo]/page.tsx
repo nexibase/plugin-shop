@@ -150,7 +150,7 @@ export default function OrderDetailPage() {
     return_address?: string
   }>({})
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [dialogAction, setDialogAction] = useState<"cancel" | "refund" | "confirm">("cancel")
+  const [dialogAction, setDialogAction] = useState<"cancel" | "refund" | "exchange" | "confirm">("cancel")
   const [selectedReason, setSelectedReason] = useState("")
   const [customReason, setCustomReason] = useState("")
   const [actionLoading, setActionLoading] = useState(false)
@@ -217,7 +217,7 @@ export default function OrderDetailPage() {
         alert(t('order.selectReason'))
         return
       }
-      const isOther = selectedReason === t('order.cancelReasons.other') || selectedReason === t('order.refundReasons.other')
+      const isOther = selectedReason === t('order.cancelReasons.other') || selectedReason === t('order.refundReasons.other') || (dialogAction === 'exchange' && selectedReason === '기타')
       if (isOther && !customReason.trim()) {
         alert(t('order.enterOtherReason'))
         return
@@ -225,14 +225,21 @@ export default function OrderDetailPage() {
       finalReason = isOther ? customReason.trim() : selectedReason
     }
 
+    // Exchange piggy-backs on the refund_request flow but prefixes the reason
+    // so admin can distinguish in the order list / activity log.
+    const submittedAction = (dialogAction === "refund" || dialogAction === "exchange") ? "refund_request" : dialogAction
+    const submittedReason = dialogAction === "exchange" && finalReason
+      ? `[교환 요청] ${finalReason}`
+      : finalReason
+
     setActionLoading(true)
     try {
       const res = await fetch(`/api/shop/orders/${orderNo}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          action: dialogAction === "refund" ? "refund_request" : dialogAction,
-          cancelReason: finalReason || undefined,
+          action: submittedAction,
+          cancelReason: submittedReason || undefined,
         }),
       })
 
@@ -254,7 +261,7 @@ export default function OrderDetailPage() {
     }
   }
 
-  const openDialog = (action: "cancel" | "refund" | "confirm") => {
+  const openDialog = (action: "cancel" | "refund" | "exchange" | "confirm") => {
     setDialogAction(action)
     setSelectedReason("")
     setCustomReason("")
@@ -678,6 +685,18 @@ export default function OrderDetailPage() {
               </Button>
             )}
 
+            {/* 교환 요청 (배송중/배송완료 상태) */}
+            {["shipping", "delivered"].includes(order.status) && (
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => openDialog("exchange")}
+              >
+                <RotateCcw className="h-4 w-4 mr-2" />
+                교환 요청
+              </Button>
+            )}
+
             {/* 환불요청 중 안내 */}
             {order.status === "refund_requested" && (
               <div className="flex-1 p-4 bg-orange-50 border border-orange-200 rounded-lg text-sm text-orange-800 space-y-2">
@@ -715,11 +734,13 @@ export default function OrderDetailPage() {
             <DialogTitle>
               {dialogAction === "cancel" && t('order.cancelOrder')}
               {dialogAction === "refund" && t('order.requestRefund')}
+              {dialogAction === "exchange" && '교환 요청'}
               {dialogAction === "confirm" && t('order.confirmPurchase')}
             </DialogTitle>
             <DialogDescription>
               {dialogAction === "cancel" && t('order.cancelConfirm')}
               {dialogAction === "refund" && t('order.refundConfirm')}
+              {dialogAction === "exchange" && '교환 사유를 선택해 주세요. 관리자 확인 후 진행됩니다.'}
               {dialogAction === "confirm" && t('order.purchaseConfirm')}
             </DialogDescription>
           </DialogHeader>
@@ -737,7 +758,12 @@ export default function OrderDetailPage() {
           {dialogAction !== "confirm" && (
             <div className="space-y-4">
               <RadioGroup value={selectedReason} onValueChange={setSelectedReason}>
-                {(dialogAction === "cancel" ? cancelReasons : refundReasons).map((reason) => (
+                {(dialogAction === "cancel" ? cancelReasons : dialogAction === "exchange" ? [
+                  '상품 불량',
+                  '오배송',
+                  '사이즈/색상 변경',
+                  '기타',
+                ] : refundReasons).map((reason) => (
                   <div key={reason} className="flex items-center space-x-2">
                     <RadioGroupItem value={reason} id={reason} />
                     <Label htmlFor={reason} className="cursor-pointer">{reason}</Label>
@@ -745,7 +771,7 @@ export default function OrderDetailPage() {
                 ))}
               </RadioGroup>
 
-              {(selectedReason === t('order.cancelReasons.other') || selectedReason === t('order.refundReasons.other')) && (
+              {(selectedReason === t('order.cancelReasons.other') || selectedReason === t('order.refundReasons.other') || (dialogAction === 'exchange' && selectedReason === '기타')) && (
                 <Textarea
                   placeholder={t('order.otherReasonPlaceholder')}
                   value={customReason}
@@ -771,6 +797,7 @@ export default function OrderDetailPage() {
                 <>
                   {dialogAction === "cancel" && t('order.cancelOrder')}
                   {dialogAction === "refund" && t('order.requestRefund')}
+                  {dialogAction === "exchange" && '교환 요청'}
                   {dialogAction === "confirm" && t('order.confirmPurchase')}
                 </>
               )}
