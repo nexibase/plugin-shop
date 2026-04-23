@@ -570,14 +570,6 @@ export default function MyPageOrderDetailPage() {
                   {t('order.confirmPurchase')}
                 </Button>
               )}
-              {(order.status === 'delivered' || order.status === 'confirmed') && (
-                <Button
-                  variant="outline"
-                  onClick={() => router.push(`/shop/mypage/orders/${order.orderNo}/return`)}
-                >
-                  반품/교환 신청
-                </Button>
-              )}
             </div>
           </div>
 

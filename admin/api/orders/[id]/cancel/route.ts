@@ -5,7 +5,6 @@ import { bootstrapPaymentAdapters } from '@/plugins/shop/payments/bootstrap'
 import { get as getAdapter } from '@/plugins/shop/payments/registry'
 import { logActivity } from '@/plugins/shop/fulfillment/activities'
 import { assertOrderTransition, type OrderStatus } from '@/plugins/shop/fulfillment/state-machine'
-import { sendNotification } from '@/plugins/shop/notifications/send'
 
 bootstrapPaymentAdapters()
 
@@ -87,7 +86,5 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
   if (outcome.type === 'not_found') return NextResponse.json({ error: 'not found' }, { status: 404 })
   if (outcome.type === 'race') return NextResponse.json({ error: 'order status changed' }, { status: 409 })
-  sendNotification({ event: 'order_cancelled', userId: order.userId, data: { orderNo: order.orderNo, reason } })
-    .catch(console.error)
   return NextResponse.json({ ok: true, refund: refundResult })
 }

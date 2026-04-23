@@ -1,7 +1,7 @@
 export default {
   name: 'Shop',
   description: 'Product sales, orders, and payment system',
-  version: '1.2.0',
+  version: '1.1.1',
   author: 'nexibase',
   authorDomain: 'https://nexibase.com',
   repository: '',
@@ -9,7 +9,6 @@ export default {
   defaultEnabled: false,
   myPageMenus: [
     { label: 'nav.orders', icon: 'ClipboardList', subPath: '/mypage/orders' },
-    { label: 'nav.returns', icon: 'RotateCcw', subPath: '/mypage/returns' },
     { label: 'nav.wishlist', icon: 'Heart', subPath: '/mypage/wishlist' },
     { label: 'nav.addresses', icon: 'MapPin', subPath: '/mypage/addresses' },
   ],

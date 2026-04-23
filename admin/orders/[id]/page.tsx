@@ -42,7 +42,6 @@ import {
 } from "lucide-react"
 import { DELIVERY_COMPANIES as DELIVERY_LIST, getTrackingUrlByName } from "@/plugins/shop/lib/delivery"
 import { ActivityTimeline } from '../components/ActivityTimeline'
-import { RelatedReturns } from '../components/RelatedReturns'
 import { StatusTransitionBar } from '../components/StatusTransitionBar'
 import type { OrderStatus } from '@/plugins/shop/fulfillment/state-machine'
 
@@ -1104,13 +1103,6 @@ export default function AdminOrderDetailPage() {
           <Card>
             <CardContent className="pt-6">
               <ActivityTimeline orderId={order.id} />
-            </CardContent>
-          </Card>
-
-          {/* 교환/반품 이력 */}
-          <Card>
-            <CardContent className="pt-6">
-              <RelatedReturns orderId={order.id} />
             </CardContent>
           </Card>
         </div>

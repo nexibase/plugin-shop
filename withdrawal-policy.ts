@@ -7,9 +7,6 @@ export default [
     reason: '공개 리뷰; 집계 보존; User 조인으로 작성자 익명화' },
   { model: 'ProductQna',    policy: 'retain',
     reason: '상품 정보 + 관리자 답변; User 조인으로 작성자 익명화' },
-  { model: 'Wishlist',       policy: 'delete' },
-  { model: 'PendingOrder',   policy: 'delete' },
-  { model: 'ReturnRequest',  policy: 'retain',
-    reason: '전자상거래법 — 반품/교환 요청 기록 5년 보관 의무; User 조인으로 요청자 익명화' },
-  { model: 'ReturnItem',     policy: 'retain-via-parent', parent: 'ReturnRequest' },
+  { model: 'Wishlist',      policy: 'delete' },
+  { model: 'PendingOrder',  policy: 'delete' },
 ]

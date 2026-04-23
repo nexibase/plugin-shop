@@ -50,9 +50,6 @@ interface ShopSettings {
   // Notification settings
   order_notification_target: string  // admin, manager, both, none
   email_notification_enabled: string  // true, false
-  // SMS notification settings
-  sms_notifications_enabled: string  // true, false
-  sms_provider_config: string  // JSON: { apiKey, apiSecret, from }
 }
 
 const DEFAULT_SETTINGS_BASE = {
@@ -78,9 +75,6 @@ const DEFAULT_SETTINGS_BASE = {
   // Notification settings
   order_notification_target: "admin",  // 기본값: 관리자만
   email_notification_enabled: "false",  // 기본값: 비활성화
-  // SMS notification settings
-  sms_notifications_enabled: "false",
-  sms_provider_config: "{}",
 }
 
 const AVAILABLE_ADAPTERS = [
@@ -657,60 +651,6 @@ export default function ShopSettingsPage() {
               <br />
               {t('smtpRequired')}
             </p>
-          </CardContent>
-        </Card>
-
-        {/* SMS 알림 설정 */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Bell className="h-5 w-5" />
-              SMS 알림
-            </CardTitle>
-            <CardDescription>
-              주요 주문/배송 이벤트에서 고객에게 SMS를 발송합니다. 고객 측 SMS 수신 동의가 추가로 필요합니다.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id="sms_notifications_enabled"
-                checked={settings.sms_notifications_enabled === 'true'}
-                onChange={(e) => handleChange('sms_notifications_enabled', e.target.checked ? 'true' : 'false')}
-                className="rounded"
-              />
-              <label htmlFor="sms_notifications_enabled" className="text-sm cursor-pointer">
-                SMS 알림 활성화
-              </label>
-            </div>
-            {(() => {
-              let config: { apiKey?: string; apiSecret?: string; from?: string } = {}
-              try { config = JSON.parse(settings.sms_provider_config || '{}') } catch { /* ignore */ }
-              const setConfig = (next: typeof config) => handleChange('sms_provider_config', JSON.stringify(next))
-              return (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="sms_apikey">CoolSMS API Key</Label>
-                    <Input id="sms_apikey" value={config.apiKey ?? ''}
-                      onChange={(e) => setConfig({ ...config, apiKey: e.target.value })}
-                      placeholder="NCS..." />
-                  </div>
-                  <div>
-                    <Label htmlFor="sms_apisecret">CoolSMS API Secret</Label>
-                    <Input id="sms_apisecret" type="password" value={config.apiSecret ?? ''}
-                      onChange={(e) => setConfig({ ...config, apiSecret: e.target.value })}
-                      placeholder="..." />
-                  </div>
-                  <div>
-                    <Label htmlFor="sms_from">발신번호</Label>
-                    <Input id="sms_from" value={config.from ?? ''}
-                      onChange={(e) => setConfig({ ...config, from: e.target.value })}
-                      placeholder="0212345678" />
-                  </div>
-                </div>
-              )
-            })()}
           </CardContent>
         </Card>
       </div>

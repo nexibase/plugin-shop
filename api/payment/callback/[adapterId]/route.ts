@@ -5,7 +5,6 @@ import { get } from '@/plugins/shop/payments/registry'
 import { logActivity } from '@/plugins/shop/fulfillment/activities'
 import { assertOrderTransition, type OrderStatus } from '@/plugins/shop/fulfillment/state-machine'
 import { createOrderCompletedNotification, createNewOrderNotificationForAdmins } from '@/lib/notification'
-import { sendNotification } from '@/plugins/shop/notifications/send'
 
 bootstrapPaymentAdapters()
 
@@ -113,8 +112,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ adapter
         .catch(err => console.error('failed to send customer notification:', err))
       createNewOrderNotificationForAdmins(paidOrder.id, paidOrder.orderNo, paidOrder.finalPrice, paidOrder.ordererName)
         .catch(err => console.error('failed to send admin notification:', err))
-      sendNotification({ event: 'order_paid', userId: paidOrder.userId, data: { orderNo: paidOrder.orderNo, amount: paidOrder.finalPrice } })
-        .catch(console.error)
     }
   }
 
