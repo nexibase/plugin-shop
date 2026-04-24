@@ -61,7 +61,7 @@ export default function AddressesPage() {
 		try {
 			const res = await fetch('/api/shop/addresses')
 			if (res.status === 401) {
-				router.push('/login?redirect=/shop/mypage/addresses')
+				router.push('/login?callbackUrl=/shop/mypage/addresses')
 				return
 			}
 			if (res.ok) {

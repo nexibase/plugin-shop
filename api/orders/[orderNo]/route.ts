@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import crypto from 'crypto'
 import { createOrderCancelledNotification, createOrderCancelledNotificationForAdmins, createCancelRequestNotificationForAdmins } from '@/lib/notification'
+import { logActivity } from '@/plugins/shop/fulfillment/activities'
 
 // Load shop settings
 async function getShopSettings() {
@@ -289,12 +290,24 @@ export async function PUT(
 
       // "준비중" 상태에서는 취소요청 상태로 변경 (관리자 승인 필요)
       if (order.status === 'preparing') {
-        await prisma.order.update({
-          where: { orderNo },
-          data: {
-            status: 'cancel_requested',
-            cancelReason
-          }
+        await prisma.$transaction(async (tx) => {
+          await tx.order.update({
+            where: { orderNo },
+            data: {
+              status: 'cancel_requested',
+              cancelReason
+            }
+          })
+          await logActivity(tx, {
+            orderId: order.id,
+            actorType: 'customer',
+            actorId: session.id,
+            action: 'cancel_requested',
+            fromStatus: order.status,
+            toStatus: 'cancel_requested',
+            payload: { reason: cancelReason },
+            memo: cancelReason,
+          })
         })
 
         // 관리자에게 취소 요청 알림 발송 (비동기)
@@ -388,6 +401,21 @@ export async function PUT(
             paymentInfo: updatedPaymentInfo
           }
         })
+
+        await logActivity(tx, {
+          orderId: order.id,
+          actorType: 'customer',
+          actorId: session.id,
+          action: 'cancelled',
+          fromStatus: order.status,
+          toStatus: 'cancelled',
+          payload: {
+            reason: cancelReason,
+            amount: order.totalPrice,
+            cancelledBy: 'customer',
+          },
+          memo: cancelReason,
+        })
       })
 
       // 주문자에게 취소 완료 알림 발송 (+ 이메일, 비동기)
@@ -432,14 +460,30 @@ export async function PUT(
       // 환불 예정 금액 계산
       const refundAmount = Math.max(0, order.totalPrice - returnShippingFee)
 
-      await prisma.order.update({
-        where: { orderNo },
-        data: {
-          status: 'refund_requested',
-          cancelReason,
-          // 예상 환불 금액 저장 (관리자가 최종 확정)
-          refundAmount
-        }
+      await prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { orderNo },
+          data: {
+            status: 'refund_requested',
+            cancelReason,
+            // 예상 환불 금액 저장 (관리자가 최종 확정)
+            refundAmount
+          }
+        })
+        await logActivity(tx, {
+          orderId: order.id,
+          actorType: 'customer',
+          actorId: session.id,
+          action: 'status_changed',
+          fromStatus: order.status,
+          toStatus: 'refund_requested',
+          payload: {
+            reason: cancelReason,
+            expectedRefundAmount: refundAmount,
+            returnShippingFee,
+          },
+          memo: cancelReason,
+        })
       })
 
       // 관리자에게 환불 요청 알림 발송 (비동기)
@@ -463,11 +507,21 @@ export async function PUT(
         )
       }
 
-      await prisma.order.update({
-        where: { orderNo },
-        data: {
-          status: 'confirmed'
-        }
+      await prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { orderNo },
+          data: {
+            status: 'confirmed'
+          }
+        })
+        await logActivity(tx, {
+          orderId: order.id,
+          actorType: 'customer',
+          actorId: session.id,
+          action: 'status_changed',
+          fromStatus: order.status,
+          toStatus: 'confirmed',
+        })
       })
 
       return NextResponse.json({

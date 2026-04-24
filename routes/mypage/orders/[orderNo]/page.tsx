@@ -34,6 +34,7 @@ import {
 } from "lucide-react"
 import { MyPageLayout } from "@/components/layout/MyPageLayout"
 import { getTrackingUrlByName } from "@/plugins/shop/lib/delivery"
+import { CustomerActivityTimeline } from "./CustomerActivityTimeline"
 
 interface Order {
   id: number
@@ -134,7 +135,7 @@ export default function MyPageOrderDetailPage() {
     try {
       const res = await fetch(`/api/shop/orders/${orderNo}`)
       if (res.status === 401) {
-        router.push(`/login?redirect=/shop/mypage/orders/${orderNo}`)
+        router.push(`/login?callbackUrl=/shop/mypage/orders/${orderNo}`)
         return
       }
       if (!res.ok) {
@@ -471,7 +472,8 @@ export default function MyPageOrderDetailPage() {
               <CardHeader>
                 <CardTitle className="text-base">{t('order.orderHistory')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
+              <CardContent className="space-y-4 text-sm">
+                <CustomerActivityTimeline orderNo={order.orderNo} />
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('order.orderedAt')}</span>
                   <span>{formatDate(order.createdAt)}</span>
@@ -601,7 +603,7 @@ export default function MyPageOrderDetailPage() {
                   <RadioGroup value={selectedReason} onValueChange={setSelectedReason}>
                     {(dialogAction === "cancel" ? cancelReasons : refundReasons).map((reason) => (
                       <div key={reason} className="flex items-center space-x-2">
-                        <RadioGroupItem value={reason} id={reason} />
+                        <RadioGroupItem value={reason} id={reason} className="border-muted-foreground/60" />
                         <Label htmlFor={reason} className="cursor-pointer">{reason}</Label>
                       </div>
                     ))}

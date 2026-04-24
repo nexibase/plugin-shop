@@ -142,21 +142,26 @@ export default function OrderPage() {
       .catch(err => console.error('결제 수단 로드 에러:', err))
   }, [])
 
-  // 로그인한 사용자 정보 불러오기
+  // 로그인한 사용자 정보 불러오기 — 비로그인이면 로그인 페이지로 리다이렉트
   const loadUserInfo = async () => {
     try {
       const res = await fetch("/api/me")
-      if (res.ok) {
-        const data = await res.json()
-        if (data.user) {
-          setOrdererEmail(data.user.email || "")
-          // DB에 저장된 name, phone이 있으면 사용, 없으면 닉네임 사용
-          setOrdererName(data.user.name || data.user.nickname || "")
-          setOrdererPhone(data.user.phone || "")
-        }
+      if (!res.ok || res.status === 401) {
+        router.replace('/login?callbackUrl=/shop/order')
+        return
       }
+      const data = await res.json()
+      if (!data?.user) {
+        router.replace('/login?callbackUrl=/shop/order')
+        return
+      }
+      setOrdererEmail(data.user.email || "")
+      // DB에 저장된 name, phone이 있으면 사용, 없으면 닉네임 사용
+      setOrdererName(data.user.name || data.user.nickname || "")
+      setOrdererPhone(data.user.phone || "")
     } catch (err) {
       console.error("사용자 정보 로드 에러:", err)
+      router.replace('/login?callbackUrl=/shop/order')
     }
   }
 

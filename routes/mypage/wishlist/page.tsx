@@ -44,7 +44,7 @@ export default function WishlistPage() {
 		try {
 			const res = await fetch(`/api/shop/wishlist?page=${wishlistPage}&limit=12`)
 			if (res.status === 401) {
-				router.push('/login?redirect=/shop/mypage/wishlist')
+				router.push('/login?callbackUrl=/shop/mypage/wishlist')
 				return
 			}
 			if (res.ok) {

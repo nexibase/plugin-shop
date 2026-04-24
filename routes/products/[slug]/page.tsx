@@ -237,7 +237,7 @@ export default function ProductDetailPage() {
       } else if (res.status === 401) {
         // 로그인 필요
         if (confirm(t('product.loginRequiredWish'))) {
-          router.push(`/login?redirect=/shop/products/${slug}`)
+          router.push(`/login?callbackUrl=/shop/products/${slug}`)
         }
       } else {
         const data = await res.json()
