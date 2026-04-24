@@ -601,7 +601,7 @@ export default function MyPageOrderDetailPage() {
                   <RadioGroup value={selectedReason} onValueChange={setSelectedReason}>
                     {(dialogAction === "cancel" ? cancelReasons : refundReasons).map((reason) => (
                       <div key={reason} className="flex items-center space-x-2">
-                        <RadioGroupItem value={reason} id={reason} />
+                        <RadioGroupItem value={reason} id={reason} className="border-muted-foreground/60" />
                         <Label htmlFor={reason} className="cursor-pointer">{reason}</Label>
                       </div>
                     ))}
