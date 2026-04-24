@@ -147,12 +147,12 @@ export default function OrderPage() {
     try {
       const res = await fetch("/api/me")
       if (!res.ok || res.status === 401) {
-        router.replace('/login?redirect=/shop/order')
+        router.replace('/login?callbackUrl=/shop/order')
         return
       }
       const data = await res.json()
       if (!data?.user) {
-        router.replace('/login?redirect=/shop/order')
+        router.replace('/login?callbackUrl=/shop/order')
         return
       }
       setOrdererEmail(data.user.email || "")
@@ -161,7 +161,7 @@ export default function OrderPage() {
       setOrdererPhone(data.user.phone || "")
     } catch (err) {
       console.error("사용자 정보 로드 에러:", err)
-      router.replace('/login?redirect=/shop/order')
+      router.replace('/login?callbackUrl=/shop/order')
     }
   }
 

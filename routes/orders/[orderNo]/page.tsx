@@ -189,7 +189,7 @@ export default function OrderDetailPage() {
     try {
       const res = await fetch(`/api/shop/orders/${orderNo}`)
       if (res.status === 401) {
-        router.push(`/login?redirect=/shop/orders/${orderNo}`)
+        router.push(`/login?callbackUrl=/shop/orders/${orderNo}`)
         return
       }
       if (!res.ok) {
