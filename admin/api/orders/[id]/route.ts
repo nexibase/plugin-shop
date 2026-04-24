@@ -341,6 +341,22 @@ export async function PUT(
             paymentInfo: updatedPaymentInfo
           }
         })
+
+        await logActivity(tx, {
+          orderId: order.id,
+          actorType: 'admin',
+          actorId: session.id,
+          action: 'cancelled',
+          fromStatus: order.status,
+          toStatus: 'cancelled',
+          payload: {
+            reason: order.cancelReason || '주문 취소',
+            amount: order.totalPrice,
+            cancelledBy: 'admin',
+            approvalOfCustomerRequest: true,
+          },
+          memo: order.cancelReason || null,
+        })
       })
 
       // Create notification
@@ -364,13 +380,24 @@ export async function PUT(
         )
       }
 
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          status: 'shipping',
-          shippedAt: new Date(),
-          cancelReason: null  // 취소 사유 제거
-        }
+      await prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            status: 'shipping',
+            shippedAt: new Date(),
+            cancelReason: null  // 취소 사유 제거
+          }
+        })
+        await logActivity(tx, {
+          orderId: order.id,
+          actorType: 'admin',
+          actorId: session.id,
+          action: 'status_changed',
+          fromStatus: order.status,
+          toStatus: 'shipping',
+          payload: { note: '취소 요청 거절' },
+        })
       })
 
       // Create notification (취소 거절 -> 배송중)
@@ -470,6 +497,21 @@ export async function PUT(
             paymentInfo: updatedPaymentInfo
           }
         })
+
+        await logActivity(tx, {
+          orderId: order.id,
+          actorType: 'admin',
+          actorId: session.id,
+          action: 'refund_issued',
+          fromStatus: order.status,
+          toStatus: 'refunded',
+          payload: {
+            amount: order.refundAmount ?? 0,
+            reason: order.cancelReason || '환불 처리',
+            approvalOfCustomerRequest: true,
+          },
+          memo: order.cancelReason || null,
+        })
       })
 
       // Create notification
@@ -494,13 +536,24 @@ export async function PUT(
         )
       }
 
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          status: 'delivered',  // 배송완료로 복원
-          cancelReason: null,
-          refundAmount: null
-        }
+      await prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            status: 'delivered',  // 배송완료로 복원
+            cancelReason: null,
+            refundAmount: null
+          }
+        })
+        await logActivity(tx, {
+          orderId: order.id,
+          actorType: 'admin',
+          actorId: session.id,
+          action: 'status_changed',
+          fromStatus: order.status,
+          toStatus: 'delivered',
+          payload: { note: '환불 요청 거절' },
+        })
       })
 
       return NextResponse.json({
@@ -607,6 +660,21 @@ export async function PUT(
             paymentInfo: updatedPaymentInfo
           }
         })
+
+        await logActivity(tx, {
+          orderId: order.id,
+          actorType: 'admin',
+          actorId: session.id,
+          action: 'cancelled',
+          fromStatus: order.status,
+          toStatus: 'cancelled',
+          payload: {
+            reason: cancelReason,
+            amount: order.totalPrice,
+            cancelledBy: 'admin',
+          },
+          memo: cancelReason,
+        })
       })
 
       // Notify the customer of the admin cancellation (includes the reason)
@@ -638,12 +706,23 @@ export async function PUT(
         )
       }
 
-      await prisma.order.update({
-        where: { id: order.id },
-        data: {
-          status: 'paid',
-          paidAt: new Date()
-        }
+      await prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            status: 'paid',
+            paidAt: new Date()
+          }
+        })
+        await logActivity(tx, {
+          orderId: order.id,
+          actorType: 'admin',
+          actorId: session.id,
+          action: 'status_changed',
+          fromStatus: 'pending',
+          toStatus: 'paid',
+          payload: { note: '무통장입금 확인' },
+        })
       })
 
       // Notify the customer that payment completed
@@ -755,6 +834,30 @@ export async function PUT(
     // Create a notification on status change
     if (status && status !== order.status && order.userId) {
       await createOrderStatusNotification(order.userId, order.orderNo, order.status, status)
+    }
+
+    // Audit log: direct status change via PUT (preparing / shipping / delivered / cancelled / refunded ...)
+    if (status && status !== order.status) {
+      const action = status === 'cancelled' || status === 'refunded'
+        ? (status === 'refunded' ? 'refund_issued' : 'cancelled')
+        : 'status_changed'
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const payload: any = {}
+      if (status === 'cancelled' || status === 'refunded') {
+        if (body.cancelReason) payload.reason = body.cancelReason
+        if (updateData.refundAmount != null) payload.amount = updateData.refundAmount
+        payload.cancelledBy = 'admin'
+      }
+      await logActivity(prisma, {
+        orderId: order.id,
+        actorType: 'admin',
+        actorId: session.id,
+        action,
+        fromStatus: order.status,
+        toStatus: status,
+        payload: Object.keys(payload).length > 0 ? payload : undefined,
+        memo: body.cancelReason ?? null,
+      })
     }
 
     // Audit log: memo changed

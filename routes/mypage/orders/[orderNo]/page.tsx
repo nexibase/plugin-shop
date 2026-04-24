@@ -34,6 +34,7 @@ import {
 } from "lucide-react"
 import { MyPageLayout } from "@/components/layout/MyPageLayout"
 import { getTrackingUrlByName } from "@/plugins/shop/lib/delivery"
+import { CustomerActivityTimeline } from "./CustomerActivityTimeline"
 
 interface Order {
   id: number
@@ -471,7 +472,8 @@ export default function MyPageOrderDetailPage() {
               <CardHeader>
                 <CardTitle className="text-base">{t('order.orderHistory')}</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-2 text-sm">
+              <CardContent className="space-y-4 text-sm">
+                <CustomerActivityTimeline orderNo={order.orderNo} />
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{t('order.orderedAt')}</span>
                   <span>{formatDate(order.createdAt)}</span>
