@@ -1,0 +1,5 @@
+# Next.js 빌드 산출물. 플러그인 디렉터리에서 next dev/build를 돌리면 생긴다.
+.next/
+
+# 의존성
+node_modules/
