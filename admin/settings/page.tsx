@@ -163,7 +163,7 @@ export default function ShopSettingsPage() {
     <div className="flex min-h-screen bg-muted/30">
       <Sidebar />
       <main className="flex-1 p-6">
-        <div className="max-w-6xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
