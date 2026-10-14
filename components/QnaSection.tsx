@@ -1,5 +1,6 @@
 "use client"
 
+import { VerifiedAdminBadge } from "@/components/VerifiedAdminBadge"
 import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
@@ -226,7 +227,7 @@ export default function QnaSection({
                         {t('qna.secret')}
                       </Badge>
                     )}
-                    <span className="font-medium text-sm">{qna.user.nickname}</span>
+                    <span className="font-medium text-sm">{qna.user.nickname} <VerifiedAdminBadge userId={qna.user.id} /></span>
                     <span className="text-sm text-muted-foreground">
                       {new Date(qna.createdAt).toLocaleDateString('ko-KR')}
                     </span>
