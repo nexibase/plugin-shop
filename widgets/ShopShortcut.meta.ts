@@ -1,4 +1,5 @@
 export default {
+  ssr: true,
   title: 'Shop Shortcut',
   defaultZone: 'center',
   defaultColSpan: 1,
