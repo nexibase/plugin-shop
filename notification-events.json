@@ -1,0 +1,8 @@
+[
+  { "eventType": "shop.order_completed", "label": "주문 접수 · 구매자", "preferenceType": "order_status", "emailEnabled": false },
+  { "eventType": "shop.order_status", "label": "주문 상태 변경 · 구매자", "preferenceType": "order_status", "emailEnabled": false },
+  { "eventType": "shop.order_cancelled", "label": "주문 취소 · 구매자", "preferenceType": "order_status", "emailEnabled": false },
+  { "eventType": "shop.new_order_admin", "label": "새 주문 · 관리자", "preferenceType": "order_status", "emailEnabled": false },
+  { "eventType": "shop.order_cancelled_admin", "label": "주문 취소 · 관리자", "preferenceType": "order_status", "emailEnabled": false },
+  { "eventType": "shop.order_request_admin", "label": "취소·환불 요청 · 관리자", "preferenceType": "order_status", "emailEnabled": false }
+]

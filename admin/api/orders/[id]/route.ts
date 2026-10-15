@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
-import { createOrderStatusNotification, createOrderCancelledByAdminNotification } from '@/lib/notification'
+import { createOrderStatusNotification, createOrderCancelledByAdminNotification } from '@/plugins/shop/lib/notifications'
 import { logActivity } from '@/plugins/shop/fulfillment/activities'
 import crypto from 'crypto'
 
@@ -357,12 +357,8 @@ export async function PUT(
           },
           memo: order.cancelReason || null,
         })
-      })
-
-      // Create notification
-      if (order.userId) {
-        await createOrderStatusNotification(order.userId, order.orderNo, order.status, 'cancelled')
-      }
+        if (order.userId) await createOrderStatusNotification(order.userId, order.orderNo, order.status, 'cancelled', undefined, tx)
+      }, { timeout: 20000 })
 
       return NextResponse.json({
         success: true,
@@ -398,12 +394,8 @@ export async function PUT(
           toStatus: 'shipping',
           payload: { note: '취소 요청 거절' },
         })
-      })
-
-      // Create notification (취소 거절 -> 배송중)
-      if (order.userId) {
-        await createOrderStatusNotification(order.userId, order.orderNo, order.status, 'shipping')
-      }
+        if (order.userId) await createOrderStatusNotification(order.userId, order.orderNo, order.status, 'shipping', undefined, tx)
+      }, { timeout: 20000 })
 
       return NextResponse.json({
         success: true,
@@ -512,12 +504,8 @@ export async function PUT(
           },
           memo: order.cancelReason || null,
         })
-      })
-
-      // Create notification
-      if (order.userId) {
-        await createOrderStatusNotification(order.userId, order.orderNo, order.status, 'refunded')
-      }
+        if (order.userId) await createOrderStatusNotification(order.userId, order.orderNo, order.status, 'refunded', undefined, tx)
+      }, { timeout: 20000 })
 
       return NextResponse.json({
         success: true,
@@ -675,13 +663,8 @@ export async function PUT(
           },
           memo: cancelReason,
         })
-      })
-
-      // Notify the customer of the admin cancellation (includes the reason)
-      if (order.userId) {
-        createOrderCancelledByAdminNotification(order.userId, order.orderNo, order.totalPrice, cancelReason)
-          .catch(err => console.error('failed to send customer cancellation notification:', err))
-      }
+        if (order.userId) await createOrderCancelledByAdminNotification(order.userId, order.orderNo, order.totalPrice, cancelReason, tx)
+      }, { timeout: 20000 })
 
       return NextResponse.json({
         success: true,
@@ -723,12 +706,8 @@ export async function PUT(
           toStatus: 'paid',
           payload: { note: '무통장입금 확인' },
         })
-      })
-
-      // Notify the customer that payment completed
-      if (order.userId) {
-        await createOrderStatusNotification(order.userId, order.orderNo, 'pending', 'paid')
-      }
+        if (order.userId) await createOrderStatusNotification(order.userId, order.orderNo, 'pending', 'paid', undefined, tx)
+      }, { timeout: 20000 })
 
       return NextResponse.json({
         success: true,
@@ -826,15 +805,13 @@ export async function PUT(
     // Admin memo
     if (adminMemo !== undefined) updateData.adminMemo = adminMemo
 
-    const updatedOrder = await prisma.order.update({
+    const updatedOrder = await prisma.$transaction(async tx => {
+    const updatedOrder = await tx.order.update({
       where: { id: order.id },
       data: updateData
     })
 
-    // Create a notification on status change
-    if (status && status !== order.status && order.userId) {
-      await createOrderStatusNotification(order.userId, order.orderNo, order.status, status)
-    }
+
 
     // Audit log: direct status change via PUT (preparing / shipping / delivered / cancelled / refunded ...)
     if (status && status !== order.status) {
@@ -848,7 +825,7 @@ export async function PUT(
         if (updateData.refundAmount != null) payload.amount = updateData.refundAmount
         payload.cancelledBy = 'admin'
       }
-      await logActivity(prisma, {
+      await logActivity(tx, {
         orderId: order.id,
         actorType: 'admin',
         actorId: session.id,
@@ -862,7 +839,7 @@ export async function PUT(
 
     // Audit log: memo changed
     if (adminMemo !== undefined && adminMemo !== order.adminMemo) {
-      await logActivity(prisma, {
+      await logActivity(tx, {
         orderId: order.id,
         actorType: 'admin',
         actorId: session.id,
@@ -876,7 +853,7 @@ export async function PUT(
       (trackingCompany !== undefined && trackingCompany !== order.trackingCompany) ||
       (trackingNumber !== undefined && trackingNumber !== order.trackingNumber)
     if (trackingChanged) {
-      await logActivity(prisma, {
+      await logActivity(tx, {
         orderId: order.id,
         actorType: 'admin',
         actorId: session.id,
@@ -887,6 +864,10 @@ export async function PUT(
         },
       })
     }
+
+    if (status && status !== order.status && order.userId) await createOrderStatusNotification(order.userId, order.orderNo, order.status, status, trackingNumber, tx)
+    return updatedOrder
+    }, { timeout: 20000 })
 
     return NextResponse.json({
       success: true,

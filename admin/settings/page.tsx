@@ -634,23 +634,7 @@ export default function ShopSettingsPage() {
                 {t('notifTargetHint')}
               </p>
             </div>
-            <div className="flex items-center gap-2 pt-2 border-t">
-              <input
-                type="checkbox"
-                id="email_notification_enabled"
-                checked={settings.email_notification_enabled === "true"}
-                onChange={(e) => handleChange("email_notification_enabled", e.target.checked ? "true" : "false")}
-                className="rounded"
-              />
-              <label htmlFor="email_notification_enabled" className="text-sm cursor-pointer">
-                {t('emailNotification')}
-              </label>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {t('emailNotificationHint')}
-              <br />
-              {t('smtpRequired')}
-            </p>
+<div className="pt-3 border-t"><a className="text-sm text-primary underline" href="/admin/notifications/settings">{t('unifiedNotificationSettings')}</a><p className="text-xs text-muted-foreground mt-1">{t('unifiedNotificationHint')}</p></div>
           </CardContent>
         </Card>
       </div>

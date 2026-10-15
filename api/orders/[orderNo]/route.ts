@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getSession } from '@/lib/auth'
 import crypto from 'crypto'
-import { createOrderCancelledNotification, createOrderCancelledNotificationForAdmins, createCancelRequestNotificationForAdmins } from '@/lib/notification'
+import { createOrderCancelledNotification, createOrderCancelledNotificationForAdmins, createCancelRequestNotificationForAdmins } from '@/plugins/shop/lib/notifications'
 import { logActivity } from '@/plugins/shop/fulfillment/activities'
 
 // Load shop settings
@@ -308,11 +308,8 @@ export async function PUT(
             payload: { reason: cancelReason },
             memo: cancelReason,
           })
-        })
-
-        // 관리자에게 취소 요청 알림 발송 (비동기)
-        createCancelRequestNotificationForAdmins(orderNo, order.ordererName, 'cancel')
-          .catch(err => console.error('관리자 취소 요청 알림 발송 실패:', err))
+          await createCancelRequestNotificationForAdmins(orderNo, order.ordererName, 'cancel', tx)
+        }, { timeout: 20000 })
 
         return NextResponse.json({
           success: true,
@@ -416,15 +413,9 @@ export async function PUT(
           },
           memo: cancelReason,
         })
-      })
-
-      // 주문자에게 취소 완료 알림 발송 (+ 이메일, 비동기)
-      createOrderCancelledNotification(order.userId, orderNo, order.totalPrice, cancelReason)
-        .catch(err => console.error('주문자 취소 알림 발송 실패:', err))
-
-      // 관리자에게 취소 완료 알림 발송 (+ 이메일, 비동기 - 설정에 따라)
-      createOrderCancelledNotificationForAdmins(orderNo, order.ordererName, order.totalPrice, cancelReason)
-        .catch(err => console.error('관리자 취소 알림 발송 실패:', err))
+        await createOrderCancelledNotification(order.userId, orderNo, order.totalPrice, cancelReason, tx)
+        await createOrderCancelledNotificationForAdmins(orderNo, order.ordererName, order.totalPrice, cancelReason, tx)
+      }, { timeout: 20000 })
 
       return NextResponse.json({
         success: true,
@@ -484,11 +475,8 @@ export async function PUT(
           },
           memo: cancelReason,
         })
-      })
-
-      // 관리자에게 환불 요청 알림 발송 (비동기)
-      createCancelRequestNotificationForAdmins(orderNo, order.ordererName, 'refund')
-        .catch(err => console.error('관리자 환불 요청 알림 발송 실패:', err))
+        await createCancelRequestNotificationForAdmins(orderNo, order.ordererName, 'refund', tx)
+      }, { timeout: 20000 })
 
       return NextResponse.json({
         success: true,
