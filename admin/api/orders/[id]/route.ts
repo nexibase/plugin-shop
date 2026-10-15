@@ -902,7 +902,7 @@ export async function PUT(
 }
 
 // Restore stock helper
-async function restoreStock(items: { productId: number; optionId: number | null; quantity: number }[]) {
+async function restoreStock(items: { productId: number | null; optionId: number | null; quantity: number }[]) {
   for (const item of items) {
     if (item.optionId) {
       await prisma.productOption.update({
